@@ -1,33 +1,188 @@
 -- ============================================================
--- Task Entity — PostgreSQL Migration
--- Run once: psql -d <your_db> -f src/config/init.sql
+-- Portfolio Database — PostgreSQL Initialization
+-- Run once: psql -d <your_db> -f init.sql
 -- ============================================================
 
--- Enable uuid generation if not already available
+-- ============================================================
+-- Extensions
+-- ============================================================
+
+-- Provides gen_random_uuid()
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
-CREATE TABLE IF NOT EXISTS tasks (
-    id            UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
-    title         VARCHAR(255)    NOT NULL,
-    description   TEXT,
-    status        VARCHAR(50)     NOT NULL DEFAULT 'pending'
-                  CHECK (status IN ('pending', 'in_progress', 'completed')),
-    created_at    TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+
+-- ============================================================
+-- ENUM TYPES
+-- ============================================================
+
+-- User gender
+CREATE TYPE gender_enum AS ENUM (
+    'male',
+    'female',
+    'prefer_not_to_say',
+    'other'
 );
 
--- Auto-update `updated_at` on every row modification
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+-- Education type
+CREATE TYPE education_type_enum AS ENUM (
+    'secondary',
+    'higher_secondary',
+    'under_graduate',
+    'post_graduate',
+    'diploma',
+    'phd'
+);
 
-DROP TRIGGER IF EXISTS set_updated_at ON tasks;
+-- Education marks type
+CREATE TYPE marks_type_enum AS ENUM (
+    'percentage',
+    'gpa'
+);
 
-CREATE TRIGGER set_updated_at
-    BEFORE UPDATE ON tasks
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
+-- Asset type
+CREATE TYPE asset_type_enum AS ENUM (
+    'image',
+    'youtube'
+);
+
+-- Resume entity type
+CREATE TYPE re_type_enum AS ENUM (
+    'project',
+    'work_exp',
+    'certification',
+    'achievements',
+    'extra_curricular',
+    'others'
+);
+
+-- Resume entity status
+CREATE TYPE status_enum AS ENUM (
+    'draft',
+    'active',
+    'deleted'
+);
+
+
+-- ============================================================
+-- USERS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS users (
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name                VARCHAR(75) NOT NULL,
+    email               VARCHAR(100) UNIQUE NOT NULL,
+    password            VARCHAR(50),
+    phone_no            VARCHAR(10),
+    gender              gender_enum,
+    profile_photo_link  TEXT,
+
+    -- IDs from the centralized links table
+    links               INTEGER[],
+
+    -- IDs from the skills table
+    skills              INTEGER[],
+
+    -- IDs from the education table
+    educations          INTEGER[]
+);
+
+
+-- ============================================================
+-- LINKS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS links (
+    id          SERIAL PRIMARY KEY,
+    link        TEXT,
+    title       TEXT,
+    description TEXT
+);
+
+
+-- ============================================================
+-- ASSETS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS assets (
+    asset_id    SERIAL PRIMARY KEY,
+    title       TEXT,
+    description TEXT,
+    asset_type  asset_type_enum
+);
+
+
+-- ============================================================
+-- SKILLS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS skills (
+    skill_id   SERIAL PRIMARY KEY,
+    skill_name TEXT
+);
+
+
+-- ============================================================
+-- EDUCATION
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS education (
+    education_id    SERIAL PRIMARY KEY,
+    institute_name  TEXT,
+    education_type  education_type_enum,
+    from_date       DATE,
+    to_date         DATE,
+    marks           NUMERIC,
+    mark_type       marks_type_enum,
+    total_mark      NUMERIC
+);
+
+
+-- ============================================================
+-- RESUME ENTITY
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS resume_entity (
+    re_id       SERIAL PRIMARY KEY,
+
+    user_id     UUID REFERENCES users(id) ON DELETE CASCADE,
+
+    re_type     re_type_enum,
+    title       TEXT,
+    description TEXT,
+
+    -- IDs from the centralized links table
+    links_id    INTEGER[],
+
+    -- IDs from the skills table
+    skills_id   INTEGER[],
+
+    -- IDs from the assets table
+    assets_id   INTEGER[],
+
+    from_date   DATE,
+    to_date     DATE,
+
+    status      status_enum
+);
+
+
+-- ============================================================
+-- INDEXES
+-- ============================================================
+
+-- Useful when retrieving all resume entities for a user.
+-- CREATE INDEX IF NOT EXISTS idx_resume_entity_user_id
+-- ON resume_entity(user_id);
+--
+-- -- Useful when filtering resume entities by type.
+-- CREATE INDEX IF NOT EXISTS idx_resume_entity_re_type
+-- ON resume_entity(re_type);
+--
+-- -- Useful when filtering resume entities by status.
+-- CREATE INDEX IF NOT EXISTS idx_resume_entity_status
+-- ON resume_entity(status);
+--
+--
+-- ============================================================
+-- END
+-
