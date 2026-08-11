@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS users (
     name                VARCHAR(75) NOT NULL,
     email               VARCHAR(100) UNIQUE NOT NULL,
     password            VARCHAR(50),
-    phone_no            VARCHAR(10),
+    phone_no            VARCHAR(10), UNIQUE NOT NULL
     gender              gender_enum,
     profile_photo_link  TEXT,
 
@@ -106,6 +106,7 @@ CREATE TABLE IF NOT EXISTS links (
 CREATE TABLE IF NOT EXISTS assets (
     asset_id    SERIAL PRIMARY KEY,
     title       TEXT,
+    link        TEXT,
     description TEXT,
     asset_type  asset_type_enum
 );
