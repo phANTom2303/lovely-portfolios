@@ -8,6 +8,7 @@ import { initRedis } from '#config/redis.js';
 import { AppError } from '#lib/errors.js';
 import taskRouter from '#routes/task.routes.js';
 import { query } from '#config/db.js';
+import { initDatabase } from '#config/initDB.js';
 
 const app = express();
 // Global Middlewares
@@ -22,6 +23,7 @@ app.use(express.json()); // Parse incoming JSON payloads
 await initRedis();
 if ((await query(`SELECT $1`, [1])).rowCount > 0) logger.info('DB Connected');
 else logger.info('DB Not connected');
+await initDatabase();
 
 // ── Route Mounts ────────────────────────────────────────────────────
 app.use('/api/tasks', taskRouter);
