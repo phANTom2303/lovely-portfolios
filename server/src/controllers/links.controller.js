@@ -10,3 +10,16 @@ export const getAllLinks = asyncHandler(async (req, res) => {
         data: links,
     })
 });
+
+export const createLink = asyncHandler(async (req, res) => {
+    const { link, title, description } = req.body;
+
+    if (!link || !title) return res.status(400).json("both URL and Title required");
+
+    const createdLink = await linkService.createLink(link, title, description);
+
+    res.status(RESPONSE_CODES.SUCCESS_CODE).json({
+        succss: true,
+        data: createdLink,
+    });
+});
