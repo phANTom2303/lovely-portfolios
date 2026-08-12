@@ -4,6 +4,28 @@
 -- ============================================================
 
 -- ============================================================
+-- RESET EXISTING TABLES
+-- ============================================================
+
+DROP TABLE IF EXISTS resume_entity CASCADE;
+DROP TABLE IF EXISTS education CASCADE;
+DROP TABLE IF EXISTS assets CASCADE;
+DROP TABLE IF EXISTS skills CASCADE;
+DROP TABLE IF EXISTS links CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
+
+-- ============================================================
+-- RESET EXISTING ENUM TYPES
+-- ============================================================
+
+DROP TYPE IF EXISTS status_enum CASCADE;
+DROP TYPE IF EXISTS re_type_enum CASCADE;
+DROP TYPE IF EXISTS asset_type_enum CASCADE;
+DROP TYPE IF EXISTS marks_type_enum CASCADE;
+DROP TYPE IF EXISTS education_type_enum CASCADE;
+DROP TYPE IF EXISTS gender_enum CASCADE;
+-- ============================================================
 -- Extensions
 -- ============================================================
 
@@ -83,7 +105,10 @@ CREATE TABLE IF NOT EXISTS users (
     skills              INTEGER[],
 
     -- IDs from the education table
-    educations          INTEGER[]
+    educations          INTEGER[],
+    professional_title  TEXT,
+    about               TEXT,
+    current_location    TEXT
 );
 
 
@@ -134,7 +159,8 @@ CREATE TABLE IF NOT EXISTS education (
     to_date         DATE,
     marks           NUMERIC,
     mark_type       marks_type_enum,
-    total_mark      NUMERIC
+    total_mark      NUMERIC,
+    stream          TEXT
 );
 
 
