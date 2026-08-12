@@ -7,4 +7,8 @@ router.get('/', linkController.getAllLinks);
 
 router.post('/', linkController.createLink);
 
+router.delete('/', linkController.deleteLink);
+
+router.patch('/', linkController.updateLink);
+
 export default router;
