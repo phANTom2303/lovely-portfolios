@@ -7,6 +7,7 @@ import { RESPONSE_CODES } from '#lib/common.js';
 import { initRedis } from '#config/redis.js';
 import { AppError } from '#lib/errors.js';
 import taskRouter from '#routes/task.routes.js';
+import linkRouter from '#routes/links.routes.js';
 import { query } from '#config/db.js';
 import { initDatabase } from '#config/initDB.js';
 
@@ -25,8 +26,14 @@ if ((await query(`SELECT $1`, [1])).rowCount > 0) logger.info('DB Connected');
 else logger.info('DB Not connected');
 await initDatabase();
 
+
+app.get('/', async(req, res)=>{
+    return res.json("Server Running :)")
+});
+
 // ── Route Mounts ────────────────────────────────────────────────────
 app.use('/api/tasks', taskRouter);
+app.use('/api/links', linkRouter);
 
 // Global Error Handler (Good practice for a security platform)
 app.use((err, req, res, next) => {
