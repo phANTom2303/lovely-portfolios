@@ -192,6 +192,11 @@ CREATE TABLE IF NOT EXISTS resume_entity (
     status      status_enum
 );
 
+INSERT INTO users (name , email, password, phone_no)
+VALUES
+    ('Anish Goenka', 'anikavy.goenka@gmail.com', '1234', '8820549752'),
+    ('Jaspreet Kaur', 'u2@gmail.com', '1234', '9087654321'),
+    ('Anuranjan Singh Parihari', 'u3@gmail.com', '1234', '1098765432');
 
 -- ============================================================
 -- INDEXES
