@@ -6,6 +6,17 @@ export const getAllLinks = async () => {
     return result;
 };
 
+
+export const getLinksByParams = async (user_id, re_id) => {
+    if (re_id === undefined) {
+        const result = await linkRepo.getProfileLinks(user_id);
+        return result;
+    } else {
+        const result = await linkRepo.getResumeEntityLinks(user_id, re_id);
+        return result;
+    }
+};
+
 export const createLink = async (link, title, description) => {
     const createdLink = await linkRepo.create(link, title, description);
 
