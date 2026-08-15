@@ -54,13 +54,13 @@ export const createLink = asyncHandler(async (req, res) => {
 });
 
 export const deleteLink = asyncHandler(async (req, res) => {
-    const { link_id } = req.body;
-    if (!link_id) return res.status(400).json({
+    const { user_id, link_id } = req.body;
+    if (!link_id || !user_id) return res.status(400).json({
         success: false,
-        message: "Please provide link_id",
+        message: "Please provide both user_id and link_id",
     });
 
-    const deleted = await linkService.deleteLink(link_id);
+    const deleted = await linkService.deleteLink(user_id, link_id);
 
     res.status(RESPONSE_CODES.SUCCESS_CODE).json({
         success: true,

@@ -51,14 +51,14 @@ export const createRElink = async (user_id, re_id, link, title, description = nu
 
     return rows[0];
 }
-export const remove = async (id) => {
+export const removeLink = async (user_id, link_id) => {
     const sql = `
     DELETE FROM links
-    WHERE id=$1
+    WHERE user_id=$1 AND id=$2
     RETURNING *
     `;
 
-    const { rows } = await query(sql, [id]);
+    const { rows } = await query(sql, [user_id, link_id]);
     return rows[0];
 };
 

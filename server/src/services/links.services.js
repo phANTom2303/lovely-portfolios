@@ -26,10 +26,10 @@ export const createRELink = async (user_id, re_id, link, title, description) => 
     return await linkRepo.createRElink(user_id, re_id, link, title, description);
 }
 
-export const deleteLink = async (id) => {
-    const deleted = await linkRepo.remove(id);
+export const deleteLink = async (user_id, link_id) => {
+    const deleted = await linkRepo.removeLink(user_id, link_id);
 
-    if (!deleted) throw new NotFoundError(`Link with id "${id}" not found`);
+    if (!deleted) throw new NotFoundError(`Link with id "${link_id}" or user_id "${user_id}" not found`);
 
     return deleted;
 }
@@ -37,7 +37,7 @@ export const deleteLink = async (id) => {
 export const updateLink = async (user_id, link_id, fields) => {
     const updated = await linkRepo.update(user_id, link_id, fields);
 
-    if (!updated) throw new NotFoundError(`Link with id "${id}" not found`);
+    if (!updated) throw new NotFoundError(`Link with id "${link_id}" or user_id "${user_id}" not found`);
 
     return updated;
 };
