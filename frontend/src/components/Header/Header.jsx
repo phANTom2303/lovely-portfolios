@@ -1,4 +1,5 @@
 import "./Header.css";
+import { Link } from "react-router-dom";
 function Header() {
   return (
     <header className="site-header">
@@ -6,10 +7,10 @@ function Header() {
         Lovely Portfolio
       </a>
       <nav className="header-actions">
-        <a href="/signin">Sign In</a>
-        <a className="header-create" href="/signup">
+        <Link to="/signin">Sign In</Link>
+        <Link to="/signup" className="header-create">
           Create Profile
-        </a>
+        </Link>
       </nav>
     </header>
   );
