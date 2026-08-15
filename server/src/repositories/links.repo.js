@@ -28,18 +28,29 @@ export const getResumeEntityLinks = async (user_id, re_id) => {
     return rows;
 }
 
-export const create = async (link, title, description = null) => {
+export const createProfileLink = async (user_id, link, title, description = null) => {
     const sql = `
-    INSERT INTO links (link, title, description)
-    VALUES ($1, $2, $3) 
+    INSERT INTO links (link, title, description, user_id)
+    VALUES ($1, $2, $3, $4) 
     RETURNING *
     `;
 
-    const { rows } = await query(sql, [link, title, description]);
+    const { rows } = await query(sql, [link, title, description, user_id]);
 
     return rows[0];
 };
 
+export const createRElink = async (user_id, re_id, link, title, description = null) => {
+    const sql = `
+    INSERT INTO links (link, title, description, user_id, re_id)
+    VALUES ($1, $2, $3, $4, $5) 
+    RETURNING *
+    `;
+
+    const { rows } = await query(sql, [link, title, description, user_id, re_id]);
+
+    return rows[0];
+}
 export const remove = async (id) => {
     const sql = `
     DELETE FROM links

@@ -30,11 +30,22 @@ export const getLinksByParams = asyncHandler(async (req, res) => {
 });
 
 export const createLink = asyncHandler(async (req, res) => {
-    const { link, title, description } = req.body;
+    const { user_id, re_id, link, title, description } = req.body;
+    if (!user_id) return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
+        success: false,
+        message: "user_id field is mandatory"
+    });
 
     if (!link || !title) return res.status(400).json("both URL and Title required");
 
-    const createdLink = await linkService.createLink(link, title, description);
+    let createdLink;
+    if (!re_id) {
+        createdLink = await linkService.createProfileLink(user_id, link, title, description);
+
+    } else {
+        createdLink = await linkService.createRELink(user_id, re_id, link, title, description);
+
+    }
 
     res.status(RESPONSE_CODES.SUCCESS_CODE).json({
         succss: true,
