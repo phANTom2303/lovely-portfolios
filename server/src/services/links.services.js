@@ -34,8 +34,8 @@ export const deleteLink = async (id) => {
     return deleted;
 }
 
-export const updateLink = async (id, fields) => {
-    const updated = await linkRepo.update(id, fields);
+export const updateLink = async (user_id, link_id, fields) => {
+    const updated = await linkRepo.update(user_id, link_id, fields);
 
     if (!updated) throw new NotFoundError(`Link with id "${id}" not found`);
 

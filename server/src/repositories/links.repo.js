@@ -62,7 +62,7 @@ export const remove = async (id) => {
     return rows[0];
 };
 
-export const update = async (id, fields) => {
+export const update = async (user_id, link_id, fields) => {
     const allowedKeys = ['title', 'link', 'description'];
     let setClauses = [];
     let values = [];
@@ -75,12 +75,13 @@ export const update = async (id, fields) => {
         }
     }
 
-    values.push(id);
+    values.push(link_id);
+    values.push(user_id);
 
     const sql = `
     UPDATE links
     SET ${setClauses.join(', ')}
-    WHERE id = $${paramIndex}
+    WHERE id = $${paramIndex} AND user_id=$${paramIndex + 1} 
     RETURNING *;
     `;
 

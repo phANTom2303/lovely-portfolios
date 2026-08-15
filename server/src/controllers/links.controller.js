@@ -69,11 +69,11 @@ export const deleteLink = asyncHandler(async (req, res) => {
 });
 
 export const updateLink = asyncHandler(async (req, res) => {
-    const { link_id, title, link, description } = req.body;
+    const { user_id, link_id, title, link, description } = req.body;
 
-    if (!link_id) return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
+    if (!link_id || !user_id) return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
         success: false,
-        message: "Please Provide link_id",
+        message: "Please Provide both user_id and link_id",
     });
 
     if (!title && !link && !description) return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
@@ -81,7 +81,7 @@ export const updateLink = asyncHandler(async (req, res) => {
         message: "Please Provide at least one parameter",
     });
 
-    const updated = await linkService.updateLink(link_id, {
+    const updated = await linkService.updateLink(user_id, link_id, {
         title,
         link,
         description,
