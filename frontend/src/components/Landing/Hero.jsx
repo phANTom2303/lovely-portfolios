@@ -1,4 +1,5 @@
 import "./Hero.css";
+import { Link } from "react-router-dom";
 function Hero() {
   return (
     <section className="hero">
@@ -58,13 +59,13 @@ function Hero() {
         </p>
 
         <div className="hero-actions">
-          <a href="/signup" className="hero-primary">
+          <Link to="/signup" className="hero-primary">
             Start with Resume
-          </a>
+          </Link>
 
-          <a href="/signin" className="hero-secondary">
+          <Link to="/signin" className="hero-secondary">
             Sign In
-          </a>
+          </Link>
         </div>
       </div>
     </section>
