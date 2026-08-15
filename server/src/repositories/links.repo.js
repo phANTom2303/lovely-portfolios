@@ -6,6 +6,37 @@ export const findAll = async () => {
     return rows;
 };
 
+export const getProfileLinks = async (user_id) => {
+    const sql = `
+        SELECT * from links
+        WHERE id = ANY (
+            SELECT UNNEST(links)
+            FROM users
+            WHERE id=$1
+        )
+    `;
+
+    const { rows } = await query(sql, [user_id]);
+
+    return rows;
+};
+
+export const getResumeEntityLinks = async (user_id, re_id) => {
+    const sql = `
+        SELECT * FROM links 
+        WHERE id = any(
+            SELECT UNNEST(links_id)
+            FROM resume_entity 
+            WHERE user_id=$1 AND re_id=$2
+        )
+    `;
+
+
+    const { rows } = await query(sql, [user_id, re_id]);
+
+    return rows;
+}
+
 export const create = async (link, title, description = null) => {
     const sql = `
     INSERT INTO links (link, title, description)

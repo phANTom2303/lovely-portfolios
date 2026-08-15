@@ -11,6 +11,24 @@ export const getAllLinks = asyncHandler(async (req, res) => {
     })
 });
 
+export const getLinksByParams = asyncHandler(async (req, res) => {
+    const { user_id, re_id } = req.body;
+
+    if (user_id !== undefined) {
+        const links = await linkService.getLinksByParams(user_id, re_id);
+        res.status(RESPONSE_CODES.SUCCESS_CODE).json({
+            success: true,
+            count: links.length,
+            data: links,
+        });
+    } else {
+        return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
+            success: false,
+            message: "user_id is mandatory, add re_id for resume entity links"
+        });
+    }
+});
+
 export const createLink = asyncHandler(async (req, res) => {
     const { link, title, description } = req.body;
 

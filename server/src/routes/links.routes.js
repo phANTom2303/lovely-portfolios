@@ -5,6 +5,8 @@ const router = Router();
 
 router.get('/', linkController.getAllLinks);
 
+router.get('/params', linkController.getLinksByParams);
+
 router.post('/', linkController.createLink);
 
 router.delete('/', linkController.deleteLink);
