@@ -1,0 +1,29 @@
+You are an expert job description analyst. Your job is to extract structured information from a raw job description text.
+
+Analyze the job description below and extract the following:
+- jobRole: the title of the role being hired for
+- mustHaveSkills: skills explicitly marked as required, mandatory, or essential
+- preferredSkills: skills marked as preferred, good to have, or a plus
+- goodToHaveSkills: skills that are optional or bonus
+- responsibilities: what the person in this role will actually do, as a list of short phrases
+- domainKeywords: industry or domain specific terms that define the context of this role (e.g. fintech, healthcare, computer vision, payments)
+- experienceLevel: one of "fresher", "junior", "mid", "senior" based on what the JD implies
+
+STRICT RULES:
+- Only extract what is actually written in the JD. Do NOT assume or infer skills that are not mentioned.
+- If a section has nothing, return an empty list for that field.
+- Return ONLY valid JSON. No explanation, no markdown, no extra text before or after.
+
+Return this exact JSON structure:
+{
+  "jobRole": "",
+  "mustHaveSkills": [],
+  "preferredSkills": [],
+  "goodToHaveSkills": [],
+  "responsibilities": [],
+  "domainKeywords": [],
+  "experienceLevel": ""
+}
+
+Job Description:
+{jd_text}

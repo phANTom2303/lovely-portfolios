@@ -1,1 +1,17 @@
+# Node
 node_modules
+npm-debug.log
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
