@@ -8,12 +8,8 @@ export const findAll = async () => {
 
 export const getProfileLinks = async (user_id) => {
     const sql = `
-        SELECT * from links
-        WHERE id = ANY (
-            SELECT UNNEST(links)
-            FROM users
-            WHERE id=$1
-        )
+       SELECT * FROM links
+       WHERE user_id=$1 AND re_id IS NULL
     `;
 
     const { rows } = await query(sql, [user_id]);
@@ -24,13 +20,8 @@ export const getProfileLinks = async (user_id) => {
 export const getResumeEntityLinks = async (user_id, re_id) => {
     const sql = `
         SELECT * FROM links 
-        WHERE id = any(
-            SELECT UNNEST(links_id)
-            FROM resume_entity 
-            WHERE user_id=$1 AND re_id=$2
-        )
+        WHERE user_id=$1 AND re_id=$2
     `;
-
 
     const { rows } = await query(sql, [user_id, re_id]);
 
