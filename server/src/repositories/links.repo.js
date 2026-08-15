@@ -8,12 +8,8 @@ export const findAll = async () => {
 
 export const getProfileLinks = async (user_id) => {
     const sql = `
-        SELECT * from links
-        WHERE id = ANY (
-            SELECT UNNEST(links)
-            FROM users
-            WHERE id=$1
-        )
+       SELECT * FROM links
+       WHERE user_id=$1 AND re_id IS NULL
     `;
 
     const { rows } = await query(sql, [user_id]);
@@ -24,43 +20,49 @@ export const getProfileLinks = async (user_id) => {
 export const getResumeEntityLinks = async (user_id, re_id) => {
     const sql = `
         SELECT * FROM links 
-        WHERE id = any(
-            SELECT UNNEST(links_id)
-            FROM resume_entity 
-            WHERE user_id=$1 AND re_id=$2
-        )
+        WHERE user_id=$1 AND re_id=$2
     `;
-
 
     const { rows } = await query(sql, [user_id, re_id]);
 
     return rows;
 }
 
-export const create = async (link, title, description = null) => {
+export const createProfileLink = async (user_id, link, title, description = null) => {
     const sql = `
-    INSERT INTO links (link, title, description)
-    VALUES ($1, $2, $3) 
+    INSERT INTO links (link, title, description, user_id)
+    VALUES ($1, $2, $3, $4) 
     RETURNING *
     `;
 
-    const { rows } = await query(sql, [link, title, description]);
+    const { rows } = await query(sql, [link, title, description, user_id]);
 
     return rows[0];
 };
 
-export const remove = async (id) => {
+export const createRElink = async (user_id, re_id, link, title, description = null) => {
+    const sql = `
+    INSERT INTO links (link, title, description, user_id, re_id)
+    VALUES ($1, $2, $3, $4, $5) 
+    RETURNING *
+    `;
+
+    const { rows } = await query(sql, [link, title, description, user_id, re_id]);
+
+    return rows[0];
+}
+export const removeLink = async (user_id, link_id) => {
     const sql = `
     DELETE FROM links
-    WHERE id=$1
+    WHERE user_id=$1 AND id=$2
     RETURNING *
     `;
 
-    const { rows } = await query(sql, [id]);
+    const { rows } = await query(sql, [user_id, link_id]);
     return rows[0];
 };
 
-export const update = async (id, fields) => {
+export const update = async (user_id, link_id, fields) => {
     const allowedKeys = ['title', 'link', 'description'];
     let setClauses = [];
     let values = [];
@@ -73,12 +75,13 @@ export const update = async (id, fields) => {
         }
     }
 
-    values.push(id);
+    values.push(link_id);
+    values.push(user_id);
 
     const sql = `
     UPDATE links
     SET ${setClauses.join(', ')}
-    WHERE id = $${paramIndex}
+    WHERE id = $${paramIndex} AND user_id=$${paramIndex + 1} 
     RETURNING *;
     `;
 
