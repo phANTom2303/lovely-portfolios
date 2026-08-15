@@ -6,7 +6,7 @@ function Footer() {
         <div>
           <div className="footer-logo">Lovely Portfolio</div>
 
-          <p>Your work deserves more a better introduction.</p>
+          <p>Your work deserves a better introduction.</p>
         </div>
 
         <div className="footer-links">
