@@ -7,6 +7,7 @@ import CoreDetails from "../../components/profile/CoreDetails";
 import ProfileImage from "../../components/profile/ProfileImage";
 import About from "../../components/profile/About";
 import Socials from "../../components/profile/Socials";
+import Education from "../../components/Education/Education";
 function Profile() {
   const [profile, setProfile] = useState(sampleProfile);
   const [activeSection, setActiveSection] = useState("profile");
@@ -23,7 +24,10 @@ function Profile() {
               >
                 Profile
               </button>
-              <button onClick={() => setActiveSection("education")}>
+              <button
+                className={activeSection === "education" ? styles.active : ""}
+                onClick={() => setActiveSection("education")}
+              >
                 Education
               </button>
               <button onClick={() => setActiveSection("experience")}>
@@ -54,7 +58,10 @@ function Profile() {
             </div>
           </aside>
           <section className={styles.content}>
-            <h1>Profile</h1>
+            <h1>
+              {activeSection === "profile" && "Profile"}
+              {activeSection === "education" && "Education"}
+            </h1>
             {activeSection === "profile" && (
               <div className={styles.profileRows}>
                 <div className={styles.profileTopRow}>
@@ -68,6 +75,7 @@ function Profile() {
                 </div>
               </div>
             )}
+            {activeSection === "education" && <Education />}
           </section>
         </div>
       </main>

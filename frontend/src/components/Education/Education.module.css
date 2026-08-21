@@ -1,0 +1,165 @@
+.educationPage {
+  width: 100%;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 28px;
+}
+
+.pageHeader h1 {
+  margin: 0;
+
+  font-family: var(--font-heading);
+  font-size: 2.2rem;
+  font-weight: 600;
+
+  color: var(--text);
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  width: min(78%, 900px);
+
+  padding-left: 20px;
+}
+
+.timelineItem {
+  position: relative;
+
+  width: 100%;
+  min-width: 0;
+}
+
+.timelineItem::before {
+  content: "";
+
+  position: absolute;
+
+  left: -16px;
+  top: 0;
+  bottom: -24px;
+
+  width: 2px;
+
+  background: var(--border-soft);
+
+  z-index: 0;
+}
+
+.timelineMarker {
+  position: absolute;
+
+  left: -22px;
+  top: 24px;
+
+  width: 14px;
+  height: 14px;
+
+  box-sizing: border-box;
+
+  border-radius: 50%;
+
+  background: var(--surface);
+
+  border: 2px solid var(--teal);
+
+  z-index: 2;
+}
+
+.timelineAdd {
+  width: 100%;
+
+  padding: 12px 18px;
+
+  background: var(--surface);
+
+  border: 1px dashed var(--surface-dim);
+  border-radius: 9px;
+
+  color: var(--text-label);
+
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.timelineAdd:hover {
+  background: var(--teal-soft);
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.dialogOverlay {
+  position: fixed;
+  inset: 0;
+
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(25, 25, 25, 0.35);
+
+  backdrop-filter: blur(3px);
+}
+
+@media (max-width: 900px) {
+  .timeline {
+    width: 90%;
+  }
+}
+
+@media (max-width: 600px) {
+  .pageHeader {
+    align-items: flex-start;
+    margin-bottom: 22px;
+  }
+
+  .pageHeader h1 {
+    font-size: 1.8rem;
+  }
+
+  .timeline {
+    width: 100%;
+    gap: 18px;
+    padding-left: 16px;
+  }
+
+  .timelineItem::before {
+    left: -12px;
+    bottom: -18px;
+  }
+
+  .timelineMarker {
+    left: -17px;
+    top: 22px;
+
+    width: 12px;
+    height: 12px;
+  }
+
+  .timelineAdd {
+    padding: 11px 14px;
+  }
+
+  .dialogOverlay {
+    padding: 10px;
+  }
+}

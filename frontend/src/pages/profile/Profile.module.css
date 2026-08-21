@@ -59,7 +59,7 @@
 }
 
 .sidebar button.active {
-  background: var(--surface-dim);
+  background: var(--teal-soft);
   color: var(--text);
 
   font-weight: 600;
