@@ -1,6 +1,6 @@
 import {Router} from "express";
 import {query} from "#src/config/db.js";
-import * as educationController from "#controller/education.controller.js";
+import * as educationController from "#controllers/education.controller.js";
 const router = Router();
 
 router.get('/', educationController.getEducation);
