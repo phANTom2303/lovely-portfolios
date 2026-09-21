@@ -1,0 +1,169 @@
+.card {
+  width: 100%;
+  height: 220px;
+
+  padding: 20px;
+
+  background: var(--surface);
+
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  box-shadow: 0 4px 12px rgba(25, 25, 25, 0.04);
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+}
+
+.cardHeader,
+.cardHeaderEdit {
+  height: 48px;
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.cardHeader h2,
+.cardHeaderEdit h2 {
+  margin: 0;
+
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 600;
+
+  color: var(--text-label);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.aboutText {
+  margin: 0;
+
+  color: var(--text);
+
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.7;
+
+  overflow-y: auto;
+}
+
+.textarea {
+  width: 100%;
+  height: 116px;
+
+  padding: 10px 12px;
+
+  resize: none;
+
+  background: var(--surface-bright);
+
+  border: 1px solid var(--border);
+  border-radius: 7px;
+
+  color: var(--text);
+
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.5;
+
+  outline: none;
+
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.textarea:focus {
+  border-color: var(--coral);
+
+  box-shadow: 0 0 0 3px var(--coral-soft);
+}
+
+.editButton,
+.saveButton,
+.cancelButton {
+  padding: 8px 14px;
+
+  border-radius: 7px;
+
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.editButton,
+.cancelButton {
+  background: transparent;
+
+  border: 1px solid var(--border);
+
+  color: var(--text-label);
+}
+
+.saveButton {
+  background: var(--coral);
+
+  border: 1px solid var(--coral);
+
+  color: #ffffff;
+}
+
+.editButton:hover,
+.cancelButton:hover {
+  background: var(--surface-dim);
+}
+
+.saveButton:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+  .card {
+    height: 220px;
+    padding: 18px;
+  }
+
+  .textarea {
+    height: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    height: 220px;
+    padding: 16px;
+  }
+
+  .cardHeader,
+  .cardHeaderEdit {
+    height: 46px;
+  }
+
+  .cardHeader h2,
+  .cardHeaderEdit h2 {
+    font-size: 1.25rem;
+  }
+
+  .editButton,
+  .saveButton,
+  .cancelButton {
+    padding: 7px 11px;
+    font-size: 0.75rem;
+  }
+}
