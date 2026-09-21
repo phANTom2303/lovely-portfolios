@@ -15,18 +15,18 @@ export const getAssetsByParams = async (user_id, re_id) => {
     console.log("Enter both user id and re id");
   }
 }
-export const createAsset = async (title, link, description, asset_type) => {
-  const createdAsset = await assetRepo.create(title, link, description, asset_type);
+export const createAsset = async (user_id, re_id, title, link, description, asset_type) => {
+  const createdAsset = await assetRepo.create(user_id, re_id, title, link, description, asset_type);
   return createdAsset;
 };
 export const deleteAsset = async (id) => {
-  const deleted = assetRepo.remove(id);
+  const deleted = await assetRepo.remove(id);
   if (!deleted) throw new NotFoundError(`Link with id "${id}" not found`);
   return deleted;
 };
 
-export const updateAsset = async (id, fields) => {
-  const updated = await assetRepo.update(id, fields);
+export const updateAsset = async (user_id, id, fields) => {
+  const updated = await assetRepo.update(user_id, id, fields);
   if (!updated) throw new NotFoundError(`Link with id "${id}" not found`);
   return updated;
 };

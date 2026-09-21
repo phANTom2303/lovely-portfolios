@@ -1,7 +1,7 @@
 import asyncHandler from "#src/lib/asyncHandler.js";
-import * as assetService from "#service/assets.service.js"
+import * as assetService from "#services/assets.service.js"
 import { RESPONSE_CODES } from "#src/lib/common.js";
-import { success } from "zod";
+
 
 export const getAllAssets = asyncHandler(async (req, res) => {
   const assets = await assetService.getAllAssets();
@@ -30,11 +30,11 @@ export const getAssetsByParams = asyncHandler(async (req, res) => {
 })
 
 export const createAsset = asyncHandler(async (req, res) => {
-  const { title, link, description, asset_type } = req.body;
+  const { user_id, re_id, title, link, description, asset_type } = req.body;
 
   if (!asset_type || !title) return res.status(400).json("both Assets type and Title required");
 
-  const createdasset = await assetService.createAsset(title, link, description, asset_type);
+  const createdasset = await assetService.createAsset(user_id, re_id, title, link, description, asset_type);
 
   res.status(RESPONSE_CODES.SUCCESS_CODE).json({
     succss: true,
@@ -49,7 +49,7 @@ export const deleteAsset = asyncHandler(async (req, res) => {
     message: "Please provide asset_id",
   });
   const deleted = await assetService.deleteAsset(asset_id);
-  res.status(RESPONSE_CODES.success).json({
+  res.status(RESPONSE_CODES.SUCCESS_CODE).json({
     success: true,
     data: deleted,
   })
