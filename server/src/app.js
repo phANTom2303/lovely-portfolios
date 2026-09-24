@@ -8,6 +8,7 @@ import { initRedis } from '#config/redis.js';
 import { AppError } from '#lib/errors.js';
 import taskRouter from '#routes/task.routes.js';
 import linkRouter from '#routes/links.routes.js';
+import educationRouter from '#routes/education.routes.js';
 import { query } from '#config/db.js';
 import { initDatabase } from '#config/initDB.js';
 
@@ -34,6 +35,7 @@ app.get('/', async(req, res)=>{
 // ── Route Mounts ────────────────────────────────────────────────────
 app.use('/api/tasks', taskRouter);
 app.use('/api/links', linkRouter);
+app.use('/api/education', educationRouter);
 
 // Global Error Handler (Good practice for a security platform)
 app.use((err, req, res, next) => {
