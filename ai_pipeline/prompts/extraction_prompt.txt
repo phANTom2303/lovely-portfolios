@@ -24,6 +24,3 @@ Return this exact JSON structure:
   "domainKeywords": [],
   "experienceLevel": ""
 }
-
-Job Description:
-{jd_text}
