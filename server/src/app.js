@@ -9,6 +9,7 @@ import { AppError } from '#lib/errors.js';
 import taskRouter from '#routes/task.routes.js';
 import linkRouter from '#routes/links.routes.js';
 import educationRouter from '#routes/education.routes.js';
+import skillsRouter from '#routes/skills.route.js';
 import { query } from '#config/db.js';
 import { initDatabase } from '#config/initDB.js';
 
@@ -28,7 +29,7 @@ else logger.info('DB Not connected');
 await initDatabase();
 
 
-app.get('/', async(req, res)=>{
+app.get('/', async (req, res) => {
     return res.json("Server Running :)")
 });
 
@@ -36,6 +37,7 @@ app.get('/', async(req, res)=>{
 app.use('/api/tasks', taskRouter);
 app.use('/api/links', linkRouter);
 app.use('/api/education', educationRouter);
+app.use('/api/skills', skillsRouter);
 
 // Global Error Handler (Good practice for a security platform)
 app.use((err, req, res, next) => {
