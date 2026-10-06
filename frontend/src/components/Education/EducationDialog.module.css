@@ -1,0 +1,255 @@
+.dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  width: min(650px, calc(100vw - 32px));
+  max-height: calc(100vh - 60px);
+
+  margin: auto;
+  padding: 0;
+
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  background: var(--surface);
+  color: var(--text);
+
+  box-shadow: 0 20px 60px rgba(25, 25, 25, 0.16);
+
+  overflow: hidden;
+}
+
+.dialog::backdrop {
+  background: rgba(25, 25, 25, 0.35);
+  backdrop-filter: blur(2px);
+}
+
+.dialogForm {
+  display: flex;
+  flex-direction: column;
+
+  max-height: calc(100vh - 40px);
+}
+
+.dialogHeader {
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  padding: 16px 20px;
+
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.dialogHeader h2 {
+  margin: 0;
+
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 600;
+
+  color: var(--text);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+}
+
+.cancelButton,
+.saveButton {
+  padding: 8px 14px;
+
+  border-radius: 7px;
+
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 160ms ease,
+    opacity 160ms ease;
+}
+.deleteButton {
+  padding: 8px 14px;
+
+  background: transparent;
+
+  border: 1px solid var(--border);
+  border-radius: 7px;
+
+  color: var(--text-muted);
+
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.deleteButton:hover {
+  background: var(--coral);
+
+  border-color: var(--surface);
+
+  color: white;
+}
+.cancelButton {
+  background: transparent;
+
+  border: 1px solid var(--border);
+
+  color: var(--text-label);
+}
+
+.cancelButton:hover {
+  background: var(--surface-dim);
+}
+
+.saveButton {
+  background: var(--teal);
+
+  border: 1px solid var(--teal);
+
+  color: #ffffff;
+}
+
+.saveButton:hover {
+  opacity: 0.9;
+}
+
+.formBody {
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+
+  padding: 22px;
+  scrollbar-width: none;
+
+  -ms-overflow-style: none;
+  overflow-y: auto;
+}
+
+.formBody::-webkit-scrollbar {
+  display: none;
+}
+.formField {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.formField label {
+  color: var(--text-label);
+
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.formField input,
+.formField select {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 10px 12px;
+
+  border: 1px solid var(--border);
+  border-radius: 7px;
+
+  background: var(--surface-bright);
+
+  color: var(--text);
+
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+
+  outline: none;
+
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.formField input:focus,
+.formField select:focus {
+  border-color: var(--coral);
+
+  box-shadow: 0 0 0 3px var(--coral-soft);
+}
+
+.dateFields {
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 14px;
+}
+
+@media (max-width: 600px) {
+  .dialog {
+    width: calc(100vw - 20px);
+    max-height: calc(100vh - 20px);
+
+    border-radius: 12px;
+  }
+
+  .dialogForm {
+    max-height: calc(100vh - 20px);
+  }
+
+  .dialogHeader {
+    padding: 14px 16px;
+  }
+
+  .dialogHeader h2 {
+    font-size: 1.15rem;
+  }
+
+  .cancelButton,
+  .saveButton,
+  .deleteButton {
+    padding: 7px 11px;
+
+    font-size: 0.75rem;
+  }
+
+  .formBody {
+    padding: 18px;
+
+    gap: 14px;
+  }
+
+  .dateFields {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 400px) {
+  .dialogHeader {
+    align-items: flex-start;
+  }
+
+  .headerActions {
+    flex-shrink: 0;
+  }
+}

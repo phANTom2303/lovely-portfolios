@@ -1,0 +1,185 @@
+.card {
+  width: 100%;
+  padding: 20px;
+
+  background: var(--surface);
+
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  box-shadow: 0 4px 12px rgba(25, 25, 25, 0.04);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 24px;
+}
+
+.cardHeader h2 {
+  margin: 0;
+
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 600;
+
+  color: var(--text-label);
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imageWrapper {
+  position: relative;
+
+  width: 124px;
+  height: 136px;
+
+  padding: 8px;
+
+  background: var(--surface-dim);
+
+  border: 1px solid var(--border);
+  border-radius: 8px;
+
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
+
+  flex-shrink: 0;
+}
+
+.image {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  border-radius: 4px;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  gap: 8px;
+
+  margin-top: 24px;
+}
+
+.cardFooter button {
+  padding: 8px 16px;
+
+  border-radius: 7px;
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 160ms ease,
+    opacity 160ms ease;
+}
+
+.cardFooter button:first-child {
+  background: var(--coral);
+  color: #ffffff;
+
+  border: 1px solid var(--coral);
+}
+
+.cardFooter button:last-child {
+  background: transparent;
+  color: var(--text-label);
+
+  border: 1px solid var(--border);
+}
+
+.cardFooter button:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 700px) {
+  .card {
+    padding: 18px;
+  }
+
+  .cardHeader {
+    margin-bottom: 20px;
+  }
+
+  .cardHeader h2 {
+    font-size: 1.35rem;
+  }
+
+  .imageWrapper {
+    width: 112px;
+    height: 124px;
+  }
+
+  .cardFooter {
+    margin-top: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 16px;
+  }
+
+  .cardHeader {
+    margin-bottom: 18px;
+  }
+
+  .cardHeader h2 {
+    font-size: 1.25rem;
+  }
+
+  .imageWrapper {
+    width: 100px;
+    height: 112px;
+
+    padding: 6px;
+  }
+
+  .cardFooter {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .cardFooter button {
+    flex: 1;
+
+    padding: 9px 12px;
+
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .card {
+    padding: 14px;
+  }
+
+  .cardHeader h2 {
+    font-size: 1.15rem;
+  }
+
+  .imageWrapper {
+    width: 92px;
+    height: 104px;
+  }
+
+  .cardFooter button {
+    padding: 8px 10px;
+  }
+}
