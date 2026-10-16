@@ -1,0 +1,29 @@
+:root {
+  /* Foundation */
+  --background: #f7f5f0;
+  --surface: #fffdf8;
+  --surface-dim: #e6e1d8;
+
+  /* Typography */
+  --text: #191919;
+  --text-muted: #6b6b67;
+
+  /* Accents */
+  --coral: #ff6b5a;
+  --teal: #2ec4a6;
+  --mustard: #f4c95d;
+
+  /* Soft accents */
+  --coral-soft: #ffe8e5;
+  --teal-soft: #d1f5ee;
+  --mustard-soft: #fdf2d5;
+
+  /* Structure */
+  --border: #dcd9d9;
+
+  /* Contrast */
+  --dark: #202322;
+
+  --font-heading: "Epilogue", sans-serif;
+  --font-body: "Manrope", sans-serif;
+}
