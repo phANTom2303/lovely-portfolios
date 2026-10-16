@@ -1,4 +1,3 @@
-import { query } from "#src/config/db.js";
 import * as linkRepo from "#repositories/links.repo.js";
 import { NotFoundError } from "#src/lib/errors.js";
 export const getAllLinks = async () => {
