@@ -6,7 +6,6 @@ import { logger } from '#config/logger.js';
 import { RESPONSE_CODES } from '#lib/common.js';
 import { initRedis } from '#config/redis.js';
 import { AppError } from '#lib/errors.js';
-import taskRouter from '#routes/task.routes.js';
 import linkRouter from '#routes/links.routes.js';
 import educationRouter from '#routes/education.routes.js';
 import skillsRouter from '#routes/skills.route.js';
@@ -36,7 +35,6 @@ app.get('/', async (req, res) => {
 });
 
 // ── Route Mounts ────────────────────────────────────────────────────
-app.use('/api/tasks', taskRouter);
 app.use('/api/links', linkRouter);
 app.use('/api/education', educationRouter);
 app.use('/api/skills', skillsRouter);

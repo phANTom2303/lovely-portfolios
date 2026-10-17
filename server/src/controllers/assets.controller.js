@@ -44,20 +44,24 @@ export const createAsset = asyncHandler(async (req, res) => {
 
 
 export const createImageAsset = asyncHandler(async (req, res) => {
-    const { user_id, re_id, title, link, description, asset_type } = req.body;
+    const { user_id, re_id, title, description, asset_type } = req.body;
 
     if (!asset_type || !title) return res.status(400).json("both Assets type and Title required");
 
-    const assets = req.files.assets;
+    const asset = req.files.assets ? [0] : undefined;
 
-    if (assets === undefined) {
+    if (asset === undefined) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({ "message": "No assets provided" });
     }
 
-    
+    const assetBuffer = asset.buffer;
+
+    const result = await assetService.createImageAsset(user_id, re_id, title, description, assetBuffer);
 
     res.status(RESPONSE_CODES.SUCCESS_CODE).json({
-        succss: true
+        succss: true,
+        count: result.length,
+        data: result
     });
 });
 

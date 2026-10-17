@@ -1,6 +1,8 @@
 import { query } from "#src/config/db.js";
 import * as assetRepo from "#repositories/assets.repo.js";
 import { NotFoundError } from "#src/lib/errors.js";
+import { uploadImage } from "#src/lib/cloudinary.js";
+
 export const getAllAssets = async () => {
     const result = await assetRepo.findAll();
     return result;
@@ -21,7 +23,15 @@ export const createAsset = async (user_id, re_id, title, link, description, asse
 };
 
 export const createImageAsset = async (user_id, re_id, title, description, imageBuffer) => {
-    
+    const imageDetails = await uploadImage(imageBuffer);
+
+    const cloudinary_public_id = imageDetails.public_id;
+
+    const link = imageDetails.secure_url;
+
+    const result = await assetRepo.createImage(user_id, re_id, title, description, 'image', cloudinary_public_id, link);
+
+    return result;
 }
 
 export const deleteAsset = async (id) => {
