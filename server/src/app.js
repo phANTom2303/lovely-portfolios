@@ -6,10 +6,10 @@ import { logger } from '#config/logger.js';
 import { RESPONSE_CODES } from '#lib/common.js';
 import { initRedis } from '#config/redis.js';
 import { AppError } from '#lib/errors.js';
-import taskRouter from '#routes/task.routes.js';
 import linkRouter from '#routes/links.routes.js';
 import educationRouter from '#routes/education.routes.js';
 import skillsRouter from '#routes/skills.route.js';
+import assetRouter from '#routes/assets.routes.js'
 import { query } from '#config/db.js';
 import { initDatabase } from '#config/initDB.js';
 
@@ -22,6 +22,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json()); // Parse incoming JSON payloads
+app.use(express.urlencoded({ extended: false }));
 
 await initRedis();
 if ((await query(`SELECT $1`, [1])).rowCount > 0) logger.info('DB Connected');
@@ -34,12 +35,12 @@ app.get('/', async (req, res) => {
 });
 
 // ── Route Mounts ────────────────────────────────────────────────────
-app.use('/api/tasks', taskRouter);
 app.use('/api/links', linkRouter);
 app.use('/api/education', educationRouter);
 app.use('/api/skills', skillsRouter);
+app.use('/api/assets', assetRouter);
 
-// Global Error Handler (Good practice for a security platform)
+// Global Error Handler
 app.use((err, req, res, next) => {
     if (err instanceof AppError && err.isOperational) {
         logger.warn(`Operational Error [${err.status}]: ${err.message}`);
