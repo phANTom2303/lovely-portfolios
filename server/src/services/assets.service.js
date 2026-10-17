@@ -1,7 +1,7 @@
 import { query } from "#src/config/db.js";
 import * as assetRepo from "#repositories/assets.repo.js";
 import { NotFoundError } from "#src/lib/errors.js";
-import { uploadImage } from "#src/lib/cloudinary.js";
+import { deleteImage, uploadImage } from "#src/lib/cloudinary.js";
 
 export const getAllAssets = async () => {
     const result = await assetRepo.findAll();
@@ -36,7 +36,15 @@ export const createImageAsset = async (user_id, re_id, title, description, image
 
 export const deleteAsset = async (id) => {
     const deleted = await assetRepo.remove(id);
-    if (!deleted) throw new NotFoundError(`Link with id "${id}" not found`);
+
+    if (!deleted) throw new NotFoundError(`Asset with id "${id}" not found`);
+
+    const cloudinary_public_id = deleted.cloudinary_public_id;
+
+    if (cloudinary_public_id !== undefined && cloudinary_public_id !== null) {
+        await deleteImage(cloudinary_public_id);
+    }
+    
     return deleted;
 };
 

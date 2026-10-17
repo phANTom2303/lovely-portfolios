@@ -2,7 +2,6 @@ import asyncHandler from "#src/lib/asyncHandler.js";
 import * as assetService from "#services/assets.service.js"
 import { RESPONSE_CODES } from "#src/lib/common.js";
 
-
 export const getAllAssets = asyncHandler(async (req, res) => {
     const assets = await assetService.getAllAssets();
     res.status(RESPONSE_CODES.SUCCESS_CODE).json({
@@ -48,13 +47,13 @@ export const createImageAsset = asyncHandler(async (req, res) => {
 
     if (!asset_type || !title) return res.status(400).json("both Assets type and Title required");
 
-    const asset = req.files.assets ? [0] : undefined;
+    const assets = req.files.assets;
 
-    if (asset === undefined) {
+    if (assets === undefined) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({ "message": "No assets provided" });
     }
 
-    const assetBuffer = asset.buffer;
+    const assetBuffer = assets[0].buffer;
 
     const result = await assetService.createImageAsset(user_id, re_id, title, description, assetBuffer);
 
@@ -72,6 +71,7 @@ export const deleteAsset = asyncHandler(async (req, res) => {
         message: "Please provide asset_id",
     });
     const deleted = await assetService.deleteAsset(asset_id);
+
     res.status(RESPONSE_CODES.SUCCESS_CODE).json({
         success: true,
         data: deleted,
