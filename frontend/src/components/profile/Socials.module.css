@@ -1,264 +1,144 @@
 .card {
   width: 100%;
   height: 220px;
-
   padding: 20px;
-
   background: var(--surface);
-
   border: 1px solid var(--border);
   border-radius: 12px;
-
   box-shadow: 0 4px 12px rgba(25, 25, 25, 0.04);
-
   display: flex;
   flex-direction: column;
-
   overflow: hidden;
 }
 
 .cardHeader {
   height: 48px;
   flex-shrink: 0;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   padding-bottom: 14px;
   margin-bottom: 16px;
-
   border-bottom: 1px solid var(--border-soft);
 }
 
 .cardHeader h2 {
   margin: 0;
-
   font-family: var(--font-heading);
   font-size: 1.35rem;
   font-weight: 600;
-
   color: var(--text-label);
-}
-
-.headerActions {
-  display: flex;
-  align-items: center;
-
-  gap: 6px;
-}
-
-.addButton,
-.editButton,
-.saveButton,
-.cancelButton,
-.deleteButton {
-  padding: 8px 14px;
-
-  border-radius: 7px;
-
-  font-family: var(--font-body);
-  font-size: 0.8rem;
-  font-weight: 600;
-
-  cursor: pointer;
-
-  transition:
-    background 160ms ease,
-    opacity 160ms ease;
-}
-
-.addButton {
-  background: var(--coral);
-
-  border: 1px solid var(--coral);
-
-  color: #ffffff;
-}
-
-.addButton:hover {
-  opacity: 0.9;
 }
 
 .editButton {
-  background: transparent;
-
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  background: var(--surface-dim);
   border: 1px solid var(--border);
-
-  color: var(--text-label);
+  border-radius: 7px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(25, 25, 25, 0.04);
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
 }
 
 .editButton:hover {
-  background: var(--surface-dim);
-}
-
-.saveButton {
-  background: var(--coral);
-
-  border: 1px solid var(--coral);
-
-  color: #ffffff;
-}
-
-.saveButton:hover {
-  opacity: 0.9;
-}
-
-.cancelButton {
-  background: transparent;
-
-  border: 1px solid var(--border);
-
-  color: var(--text-label);
-}
-
-.cancelButton:hover {
-  background: var(--surface-dim);
-}
-
-.deleteButton {
-  background: transparent;
-
-  border: 1px solid var(--border);
-
-  color: var(--text-muted);
-}
-
-.deleteButton:hover {
-  background: var(--surface-dim);
+  background: var(--coral-soft);
+  border-color: var(--coral);
+  color: var(--coral);
+  transform: translateY(-1px);
 }
 
 .socialList {
   min-height: 0;
-
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-
   gap: 10px;
-
   overflow-y: auto;
 }
 
 .socialItem {
   min-width: 0;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   gap: 12px;
-
-  padding: 12px;
-
+  padding: 10px 14px;
+  background: var(--background);
   border: 1px solid var(--border-soft);
   border-radius: 8px;
+  transition: border-color 140ms ease;
 }
 
-.socialItem span {
-  min-width: 0;
+.socialItem:hover {
+  border-color: var(--border);
+}
 
+.socialTitle {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-
   color: var(--text);
-
+  font-family: var(--font-body);
   font-size: 0.9rem;
   font-weight: 600;
 }
 
-.socialItem a,
-.itemEditButton {
-  flex-shrink: 0;
-
-  padding: 0;
-
-  background: transparent;
-
-  border: 0;
-
-  color: var(--coral);
-
+.visitLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: var(--teal-soft);
+  border: 1px solid var(--teal);
+  border-radius: 6px;
+  color: var(--text);
   font-family: var(--font-body);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
-
   text-decoration: none;
-
   cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
 }
 
-.socialItem a:hover,
-.itemEditButton:hover {
-  text-decoration: underline;
+.visitLink:hover {
+  background: var(--teal);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.arrowIcon {
+  font-size: 0.82rem;
+  line-height: 1;
 }
 
 .emptyState {
   margin: 0;
-
   color: var(--text-muted);
-
+  font-family: var(--font-body);
   font-size: 0.9rem;
   line-height: 1.5;
 }
 
-.addForm {
-  display: flex;
-  flex-direction: column;
-
-  gap: 10px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-
-  gap: 5px;
-}
-
-.field label {
-  color: var(--text-label);
-
-  font-size: 0.75rem;
-  font-weight: 700;
-
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.field input {
-  width: 100%;
-
-  padding: 8px 10px;
-
-  background: var(--surface-bright);
-
-  border: 1px solid var(--border);
-
-  border-radius: 7px;
-
-  color: var(--text);
-
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-
-  outline: none;
-
-  transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease;
-}
-
-.field input:focus {
-  border-color: var(--coral);
-
-  box-shadow: 0 0 0 3px var(--coral-soft);
-}
-
 @media (max-width: 768px) {
   .card {
-    height: 220px;
-
+    min-height: 180px;
+    height: auto;
     padding: 18px;
   }
 
@@ -269,8 +149,8 @@
 
 @media (max-width: 480px) {
   .card {
-    height: 220px;
-
+    min-height: 180px;
+    height: auto;
     padding: 16px;
   }
 
@@ -282,13 +162,8 @@
     font-size: 1.25rem;
   }
 
-  .addButton,
-  .editButton,
-  .saveButton,
-  .cancelButton,
-  .deleteButton {
-    padding: 7px 11px;
-
-    font-size: 0.75rem;
+  .editButton {
+    padding: 5px 10px;
+    font-size: 0.76rem;
   }
 }

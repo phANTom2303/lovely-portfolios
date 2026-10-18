@@ -108,6 +108,11 @@
   opacity: 0.9;
 }
 
+.cardFooter button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 @media (max-width: 700px) {
   .card {
     padding: 18px;

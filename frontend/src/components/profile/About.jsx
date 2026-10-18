@@ -1,80 +1,59 @@
 import styles from "./About.module.css";
 import { useState } from "react";
+import AboutDialog from "./AboutDialog";
 
 function About({ profile, setProfile }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [draftAbout, setDraftAbout] = useState(profile.about || "");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  function handleEdit() {
-    setDraftAbout(profile.about || "");
-    setIsEditing(true);
-  }
-
-  function handleCancel() {
-    setIsEditing(false);
-  }
-
-  function handleSave() {
+  function handleSave(draftAbout) {
     setProfile((previous) => ({
       ...previous,
       about: draftAbout,
     }));
-
-    setIsEditing(false);
+    setIsDialogOpen(false);
   }
 
   return (
-    <section className={styles.card}>
-      {isEditing ? (
-        <div className={styles.cardHeaderEdit}>
-          <h2>About</h2>
-
-          <div className={styles.headerActions}>
-            <button
-              className={styles.cancelButton}
-              type="button"
-              onClick={handleCancel}
-            >
-              Cancel
-            </button>
-
-            <button
-              className={styles.saveButton}
-              type="button"
-              onClick={handleSave}
-            >
-              Save
-            </button>
-          </div>
-        </div>
-      ) : (
+    <>
+      <section className={styles.card}>
         <div className={styles.cardHeader}>
           <h2>About</h2>
-
           <button
             className={styles.editButton}
             type="button"
-            onClick={handleEdit}
+            onClick={() => setIsDialogOpen(true)}
+            aria-label="Edit about"
           >
-            Edit
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+            </svg>
+            <span>Edit</span>
           </button>
         </div>
-      )}
 
-      {isEditing ? (
-        <textarea
-          className={styles.textarea}
-          value={draftAbout}
-          onChange={(event) => setDraftAbout(event.target.value)}
-          placeholder="Tell people about yourself..."
-          rows={6}
-        />
-      ) : (
         <p className={styles.aboutText}>
           {profile.about || "Tell people about yourself."}
         </p>
+      </section>
+
+      {isDialogOpen && (
+        <AboutDialog
+          about={profile.about}
+          onSave={handleSave}
+          onClose={() => setIsDialogOpen(false)}
+        />
       )}
-    </section>
+    </>
   );
 }
 

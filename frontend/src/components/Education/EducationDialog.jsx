@@ -15,7 +15,6 @@ function EducationDialog({ education, onSave, onClose, onDelete }) {
 
   function handleChange(event) {
     const { name, value } = event.target;
-
     setFormData((previous) => ({
       ...previous,
       [name]: value,
@@ -24,14 +23,12 @@ function EducationDialog({ education, onSave, onClose, onDelete }) {
 
   function handleSubmit(event) {
     event.preventDefault();
-
     onSave(formData);
   }
 
   return (
     <div className={styles.dialog}>
       <form className={styles.dialogForm} onSubmit={handleSubmit}>
-        {/* Header */}
         <div className={styles.dialogHeader}>
           <h2>{education ? "Edit Education" : "Add Education"}</h2>
 
@@ -59,11 +56,9 @@ function EducationDialog({ education, onSave, onClose, onDelete }) {
           </div>
         </div>
 
-        {/* Form body */}
         <div className={styles.formBody}>
           <div className={styles.formField}>
             <label htmlFor="level">Level Of Education</label>
-
             <input
               id="level"
               name="level"
@@ -77,7 +72,6 @@ function EducationDialog({ education, onSave, onClose, onDelete }) {
 
           <div className={styles.formField}>
             <label htmlFor="degree">Degree / Qualification</label>
-
             <input
               id="degree"
               name="degree"
@@ -91,7 +85,6 @@ function EducationDialog({ education, onSave, onClose, onDelete }) {
 
           <div className={styles.formField}>
             <label htmlFor="institute">Name of Institution</label>
-
             <input
               id="institute"
               name="institute"
@@ -105,7 +98,6 @@ function EducationDialog({ education, onSave, onClose, onDelete }) {
 
           <div className={styles.formField}>
             <label htmlFor="branch">Branch / Stream</label>
-
             <input
               id="branch"
               name="branch"
@@ -117,38 +109,37 @@ function EducationDialog({ education, onSave, onClose, onDelete }) {
             />
           </div>
 
-          <div className={styles.formField}>
-            <label htmlFor="gradingSystem">Grading System</label>
+          <div className={styles.formRow}>
+            <div className={styles.formField}>
+              <label htmlFor="gradingSystem">Grading System</label>
+              <input
+                id="gradingSystem"
+                name="gradingSystem"
+                type="text"
+                value={formData.gradingSystem}
+                placeholder="e.g. CGPA, Percentage"
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-            <input
-              id="gradingSystem"
-              name="gradingSystem"
-              type="text"
-              value={formData.gradingSystem}
-              placeholder="e.g. CGPA, Percentage"
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className={styles.formField}>
-            <label htmlFor="grade">Grade Obtained</label>
-
-            <input
-              id="grade"
-              name="grade"
-              type="number"
-              value={formData.grade}
-              placeholder="Enter your grade"
-              onChange={handleChange}
-              required
-            />
+            <div className={styles.formField}>
+              <label htmlFor="grade">Grade Obtained</label>
+              <input
+                id="grade"
+                name="grade"
+                type="text"
+                value={formData.grade}
+                placeholder="e.g. 9.0 or 91%"
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
 
           <div className={styles.dateFields}>
             <div className={styles.formField}>
               <label htmlFor="startDate">Start Date</label>
-
               <input
                 id="startDate"
                 name="startDate"
@@ -161,7 +152,6 @@ function EducationDialog({ education, onSave, onClose, onDelete }) {
 
             <div className={styles.formField}>
               <label htmlFor="endDate">End Date</label>
-
               <input
                 id="endDate"
                 name="endDate"

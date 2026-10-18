@@ -1,141 +1,83 @@
 import styles from "./CoreDetails.module.css";
 import { useState } from "react";
-function CoreDetails({ profile, setProfile }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [draftProfile, setDraftProfile] = useState(profile);
-  function handleEdit() {
-    setDraftProfile(profile);
-    setIsEditing(true);
-  }
-  function handleCancel() {
-    setIsEditing(false);
-  }
-  function handleSave() {
-    setProfile(draftProfile);
-    setIsEditing(false);
-  }
-  function handleChange(event) {
-    const { name, value } = event.target;
-    setDraftProfile((previous) => ({ ...previous, [name]: value }));
-  }
-  return (
-    <section className={styles.card}>
-      {isEditing ? (
-        <div className={styles.cardHeaderEdit}>
-          <h2>Core Details</h2>
-          <div className={styles.headerActions}>
-            <button
-              className={styles.cancelButton}
-              type="button"
-              onClick={handleCancel}
-            >
-              Cancel
-            </button>
+import CoreDetailsDialog from "./CoreDetailsDialog";
 
-            <button
-              className={styles.saveButton}
-              type="button"
-              onClick={handleSave}
-            >
-              Save
-            </button>
-          </div>
-        </div>
-      ) : (
+function CoreDetails({ profile, setProfile }) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  function handleSave(formData) {
+    setProfile((previous) => ({
+      ...previous,
+      ...formData,
+    }));
+    setIsDialogOpen(false);
+  }
+
+  return (
+    <>
+      <section className={styles.card}>
         <div className={styles.cardHeader}>
           <h2>Core Details</h2>
           <button
             className={styles.editButton}
             type="button"
-            onClick={handleEdit}
+            onClick={() => setIsDialogOpen(true)}
+            aria-label="Edit core details"
           >
-            Edit
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+            </svg>
+            <span>Edit</span>
           </button>
         </div>
-      )}
-      {isEditing ? (
-        <div>
-          <form className={styles.formFields}>
-            <div className={`${styles.field} ${styles.fullWidth}`}>
-              <span className={styles.label}>Name</span>
-              <input
-                className={styles.name}
-                name="name"
-                value={draftProfile.name}
-                onChange={handleChange}
-              />
-            </div>
 
-            <div className={styles.field}>
-              <span className={styles.label}>Gender</span>
-              <input
-                className={styles.value}
-                name="gender"
-                value={draftProfile.gender}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <span className={styles.label}>Phone</span>
-              <input
-                className={styles.value}
-                name="phone"
-                value={draftProfile.phone}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <span className={styles.label}>Professional Title</span>
-              <input
-                className={styles.value}
-                name="professionalTitle"
-                value={draftProfile.professionalTitle}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <span className={styles.label}>Current Location</span>
-              <input
-                className={styles.value}
-                name="location"
-                value={draftProfile.location}
-                onChange={handleChange}
-              />
-            </div>
-          </form>
-        </div>
-      ) : (
         <div className={styles.fields}>
           <div className={`${styles.field} ${styles.fullWidth}`}>
             <span className={styles.label}>Name</span>
-            <p className={styles.value}>{profile.name}</p>
+            <p className={styles.value}>{profile.name || "—"}</p>
           </div>
 
           <div className={styles.field}>
             <span className={styles.label}>Gender</span>
-            <p className={styles.value}>{profile.gender}</p>
+            <p className={styles.value}>{profile.gender || "—"}</p>
           </div>
 
           <div className={styles.field}>
             <span className={styles.label}>Phone</span>
-            <p className={styles.value}>{profile.phone}</p>
+            <p className={styles.value}>{profile.phone || "—"}</p>
           </div>
 
           <div className={styles.field}>
             <span className={styles.label}>Professional Title</span>
-            <p className={styles.value}>{profile.professionalTitle}</p>
+            <p className={styles.value}>{profile.professionalTitle || "—"}</p>
           </div>
 
           <div className={styles.field}>
             <span className={styles.label}>Current Location</span>
-            <p className={styles.value}>{profile.location}</p>
+            <p className={styles.value}>{profile.location || "—"}</p>
           </div>
         </div>
+      </section>
+
+      {isDialogOpen && (
+        <CoreDetailsDialog
+          profile={profile}
+          onSave={handleSave}
+          onClose={() => setIsDialogOpen(false)}
+        />
       )}
-    </section>
+    </>
   );
 }
+
 export default CoreDetails;

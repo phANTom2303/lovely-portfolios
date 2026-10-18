@@ -1,262 +1,81 @@
 import styles from "./Socials.module.css";
 import { useState } from "react";
+import SocialsDialog from "./SocialsDialog";
 
 function Socials({ profile, setProfile }) {
-  const [isAdding, setIsAdding] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingId, setEditingId] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const [title, setTitle] = useState("");
-  const [url, setUrl] = useState("");
-
-  function handleAddStart() {
-    setTitle("");
-    setUrl("");
-    setIsAdding(true);
-  }
-
-  function handleAdd() {
-    if (!title.trim() || !url.trim()) {
-      return;
-    }
-
-    const newSocial = {
-      id: crypto.randomUUID(),
-      title: title.trim(),
-      url: url.trim(),
-    };
-
+  function handleSaveSocials(updatedSocials) {
     setProfile((previous) => ({
       ...previous,
-      socials: [...(previous.socials || []), newSocial],
+      socials: updatedSocials,
     }));
-
-    handleCancel();
-  }
-
-  function handleEditMode() {
-    setIsEditing(true);
-    setEditingId(null);
-  }
-
-  function handleEditSocial(social) {
-    setEditingId(social.id);
-    setTitle(social.title);
-    setUrl(social.url);
-  }
-
-  function handleSaveEdit() {
-    if (!title.trim() || !url.trim()) {
-      return;
-    }
-
-    setProfile((previous) => ({
-      ...previous,
-      socials: previous.socials.map((social) =>
-        social.id === editingId
-          ? {
-              ...social,
-              title: title.trim(),
-              url: url.trim(),
-            }
-          : social,
-      ),
-    }));
-
-    handleCancel();
-  }
-
-  function handleDelete() {
-    setProfile((previous) => ({
-      ...previous,
-      socials: previous.socials.filter((social) => social.id !== editingId),
-    }));
-
-    handleCancel();
-  }
-
-  function handleCancel() {
-    setTitle("");
-    setUrl("");
-
-    setIsAdding(false);
-    setIsEditing(false);
-    setEditingId(null);
-  }
-
-  function handleDoneEditing() {
-    setIsEditing(false);
-    setEditingId(null);
+    setIsDialogOpen(false);
   }
 
   return (
-    <section className={styles.card}>
-      <div className={styles.cardHeader}>
-        <h2>Socials</h2>
-
-        {/* Normal Mode */}
-        {!isAdding && !isEditing && (
-          <div className={styles.headerActions}>
-            <button
-              className={styles.addButton}
-              type="button"
-              onClick={handleAddStart}
-            >
-              Add
-            </button>
-
-            <button
-              className={styles.editButton}
-              type="button"
-              onClick={handleEditMode}
-            >
-              Edit
-            </button>
-          </div>
-        )}
-
-        {/* Social Selection Mode */}
-        {isEditing && !editingId && (
+    <>
+      <section className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2>Socials</h2>
           <button
-            className={styles.cancelButton}
+            className={styles.editButton}
             type="button"
-            onClick={handleDoneEditing}
+            onClick={() => setIsDialogOpen(true)}
+            aria-label="Add or edit socials"
           >
-            Done
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+            </svg>
+            <span>Add / Edit</span>
           </button>
-        )}
-
-        {/* Individual Social Editing */}
-        {editingId && (
-          <div className={styles.headerActions}>
-            <button
-              className={styles.deleteButton}
-              type="button"
-              onClick={handleDelete}
-            >
-              Delete
-            </button>
-
-            <button
-              className={styles.saveButton}
-              type="button"
-              onClick={handleSaveEdit}
-            >
-              Save
-            </button>
-          </div>
-        )}
-
-        {/* Adding New Social */}
-        {isAdding && (
-          <div className={styles.headerActions}>
-            <button
-              className={styles.cancelButton}
-              type="button"
-              onClick={handleCancel}
-            >
-              Cancel
-            </button>
-
-            <button
-              className={styles.saveButton}
-              type="button"
-              onClick={handleAdd}
-            >
-              Save
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Add Social*/}
-
-      {isAdding && (
-        <div className={styles.addForm}>
-          <div className={styles.field}>
-            <label htmlFor="socialTitle">Title</label>
-
-            <input
-              id="socialTitle"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="e.g. LinkedIn"
-            />
-          </div>
-
-          <div className={styles.field}>
-            <label htmlFor="socialUrl">Link</label>
-
-            <input
-              id="socialUrl"
-              type="url"
-              value={url}
-              onChange={(event) => setUrl(event.target.value)}
-              placeholder="https://..."
-            />
-          </div>
         </div>
-      )}
 
-      {/*Edit Existing Social*/}
-
-      {editingId && (
-        <div className={styles.addForm}>
-          <div className={styles.field}>
-            <label htmlFor="editSocialTitle">Title</label>
-
-            <input
-              id="editSocialTitle"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="e.g. LinkedIn"
-            />
-          </div>
-
-          <div className={styles.field}>
-            <label htmlFor="editSocialUrl">Link</label>
-
-            <input
-              id="editSocialUrl"
-              type="url"
-              value={url}
-              onChange={(event) => setUrl(event.target.value)}
-              placeholder="https://..."
-            />
-          </div>
-        </div>
-      )}
-
-      {!isAdding && !editingId && (
         <div className={styles.socialList}>
           {profile.socials?.length ? (
             profile.socials.map((social) => (
               <div className={styles.socialItem} key={social.id}>
-                <span>{social.title}</span>
-
-                {isEditing ? (
-                  <button
-                    className={styles.itemEditButton}
-                    type="button"
-                    onClick={() => handleEditSocial(social)}
+                <span className={styles.socialTitle}>{social.title}</span>
+                {social.url && (
+                  <a
+                    href={social.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={styles.visitLink}
+                    aria-label={`Visit ${social.title}`}
                   >
-                    Edit
-                  </button>
-                ) : (
-                  <a href={social.url} target="_blank" rel="noreferrer">
-                    Visit
+                    <span>Visit</span>
+                    <span className={styles.arrowIcon}>↗</span>
                   </a>
                 )}
               </div>
             ))
           ) : (
             <p className={styles.emptyState}>
-              Add links to your professional profiles.
+              Add links to your professional profiles. Click &quot;Add / Edit&quot; to begin.
             </p>
           )}
         </div>
+      </section>
+
+      {isDialogOpen && (
+        <SocialsDialog
+          socials={profile.socials || []}
+          onSave={handleSaveSocials}
+          onClose={() => setIsDialogOpen(false)}
+        />
       )}
-    </section>
+    </>
   );
 }
 

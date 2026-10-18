@@ -2,37 +2,26 @@ import styles from "./Education.module.css";
 import EducationCard from "./EducationCard";
 import EducationDialog from "./EducationDialog";
 import { useState } from "react";
+import sampleEducation from "../../data/sampleEducation";
 
-const sampleEducation = [
-  {
-    id: "edu-1",
-    level: "Degree",
-    degree: "B.Tech",
-    institute: "KIIT",
-    branch: "Computer Science",
-    gradingSystem: "CGPA",
-    grade: "9.0",
-    startDate: "2023-08",
-    endDate: "2027-06",
-  },
-  {
-    id: "edu-2",
-    level: "School",
-    degree: "Class XII",
-    institute: "XYZ School",
-    branch: "Science",
-    gradingSystem: "Percentage",
-    grade: "91%",
-    startDate: "2021-04",
-    endDate: "2023-03",
-  },
-];
+function formatDateRange(startDate, endDate) {
+  function formatMonthYear(val) {
+    if (!val) return "";
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return val;
+    return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  }
+
+  const start = formatMonthYear(startDate);
+  const end = formatMonthYear(endDate);
+  if (!start && !end) return "";
+  if (!end) return start;
+  return `${start} — ${end}`;
+}
 
 function Education() {
   const [education, setEducation] = useState(sampleEducation);
-
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
   const [editingEducation, setEditingEducation] = useState(null);
 
   function handleAdd() {
@@ -49,6 +38,7 @@ function Education() {
     setIsDialogOpen(false);
     setEditingEducation(null);
   }
+
   function handleDelete() {
     if (!editingEducation) {
       return;
@@ -92,7 +82,9 @@ function Education() {
         {education.map((item) => (
           <div className={styles.timelineItem} key={item.id}>
             <div className={styles.timelineMarker} />
-
+            <span className={styles.dateLabel}>
+              {formatDateRange(item.startDate, item.endDate)}
+            </span>
             <EducationCard education={item} onEdit={() => handleEdit(item)} />
           </div>
         ))}
