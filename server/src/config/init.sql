@@ -176,6 +176,7 @@ CREATE TABLE IF NOT EXISTS links (
 
 CREATE TABLE IF NOT EXISTS assets (
     asset_id    SERIAL PRIMARY KEY,
+    cloudinary_public_id TEXT,
     user_id     UUID REFERENCES users(id) ON DELETE CASCADE,
     re_id       INTEGER REFERENCES resume_entity(re_id) ON DELETE CASCADE,
     title       TEXT,
