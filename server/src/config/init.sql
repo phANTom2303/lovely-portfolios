@@ -93,8 +93,8 @@ CREATE TABLE IF NOT EXISTS users (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name                VARCHAR(75) NOT NULL,
     email               VARCHAR(100) UNIQUE NOT NULL,
-    password            VARCHAR(50),
-    phone_no            VARCHAR(10) UNIQUE NOT NULL,
+    password            TEXT NOT NULL,
+    phone_no            VARCHAR(15) UNIQUE,
     gender              gender_enum,
     profile_photo_link  TEXT,
 

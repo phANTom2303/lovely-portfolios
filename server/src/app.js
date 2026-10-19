@@ -9,7 +9,8 @@ import { AppError } from '#lib/errors.js';
 import linkRouter from '#routes/links.routes.js';
 import educationRouter from '#routes/education.routes.js';
 import skillsRouter from '#routes/skills.route.js';
-import assetRouter from '#routes/assets.routes.js'
+import assetRouter from '#routes/assets.routes.js';
+import authRouter from '#routes/auth.routes.js';
 import { query } from '#config/db.js';
 import { initDatabase } from '#config/initDB.js';
 
@@ -35,6 +36,7 @@ app.get('/', async (req, res) => {
 });
 
 // ── Route Mounts ────────────────────────────────────────────────────
+app.use('/api/auth', authRouter);
 app.use('/api/links', linkRouter);
 app.use('/api/education', educationRouter);
 app.use('/api/skills', skillsRouter);
