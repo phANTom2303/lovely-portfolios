@@ -56,8 +56,26 @@ function ExperienceCard({ experience, onEdit }) {
       {experience.images?.length > 0 && (
         <div className={styles.imagesSection}>
           {experience.images.map((img) => (
-            <div key={img.id} className={styles.imagePreview} title={img.title}>
-              <img src={img.url} alt={img.title} />
+            <div
+              key={img.id || img.url}
+              className={styles.imageWrapper}
+              title={img.description ? `${img.title} — ${img.description}` : img.title}
+            >
+              <img
+                src={img.url}
+                alt={img.title || "Experience photo"}
+                className={styles.imageThumb}
+              />
+              {(img.title || img.description) && (
+                <div className={styles.imageCaption}>
+                  {img.title && (
+                    <span className={styles.imageTitle}>{img.title}</span>
+                  )}
+                  {img.description && (
+                    <span className={styles.imageDesc}>{img.description}</span>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>

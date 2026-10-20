@@ -11,6 +11,7 @@ function formatDate(dateVal) {
 function CertificationCard({ certification, onEdit }) {
   const skills = certification.skills || [];
   const links = certification.links || [];
+  const images = certification.images || [];
 
   return (
     <article className={styles.card}>
@@ -46,6 +47,40 @@ function CertificationCard({ certification, onEdit }) {
           <span>Edit</span>
         </button>
       </div>
+
+      {images.length > 0 && (
+        <div className={styles.imagesGrid}>
+          {images.map((img) => (
+            <div
+              key={img.id || img.url}
+              className={styles.imageWrapper}
+              title={img.description ? `${img.title} — ${img.description}` : img.title}
+            >
+              <img
+                src={img.url}
+                alt={img.title || "Certification photo"}
+                className={styles.imageThumb}
+              />
+              {(img.title || img.description) && (
+                <div className={styles.imageCaption}>
+                  {img.title && (
+                    <span className={styles.imageTitle}>{img.title}</span>
+                  )}
+                  {img.description && (
+                    <span className={styles.imageDesc}>{img.description}</span>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {certification.description && (
+        <div className={styles.descBox}>
+          <p className={styles.descText}>{certification.description}</p>
+        </div>
+      )}
 
       {skills.length > 0 && (
         <div className={styles.skillsRow}>
