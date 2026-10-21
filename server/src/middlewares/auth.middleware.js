@@ -12,14 +12,17 @@ const JWT_SECRET = process.env.JWT_SECRET || 'lovely_portfolios_jwt_super_secret
  */
 export const userLoggedIn = async (req, res, next) => {
     try {
+        let token;
         const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            throw new UnauthorizedError('Access denied. No authentication token provided.');
+
+        if (req.cookies && req.cookies.token) {
+            token = req.cookies.token;
+        } else if (authHeader && authHeader.startsWith('Bearer ')) {
+            token = authHeader.split(' ')[1];
         }
 
-        const token = authHeader.split(' ')[1];
         if (!token) {
-            throw new UnauthorizedError('Malformed authorization header.');
+            throw new UnauthorizedError('Access denied. No authentication token provided.');
         }
 
         // Check if token was blacklisted via logout

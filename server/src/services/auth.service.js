@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import * as userRepo from '#repositories/user.repo.js';
@@ -9,10 +10,14 @@ const JWT_SECRET = process.env.JWT_SECRET || 'lovely_portfolios_jwt_super_secret
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 /**
- * Generate a signed JWT token
+ * Generate a signed JWT token with a unique jti identifier
  */
 const generateToken = (payload) => {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    return jwt.sign(
+        { ...payload, jti: crypto.randomUUID() },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRES_IN }
+    );
 };
 
 /**

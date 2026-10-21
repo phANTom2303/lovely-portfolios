@@ -4,9 +4,24 @@ import * as userRepo from '#repositories/user.repo.js';
 import { RESPONSE_CODES } from '#lib/common.js';
 import { NotFoundError } from '#lib/errors.js';
 
+const COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
+
+const CLEAR_COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+};
+
 export const signup = asyncHandler(async (req, res) => {
     const { name, email, password, phone_no } = req.body;
     const result = await authService.signup({ name, email, password, phone_no });
+
+    res.cookie('token', result.token, COOKIE_OPTIONS);
 
     res.status(RESPONSE_CODES.CREATED_CODE).json({
         success: true,
@@ -19,6 +34,8 @@ export const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     const result = await authService.login({ email, password });
 
+    res.cookie('token', result.token, COOKIE_OPTIONS);
+
     res.status(RESPONSE_CODES.SUCCESS_CODE).json({
         success: true,
         message: 'Logged in successfully',
@@ -28,6 +45,8 @@ export const login = asyncHandler(async (req, res) => {
 
 export const logout = asyncHandler(async (req, res) => {
     await authService.logout({ token: req.token });
+
+    res.clearCookie('token', CLEAR_COOKIE_OPTIONS);
 
     res.status(RESPONSE_CODES.SUCCESS_CODE).json({
         success: true,
