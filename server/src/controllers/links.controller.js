@@ -13,7 +13,7 @@ export const getAllLinks = asyncHandler(async (req, res) => {
 
 export const getLinksByParams = asyncHandler(async (req, res) => {
     const user_id = req.user.id;
-    const { re_id } = req.body;
+    const { re_id } = req.query;
 
     if (user_id !== undefined) {
         const links = await linkService.getLinksByParams(user_id, re_id);
@@ -57,7 +57,7 @@ export const createLink = asyncHandler(async (req, res) => {
 
 export const deleteLink = asyncHandler(async (req, res) => {
     const user_id = req.user.id;
-    const { link_id } = req.body;
+    const { link_id } = req.query;
     if (!link_id || !user_id) return res.status(400).json({
         success: false,
         message: "Please provide both user_id and link_id",

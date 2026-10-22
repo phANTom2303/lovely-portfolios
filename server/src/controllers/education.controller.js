@@ -19,7 +19,7 @@ const validMarksTypes = ["percentage", "gpa"];
 //GET EDUCATION
 export const getEducation = asyncHandler(async (req, res) => {
     const user_id = req.user.id;
-    const { edu_id } = req.body;
+    const { edu_id } = req.query;
 
     if (!user_id) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
@@ -168,7 +168,7 @@ export const createEducation = asyncHandler(async (req, res) => {
 
 export const deleteEducation = asyncHandler(async (req,res) => {
     const user_id = req.user.id;
-    const {edu_id} = req.body;
+    const {edu_id} = req.query;
 
     if(!user_id || !edu_id){
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
