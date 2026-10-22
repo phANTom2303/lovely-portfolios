@@ -44,7 +44,6 @@ app.use('/api/links', linkRouter);
 app.use('/api/education', educationRouter);
 app.use('/api/skills', skillsRouter);
 app.use('/api/assets', assetRouter);
-
 // Global Error Handler
 app.use((err, req, res, next) => {
     if (err instanceof AppError && err.isOperational) {
