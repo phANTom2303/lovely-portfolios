@@ -1,0 +1,170 @@
+.card {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(25, 25, 25, 0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 24px rgba(25, 25, 25, 0.08);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.titleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.35;
+}
+
+.issuer {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-label);
+}
+
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 13px;
+  background: var(--surface-dim);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(25, 25, 25, 0.04);
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.editBtn:hover {
+  background: var(--coral-soft);
+  border-color: var(--coral);
+  color: var(--coral);
+  transform: translateY(-1px);
+}
+
+.skillsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.datesGroup {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dateCol {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dateLabel {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dateVal {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.linksRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.linkItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--teal);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.linkItem:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .cardHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .editBtn {
+    width: 100%;
+    text-align: center;
+    padding: 7px 12px;
+  }
+
+  .cardFooter {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

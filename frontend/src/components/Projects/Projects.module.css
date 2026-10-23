@@ -1,0 +1,119 @@
+.projectsSection {
+  width: 100%;
+  max-width: 1080px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.topActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+
+.addProjectBtn {
+  padding: 10px 24px;
+  background: var(--coral);
+  border: 1px solid var(--coral);
+  border-radius: 8px;
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 160ms ease;
+}
+
+.addProjectBtn:hover {
+  opacity: 0.9;
+}
+
+.projectsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: stretch;
+}
+
+.ctaCard {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 240px;
+  padding: 36px 24px;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.ctaCard:hover {
+  background: var(--surface-dim);
+  border-color: var(--border-dark);
+}
+
+.emptyStateCard {
+  min-height: 300px;
+  padding: 64px 24px;
+}
+
+.ctaTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ctaButton {
+  padding: 10px 24px;
+  background: var(--coral);
+  border: 1px solid var(--coral);
+  border-radius: 8px;
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 160ms ease;
+}
+
+.ctaButton:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 900px) {
+  .projectsGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .topActions {
+    justify-content: stretch;
+  }
+
+  .addProjectBtn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .ctaCard {
+    padding: 28px 16px;
+    min-height: 200px;
+  }
+
+  .ctaTitle {
+    font-size: 1.25rem;
+  }
+}

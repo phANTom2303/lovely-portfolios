@@ -1,0 +1,172 @@
+.card {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(25, 25, 25, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 24px rgba(25, 25, 25, 0.08);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.titleArea {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.title {
+  margin: 3px 0 0;
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.35;
+}
+
+.club {
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-label);
+}
+
+.dateLabel {
+  font-family: var(--font-body);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 13px;
+  background: var(--surface-dim);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(25, 25, 25, 0.04);
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.editBtn:hover {
+  background: var(--coral-soft);
+  border-color: var(--coral);
+  color: var(--coral);
+  transform: translateY(-1px);
+}
+
+.descBox {
+  padding: 12px 14px;
+  background: var(--background);
+  border: 1px solid var(--border-soft);
+  border-radius: 9px;
+}
+
+.descText {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.keyPointsBox {
+  padding: 12px 14px;
+  background: var(--background);
+  border: 1px solid var(--border-soft);
+  border-radius: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.keyPointLine {
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.cardFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 2px;
+}
+
+.skillsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.linksRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.linkItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--teal);
+  text-decoration: none;
+}
+
+.linkItem:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .card {
+    padding: 18px 16px;
+    gap: 12px;
+  }
+
+  .cardHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .editBtn {
+    width: 100%;
+    text-align: center;
+    padding: 8px 14px;
+  }
+}

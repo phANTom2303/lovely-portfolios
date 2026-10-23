@@ -17,12 +17,12 @@ export const getLinksByParams = async (user_id, re_id) => {
 };
 
 export const createProfileLink = async (user_id, link, title, description) => {
-    const createdLink = await linkRepo.createProfileLink(user_id, link, title, description);
+    const createdLink = await linkRepo.create(user_id, null, link, title, description);
     return createdLink;
 };
 
 export const createRELink = async (user_id, re_id, link, title, description) => {
-    return await linkRepo.createRElink(user_id, re_id, link, title, description);
+    return await linkRepo.create(user_id, re_id, link, title, description);
 }
 
 export const deleteLink = async (user_id, link_id) => {
