@@ -1,0 +1,326 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(25, 25, 25, 0.4);
+  backdrop-filter: blur(3px);
+}
+
+.dialog {
+  width: min(620px, calc(100vw - 32px));
+  max-height: calc(100vh - 60px);
+  margin: auto;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 20px 60px rgba(25, 25, 25, 0.16);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dialogHeader {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-soft);
+  gap: 16px;
+}
+
+.dialogHeader h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cancelButton,
+.saveButton {
+  padding: 7px 16px;
+  border-radius: 7px;
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    opacity 140ms ease;
+}
+
+.cancelButton {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-label);
+}
+
+.cancelButton:hover {
+  background: var(--surface-dim);
+  color: var(--text);
+}
+
+.saveButton {
+  background: var(--teal);
+  border: 1px solid var(--teal);
+  color: #ffffff;
+}
+
+.saveButton:hover {
+  opacity: 0.92;
+}
+
+.dialogBody {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.sectionTitle {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-label);
+}
+
+.addSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: var(--background);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+}
+
+.addInputsRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.titleInput {
+  flex: 0 0 160px;
+  padding: 9px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 140ms ease;
+}
+
+.urlInput {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 140ms ease;
+}
+
+.titleInput:focus,
+.urlInput:focus,
+.rowTitleInput:focus,
+.rowUrlInput:focus {
+  border-color: var(--coral);
+}
+
+.addButton {
+  padding: 9px 16px;
+  background: var(--coral);
+  border: 1px solid var(--coral);
+  border-radius: 7px;
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: opacity 140ms ease;
+}
+
+.addButton:hover {
+  opacity: 0.9;
+}
+
+.errorText {
+  color: #d93829;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.linksSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.linksList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.linkRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  transition: border-color 140ms ease;
+}
+
+.linkRow:hover {
+  border-color: var(--border);
+}
+
+.rowTitleInput {
+  flex: 0 0 140px;
+  padding: 7px 10px;
+  background: var(--background);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  outline: none;
+}
+
+.rowUrlInput {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  background: var(--background);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.removeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
+}
+
+.removeButton:hover {
+  background: #fdeeee;
+  border-color: #f7b4b0;
+  color: #c92a2a;
+}
+
+.emptyNotice {
+  margin: 0;
+  padding: 18px;
+  text-align: center;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  background: var(--background);
+  border: 1px dashed var(--border-soft);
+  border-radius: 8px;
+}
+
+@media (max-width: 580px) {
+  .dialogHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .headerActions {
+    width: 100%;
+  }
+
+  .cancelButton,
+  .saveButton {
+    flex: 1;
+    text-align: center;
+  }
+
+  .dialogBody {
+    padding: 16px;
+    gap: 18px;
+  }
+
+  .addInputsRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .titleInput {
+    flex: none;
+    width: 100%;
+  }
+
+  .urlInput {
+    width: 100%;
+  }
+
+  .addButton {
+    width: 100%;
+  }
+
+  .linkRow {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .rowTitleInput {
+    flex: 1;
+  }
+
+  .rowUrlInput {
+    order: 3;
+    flex: 1 0 100%;
+  }
+}

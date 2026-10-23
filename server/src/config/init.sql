@@ -93,8 +93,8 @@ CREATE TABLE IF NOT EXISTS users (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name                VARCHAR(75) NOT NULL,
     email               VARCHAR(100) UNIQUE NOT NULL,
-    password            VARCHAR(50),
-    phone_no            VARCHAR(10) UNIQUE NOT NULL,
+    password            TEXT NOT NULL,
+    phone_no            VARCHAR(15) UNIQUE,
     gender              gender_enum,
     profile_photo_link  TEXT,
 
@@ -176,6 +176,7 @@ CREATE TABLE IF NOT EXISTS links (
 
 CREATE TABLE IF NOT EXISTS assets (
     asset_id    SERIAL PRIMARY KEY,
+    cloudinary_public_id TEXT,
     user_id     UUID REFERENCES users(id) ON DELETE CASCADE,
     re_id       INTEGER REFERENCES resume_entity(re_id) ON DELETE CASCADE,
     title       TEXT,

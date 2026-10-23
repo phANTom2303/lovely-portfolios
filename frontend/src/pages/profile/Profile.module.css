@@ -1,0 +1,241 @@
+.profilePage {
+  min-height: calc(100vh - 160px);
+}
+
+.mobileNav {
+  display: none;
+}
+
+.profileLayout {
+  min-height: calc(100vh - 64px);
+
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  padding: 20px;
+
+  border-right: 1px solid var(--border);
+
+  background: var(--background);
+}
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.sidebar button {
+  width: 100%;
+
+  padding: 8px 10px;
+
+  border: 0;
+  border-radius: 6px;
+
+  background: transparent;
+  color: var(--text-muted);
+
+  text-align: left;
+
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+
+  cursor: pointer;
+}
+
+.sidebar button:hover {
+  background: var(--surface-dim);
+  color: var(--text);
+}
+
+.sidebar button.active {
+  background: var(--teal-soft);
+  color: var(--text);
+
+  font-weight: 600;
+}
+
+.sidebarBottom {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.content {
+  min-width: 0;
+
+  padding: 40px;
+}
+
+.content h1 {
+  margin: 0;
+
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+}
+
+.content > section {
+  margin-bottom: 20px;
+}
+
+.profileRows {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 20px;
+}
+
+.profileTopRow {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+
+  gap: 20px;
+
+  align-items: stretch;
+}
+
+.profileTopRow > * {
+  min-width: 0;
+}
+
+.profileBottomRow {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 20px;
+
+  align-items: stretch;
+}
+
+.profileBottomRow > * {
+  min-width: 0;
+}
+
+@media (max-width: 905px) {
+  .profileTopRow,
+  .profileBottomRow {
+    grid-template-columns: 1fr;
+  }
+
+  .content {
+    padding: 32px 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mobileNav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border-soft);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    position: sticky;
+    top: 58px;
+    z-index: 10;
+  }
+
+  .mobileNav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobileNav button {
+    flex-shrink: 0;
+    padding: 7px 14px;
+    border: 1px solid var(--border-soft);
+    border-radius: 20px;
+    background: var(--background);
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+      background 140ms ease,
+      border-color 140ms ease,
+      color 140ms ease;
+  }
+
+  .mobileNav button:hover {
+    background: var(--surface-dim);
+    color: var(--text);
+  }
+
+  .mobileNav button.active {
+    background: var(--teal-soft);
+    border-color: var(--teal);
+    color: var(--text);
+  }
+
+  .profileLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .content {
+    padding: 24px 16px;
+  }
+
+  .content h1 {
+    font-size: 1.8rem;
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobileNav {
+    padding: 8px 12px;
+    gap: 6px;
+  }
+
+  .mobileNav button {
+    padding: 6px 12px;
+    font-size: 0.78rem;
+  }
+
+  .content {
+    padding: 18px 12px;
+  }
+
+  .profileRows {
+    gap: 16px;
+  }
+
+  .profileTopRow,
+  .profileBottomRow {
+    gap: 16px;
+  }
+
+  .content h1 {
+    font-size: 1.5rem;
+    margin-bottom: 14px;
+  }
+}
