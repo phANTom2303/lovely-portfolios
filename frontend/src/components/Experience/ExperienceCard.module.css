@@ -123,20 +123,55 @@
   padding-bottom: 4px;
 }
 
-.imagePreview {
-  width: 90px;
-  height: 60px;
-  border-radius: 6px;
+.imageWrapper {
+  width: 160px;
+  border-radius: 8px;
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
+  background: var(--background);
   flex-shrink: 0;
-  background: var(--surface-dim);
+  display: flex;
+  flex-direction: column;
+  transition: border-color 140ms ease;
 }
 
-.imagePreview img {
+.imageWrapper:hover {
+  border-color: var(--border);
+}
+
+.imageThumb {
   width: 100%;
-  height: 100%;
+  height: 90px;
   object-fit: cover;
+  display: block;
+}
+
+.imageCaption {
+  padding: 6px 8px;
+  background: var(--background);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.imageTitle {
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.imageDesc {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .skillsSection {

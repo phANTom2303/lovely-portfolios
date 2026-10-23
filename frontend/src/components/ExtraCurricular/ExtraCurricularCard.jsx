@@ -20,6 +20,7 @@ function formatDateRange(startDate, endDate, isCurrent) {
 function ExtraCurricularCard({ activity, onEdit }) {
   const skills = activity.skills || [];
   const links = activity.links || [];
+  const images = activity.images || [];
 
   return (
     <article className={styles.card}>
@@ -67,17 +68,31 @@ function ExtraCurricularCard({ activity, onEdit }) {
         </div>
       )}
 
-      {activity.keyPoints && (
-        <div className={styles.keyPointsBox}>
-          {activity.keyPoints.split("\n").map((line, idx) => {
-            const trimmed = line.trim();
-            if (!trimmed) return null;
-            return (
-              <div key={idx} className={styles.keyPointLine}>
-                {trimmed.startsWith("•") ? trimmed : `• ${trimmed}`}
-              </div>
-            );
-          })}
+      {images.length > 0 && (
+        <div className={styles.imagesGrid}>
+          {images.map((img) => (
+            <div
+              key={img.id || img.url}
+              className={styles.imageWrapper}
+              title={img.description ? `${img.title} — ${img.description}` : img.title}
+            >
+              <img
+                src={img.url}
+                alt={img.title || "Activity photo"}
+                className={styles.imageThumb}
+              />
+              {(img.title || img.description) && (
+                <div className={styles.imageCaption}>
+                  {img.title && (
+                    <span className={styles.imageTitle}>{img.title}</span>
+                  )}
+                  {img.description && (
+                    <span className={styles.imageDesc}>{img.description}</span>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
