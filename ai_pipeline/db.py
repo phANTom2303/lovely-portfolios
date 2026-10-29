@@ -48,6 +48,14 @@ MOCK_USER_ENTITIES = [
 ]
 
 
+def _parse_user_id(user_id: str) -> uuid.UUID:
+    """Validate that user_id is a UUID (users.id is UUID in the schema)."""
+    try:
+        return uuid.UUID(str(user_id))
+    except ValueError:
+        raise ValueError(f"Invalid user_id (expected a UUID): {user_id!r}")
+
+
 async def get_db_connection():
     """Establish async connection to PostgreSQL."""
     try:
@@ -70,6 +78,8 @@ async def fetch_user_re_data(user_id: str) -> Tuple[Dict[str, Any], List[Dict[st
     Fetches user profile and active resume entities (with resolved skill names) from PostgreSQL.
     Falls back gracefully if the database is unreachable.
     """
+    uid = _parse_user_id(user_id)
+
     conn = await get_db_connection()
     if conn is None:
         return MOCK_USER_PROFILE, MOCK_USER_ENTITIES
@@ -80,36 +90,35 @@ async def fetch_user_re_data(user_id: str) -> Tuple[Dict[str, Any], List[Dict[st
             """
             SELECT id, name, professional_title, about, current_location
             FROM users
-            WHERE id = $1::uuid OR email = $1
-            LIMIT 1
+            WHERE id = $1
             """,
-            user_id,
+            uid,
         )
+        if user_row is None:
+            raise ValueError(f"User not found: {user_id}")
 
-        user_profile = dict(MOCK_USER_PROFILE)
-        if user_row:
-            user_profile = {
-                "name": user_row["name"] or "Candidate",
-                "professionalTitle": user_row["professional_title"] or "Software Developer",
-                "about": user_row["about"] or "",
-                "currentLocation": user_row["current_location"] or "India",
-                "socials": {},
-            }
+        user_profile = {
+            "name": user_row["name"] or "Candidate",
+            "professionalTitle": user_row["professional_title"] or "Software Developer",
+            "about": user_row["about"] or "",
+            "currentLocation": user_row["current_location"] or "India",
+            "socials": {},
+        }
 
         # 2. Fetch active resume entities
         entity_rows = await conn.fetch(
             """
             SELECT re_id, re_type, title, description, skills_id, from_date, to_date
             FROM resume_entity
-            WHERE (user_id = $1::uuid OR user_id = (SELECT id FROM users WHERE email = $1 LIMIT 1))
+            WHERE user_id = $1
               AND status = 'active'
             ORDER BY from_date DESC NULLS LAST
             """,
-            user_id,
+            uid,
         )
 
         if not entity_rows:
-            return user_profile, MOCK_USER_ENTITIES
+            raise ValueError(f"User {user_id} has no active resume entities")
 
         # 3. Resolve skill names from skills table
         all_skill_ids = set()
@@ -151,10 +160,6 @@ async def fetch_user_re_data(user_id: str) -> Tuple[Dict[str, Any], List[Dict[st
 
         return user_profile, entities
 
-    except Exception as e:
-        print(f"[db] Query error: {e}. Falling back to mock data.")
-        return MOCK_USER_PROFILE, MOCK_USER_ENTITIES
-
     finally:
         await conn.close()
 
@@ -166,6 +171,8 @@ async def save_portfolio(
     Saves generated portfolio JSON to PostgreSQL 'portfolios' table.
     Expects the table to be managed and created by the backend database migrations.
     """
+    uid = _parse_user_id(user_id)
+
     conn = await get_db_connection()
     if conn is None:
         portfolio_id = str(uuid.uuid4())
@@ -177,15 +184,10 @@ async def save_portfolio(
         inserted_id = await conn.fetchval(
             """
             INSERT INTO portfolios (user_id, job_role, jd_text, portfolio_json)
-            VALUES (
-                (SELECT id FROM users WHERE id = $1::uuid OR email = $1 LIMIT 1),
-                $2,
-                $3,
-                $4::jsonb
-            )
+            VALUES ($1, $2, $3, $4::jsonb)
             RETURNING portfolio_id
             """,
-            user_id,
+            uid,
             job_role,
             jd_text,
             json.dumps(portfolio_json),
