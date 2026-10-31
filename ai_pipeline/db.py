@@ -48,12 +48,24 @@ MOCK_USER_ENTITIES = [
 ]
 
 
+class InvalidUserId(ValueError):
+    """user_id is not a valid UUID — the caller's mistake."""
+
+
+class UserNotFound(LookupError):
+    """No user with this id exists."""
+
+
+class NoResumeEntities(LookupError):
+    """The user exists but has no active resume entities to build a portfolio from."""
+
+
 def _parse_user_id(user_id: str) -> uuid.UUID:
     """Validate that user_id is a UUID (users.id is UUID in the schema)."""
     try:
         return uuid.UUID(str(user_id))
     except ValueError:
-        raise ValueError(f"Invalid user_id (expected a UUID): {user_id!r}")
+        raise InvalidUserId(f"Invalid user_id (expected a UUID): {user_id!r}")
 
 
 async def get_db_connection():
@@ -95,7 +107,7 @@ async def fetch_user_re_data(user_id: str) -> Tuple[Dict[str, Any], List[Dict[st
             uid,
         )
         if user_row is None:
-            raise ValueError(f"User not found: {user_id}")
+            raise UserNotFound(f"User not found: {user_id}")
 
         user_profile = {
             "name": user_row["name"] or "Candidate",
@@ -118,7 +130,7 @@ async def fetch_user_re_data(user_id: str) -> Tuple[Dict[str, Any], List[Dict[st
         )
 
         if not entity_rows:
-            raise ValueError(f"User {user_id} has no active resume entities")
+            raise NoResumeEntities(f"User {user_id} has no active resume entities")
 
         # 3. Resolve skill names from skills table
         all_skill_ids = set()
