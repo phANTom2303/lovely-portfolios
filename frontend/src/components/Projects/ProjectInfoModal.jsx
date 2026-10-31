@@ -108,23 +108,6 @@ function ProjectInfoModal({ project, onClose }) {
             </div>
           )}
 
-          {project.keyPoints && (
-            <div className={styles.section}>
-              <h3 className={styles.sectionHeading}>Key Highlights</h3>
-              <div className={styles.keyPointsBox}>
-                {project.keyPoints.split("\n").map((line, idx) => {
-                  const trimmed = line.trim();
-                  if (!trimmed) return null;
-                  return (
-                    <div key={idx} className={styles.keyPointLine}>
-                      {trimmed.startsWith("•") ? trimmed : `• ${trimmed}`}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
           {project.skills && project.skills.length > 0 && (
             <div className={styles.section}>
               <h3 className={styles.sectionHeading}>Technologies & Tools</h3>

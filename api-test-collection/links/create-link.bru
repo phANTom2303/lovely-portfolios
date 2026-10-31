@@ -1,0 +1,27 @@
+meta {
+  name: Create Link
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/links
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "link": "https://github.com/johndoe",
+    "title": "GitHub Profile",
+    "description": "My GitHub page"
+  }
+}

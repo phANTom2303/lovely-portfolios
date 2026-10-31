@@ -70,20 +70,6 @@ function ProjectCard({ project, onEdit }) {
               <p className={styles.descriptionText}>{project.description}</p>
             </div>
           )}
-
-          {project.keyPoints && (
-            <div className={styles.keyPointsBox}>
-              {project.keyPoints.split("\n").map((line, idx) => {
-                const trimmed = line.trim();
-                if (!trimmed) return null;
-                return (
-                  <div key={idx} className={styles.keyPointLine}>
-                    {trimmed.startsWith("•") ? trimmed : `• ${trimmed}`}
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </div>
 
         <div className={styles.cardFooter}>

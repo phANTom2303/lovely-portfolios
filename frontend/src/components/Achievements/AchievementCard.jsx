@@ -54,14 +54,25 @@ function AchievementCard({ achievement, onEdit }) {
       {images.length > 0 && (
         <div className={styles.imagesGrid}>
           {images.map((img) => (
-            <div key={img.id || img.url} className={styles.imageWrapper}>
+            <div
+              key={img.id || img.url}
+              className={styles.imageWrapper}
+              title={img.description ? `${img.title} — ${img.description}` : img.title}
+            >
               <img
                 src={img.url}
                 alt={img.title || "Achievement photo"}
                 className={styles.imageThumb}
               />
-              {img.title && (
-                <span className={styles.imageCaption}>{img.title}</span>
+              {(img.title || img.description) && (
+                <div className={styles.imageCaption}>
+                  {img.title && (
+                    <span className={styles.imageTitle}>{img.title}</span>
+                  )}
+                  {img.description && (
+                    <span className={styles.imageDesc}>{img.description}</span>
+                  )}
+                </div>
               )}
             </div>
           ))}
@@ -71,20 +82,6 @@ function AchievementCard({ achievement, onEdit }) {
       {achievement.description && (
         <div className={styles.descBox}>
           <p className={styles.descText}>{achievement.description}</p>
-        </div>
-      )}
-
-      {achievement.keyPoints && (
-        <div className={styles.keyPointsBox}>
-          {achievement.keyPoints.split("\n").map((line, idx) => {
-            const trimmed = line.trim();
-            if (!trimmed) return null;
-            return (
-              <div key={idx} className={styles.keyPointLine}>
-                {trimmed.startsWith("•") ? trimmed : `• ${trimmed}`}
-              </div>
-            );
-          })}
         </div>
       )}
 

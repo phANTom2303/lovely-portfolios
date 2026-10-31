@@ -119,23 +119,7 @@
   font-size: 0.88rem;
   line-height: 1.55;
   color: var(--text);
-}
-
-.keyPointsBox {
-  padding: 12px 14px;
-  background: var(--background);
-  border: 1px solid var(--border-soft);
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.keyPointLine {
-  font-family: var(--font-body);
-  font-size: 0.84rem;
-  line-height: 1.5;
-  color: var(--text);
+  white-space: pre-line;
 }
 
 .cardFooter {

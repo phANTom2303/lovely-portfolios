@@ -8,9 +8,7 @@ const sampleCertifications = [
     endDate: "2026-10",
     isCurrent: false,
     description:
-      "Validates expertise in designing resilient, high-performing, and cost-optimized cloud architectures on AWS.",
-    keyPoints:
-      "• Validation of VPC peering, IAM security boundaries, S3 lifecycle rules, and ECS container orchestration.",
+      "Validates expertise in designing resilient, high-performing, and cost-optimized cloud architectures on AWS.\n\n• Validation of VPC peering, IAM security boundaries, S3 lifecycle rules, and ECS container orchestration.",
     skills: [
       { skill_id: 9, skill_name: "Docker" },
       { skill_id: 4, skill_name: "PostgreSQL" },
@@ -24,7 +22,14 @@ const sampleCertifications = [
         description: "Credential ID: AWS-78492019",
       },
     ],
-    images: [],
+    images: [
+      {
+        id: "cert-img-1",
+        title: "AWS Badge",
+        url: "/Images/image.png",
+        description: "Official digital badge certification",
+      },
+    ],
   },
   {
     id: "cert-2",
@@ -35,9 +40,7 @@ const sampleCertifications = [
     endDate: "",
     isCurrent: false,
     description:
-      "Demonstrates fundamental understanding of the Scrum framework, sprint planning, backlog refinement, and cross-functional facilitation.",
-    keyPoints:
-      "• Scored 96.5% on the certification examination.",
+      "Demonstrates fundamental understanding of the Scrum framework, sprint planning, backlog refinement, and cross-functional facilitation.\n\n• Scored 96.5% on the certification examination.",
     skills: [
       { skill_id: 8, skill_name: "Git" },
     ],
@@ -60,9 +63,7 @@ const sampleCertifications = [
     endDate: "",
     isCurrent: false,
     description:
-      "Comprehensive multi-course credential spanning front-end React development, relational databases, backend APIs, and CI/CD deployment.",
-    keyPoints:
-      "• Completed 9 capstone projects evaluating UI accessibility and REST APIs.",
+      "Comprehensive multi-course credential spanning front-end React development, relational databases, backend APIs, and CI/CD deployment.\n\n• Completed 9 capstone projects evaluating UI accessibility and REST APIs.",
     skills: [
       { skill_id: 2, skill_name: "React" },
       { skill_id: 6, skill_name: "TypeScript" },
@@ -88,9 +89,7 @@ const sampleCertifications = [
     endDate: "2025-08",
     isCurrent: false,
     description:
-      "Validates enterprise container orchestration, multi-stage Dockerfile optimization, storage volume persistence, and swarm networking.",
-    keyPoints:
-      "• Rigorous practical evaluation of container security and registry governance.",
+      "Validates enterprise container orchestration, multi-stage Dockerfile optimization, storage volume persistence, and swarm networking.\n\n• Rigorous practical evaluation of container security and registry governance.",
     skills: [
       { skill_id: 9, skill_name: "Docker" },
       { skill_id: 8, skill_name: "Git" },
@@ -107,9 +106,7 @@ const sampleCertifications = [
     endDate: "2027-01",
     isCurrent: false,
     description:
-      "Advanced mastery of complex SQL queries, window functions, indexing strategies, EXPLAIN ANALYZE query planning, and table partitioning.",
-    keyPoints:
-      "• Demonstrated query optimization yielding 10x throughput in high-concurrency workloads.",
+      "Advanced mastery of complex SQL queries, window functions, indexing strategies, EXPLAIN ANALYZE query planning, and table partitioning.\n\n• Demonstrated query optimization yielding 10x throughput in high-concurrency workloads.",
     skills: [
       { skill_id: 4, skill_name: "PostgreSQL" },
       { skill_id: 1, skill_name: "Node.js" },

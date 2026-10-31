@@ -17,6 +17,8 @@ const ENTITY_CONFIGS = {
     startDateLabel: "Start Date",
     endDateLabel: "End Date",
     showPresent: true,
+    isSubtitleRequired: true,
+    isDescRequired: true,
   },
   project: {
     entityName: "Project",
@@ -29,6 +31,8 @@ const ENTITY_CONFIGS = {
     startDateLabel: "Start Date",
     endDateLabel: "End Date",
     showPresent: false,
+    isSubtitleRequired: false,
+    isDescRequired: true,
   },
   certification: {
     entityName: "Certification",
@@ -41,6 +45,8 @@ const ENTITY_CONFIGS = {
     startDateLabel: "Issue Date",
     endDateLabel: "Expiry Date",
     showPresent: false,
+    isSubtitleRequired: true,
+    isDescRequired: false,
   },
   achievements: {
     entityName: "Achievement",
@@ -53,6 +59,8 @@ const ENTITY_CONFIGS = {
     startDateLabel: "Date Awarded",
     endDateLabel: "End Date (Optional)",
     showPresent: false,
+    isSubtitleRequired: true,
+    isDescRequired: false,
   },
   extra_curricular: {
     entityName: "Activity",
@@ -65,6 +73,8 @@ const ENTITY_CONFIGS = {
     startDateLabel: "Start Date",
     endDateLabel: "End Date",
     showPresent: true,
+    isSubtitleRequired: true,
+    isDescRequired: false,
   },
   others: {
     entityName: "Entry",
@@ -74,6 +84,8 @@ const ENTITY_CONFIGS = {
     subtitlePlaceholder: "e.g. Global Tech Conference",
     descPlaceholder: "Details and highlights...",
     skillsLabel: "Relevant Skills",
+    isSubtitleRequired: false,
+    isDescRequired: false,
   },
 };
 
@@ -95,7 +107,6 @@ function ResumeEntityDialog({
     endDate: entity?.endDate || entity?.to_date || "",
     isCurrent: entity?.isCurrent ?? false,
     description: entity?.description || "",
-    keyPoints: entity?.keyPoints || entity?.key_points || "",
     skills: entity?.skills || [],
     links: entity?.links || [],
     images: entity?.images || [],
@@ -185,6 +196,45 @@ function ResumeEntityDialog({
   function handleSubmit(event) {
     event.preventDefault();
     if (!formData.role.trim()) return;
+    if (config.isSubtitleRequired && !formData.company.trim()) return;
+    if (config.isDescRequired && !formData.description.trim()) return;
+
+    console.log(`[API Ready Payload: ${formData.re_type}]`, {
+      user_id: "USER_UUID_HERE",
+      re_type: formData.re_type,
+      title: formData.role,
+      subtitle: formData.company || null,
+      description: formData.description,
+      skills_id: formData.skills.map(
+        (s) => s.skill_id || s.id || crypto.randomUUID(),
+      ),
+      from_date: formData.startDate
+        ? (formData.startDate.length === 7
+            ? `${formData.startDate}-01`
+            : formData.startDate)
+        : null,
+      to_date: formData.isCurrent
+        ? null
+        : formData.endDate
+          ? (formData.endDate.length === 7
+              ? `${formData.endDate}-01`
+              : formData.endDate)
+          : null,
+      status: "active",
+      links: formData.links.map((l) => ({
+        title: l.title,
+        link: l.url || l.link,
+        description: l.description || "",
+      })),
+      assets: formData.images.map((img) => ({
+        title: img.title || "",
+        link: img.url,
+        description: img.description || "",
+        asset_type: "image",
+      })),
+      raw_form_data: formData,
+    });
+
     onSave(formData);
   }
 
@@ -249,6 +299,7 @@ function ResumeEntityDialog({
                     placeholder={config.subtitlePlaceholder}
                     value={formData.company}
                     onChange={handleChange}
+                    required={config.isSubtitleRequired}
                   />
                 </div>
               </div>
@@ -347,20 +398,8 @@ function ResumeEntityDialog({
                   placeholder={config.descPlaceholder}
                   value={formData.description}
                   onChange={handleChange}
-                  rows={3}
-                />
-              </div>
-
-              <div className={styles.formField}>
-                <label htmlFor="entityKeyPoints">Key Points / Highlights</label>
-                <textarea
-                  id="entityKeyPoints"
-                  name="keyPoints"
-                  className={styles.textarea}
-                  placeholder="Bullet points, metrics, and key impact achieved..."
-                  value={formData.keyPoints}
-                  onChange={handleChange}
-                  rows={3}
+                  rows={5}
+                  required={config.isDescRequired}
                 />
               </div>
 

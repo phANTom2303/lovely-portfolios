@@ -9,11 +9,7 @@ export const findAll = async () => {
 export const getProfileLinks = async (user_id) => {
   const sql = `
         SELECT * from links
-        WHERE id = ANY (
-            SELECT UNNEST(links)
-            FROM users
-            WHERE id=$1
-        )
+        WHERE user_id = $1 AND re_id IS NULL 
     `;
 
   const { rows } = await query(sql, [user_id]);
@@ -24,11 +20,7 @@ export const getProfileLinks = async (user_id) => {
 export const getResumeEntityLinks = async (user_id, re_id) => {
   const sql = `
         SELECT * FROM links 
-        WHERE id = any(
-            SELECT UNNEST(links_id)
-            FROM resume_entity 
-            WHERE user_id=$1 AND re_id=$2
-        )
+        WHERE user_id = $1 AND re_id = $2
     `;
 
 
@@ -49,18 +41,18 @@ export const create = async (user_id, re_id = null, link, title, description = n
   return rows[0];
 };
 
-export const remove = async (id) => {
+export const remove = async (user_id, id) => {
   const sql = `
     DELETE FROM links
-    WHERE id=$1
+    WHERE id=$1 AND user_id = $2
     RETURNING *
     `;
 
-  const { rows } = await query(sql, [id]);
+  const { rows } = await query(sql, [id,user_id]);
   return rows[0];
 };
 
-export const update = async (id, fields) => {
+export const update = async (user_id, id, fields) => {
   const allowedKeys = ['title', 'link', 'description'];
   let setClauses = [];
   let values = [];
@@ -74,11 +66,16 @@ export const update = async (id, fields) => {
   }
 
   values.push(id);
+  const idIndex = paramIndex;
+  paramIndex++;
+
+  values.push(user_id);
+  const userIdIndex = paramIndex;
 
   const sql = `
     UPDATE links
     SET ${setClauses.join(', ')}
-    WHERE id = $${paramIndex}
+    WHERE id = $${idIndex} AND user_id = $${userIdIndex}
     RETURNING *;
     `;
 

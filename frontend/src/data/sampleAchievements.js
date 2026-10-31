@@ -8,9 +8,7 @@ const sampleAchievements = [
     endDate: "",
     isCurrent: false,
     description:
-      "Built an AI-assisted disaster response triage platform using real-time geospatial data, outperforming 450+ international developer teams.",
-    keyPoints:
-      "• Won Grand Prize of $15,000 and featured on the official AWS developer showcase.\n• Architected real-time WebSocket communication layer handling simulated 100k emergency pings.",
+      "Built an AI-assisted disaster response triage platform using real-time geospatial data, outperforming 450+ international developer teams.\n\n• Won Grand Prize of $15,000 and featured on the official AWS developer showcase.\n• Architected real-time WebSocket communication layer handling simulated 100k emergency pings.",
     skills: [
       { skill_id: 1, skill_name: "Node.js" },
       { skill_id: 9, skill_name: "Docker" },
@@ -48,9 +46,7 @@ const sampleAchievements = [
     endDate: "",
     isCurrent: false,
     description:
-      "Awarded top honors for an IoT sensor firmware tracking municipal water purification levels and predicting pipe maintenance needs.",
-    keyPoints:
-      "• Presented technical architecture to a panel of 8 industry judges and energy ministers.\n• Fast-tracked into the National CleanTech incubation accelerator.",
+      "Awarded top honors for an IoT sensor firmware tracking municipal water purification levels and predicting pipe maintenance needs.\n\n• Presented technical architecture to a panel of 8 industry judges and energy ministers.\n• Fast-tracked into the National CleanTech incubation accelerator.",
     skills: [
       { skill_id: 4, skill_name: "PostgreSQL" },
       { skill_id: 6, skill_name: "TypeScript" },
@@ -74,9 +70,7 @@ const sampleAchievements = [
     endDate: "",
     isCurrent: false,
     description:
-      "Co-authored 'Low-Latency Distributed Consensus in Constrained IoT Topologies' published in IEEE International Conference Proceedings.",
-    keyPoints:
-      "• Formulated benchmark algorithms showing 28% reduction in network overhead.\n• Cited by 14 subsequent academic papers in distributed systems.",
+      "Co-authored 'Low-Latency Distributed Consensus in Constrained IoT Topologies' published in IEEE International Conference Proceedings.\n\n• Formulated benchmark algorithms showing 28% reduction in network overhead.\n• Cited by 14 subsequent academic papers in distributed systems.",
     skills: [
       { skill_id: 8, skill_name: "Git" },
       { skill_id: 1, skill_name: "Node.js" },
@@ -107,9 +101,7 @@ const sampleAchievements = [
     endDate: "",
     isCurrent: false,
     description:
-      "Recognized in the top 1% academic percentile for distinction in Data Structures, Distributed Algorithms, and Operating Systems.",
-    keyPoints:
-      "• Maintained 3.96 GPA across all core computer science coursework.",
+      "Recognized in the top 1% academic percentile for distinction in Data Structures, Distributed Algorithms, and Operating Systems.\n\n• Maintained 3.96 GPA across all core computer science coursework.",
     skills: [],
     links: [],
     images: [
@@ -130,9 +122,7 @@ const sampleAchievements = [
     endDate: "",
     isCurrent: false,
     description:
-      "Honored for core contributions to high-throughput message streaming exporters, resolving 8 long-standing memory leak issues.",
-    keyPoints:
-      "• Authored 12 merged pull requests with comprehensive unit test coverage.\n• Actively reviewed community PRs and mentored first-time contributors.",
+      "Honored for core contributions to high-throughput message streaming exporters, resolving 8 long-standing memory leak issues.\n\n• Authored 12 merged pull requests with comprehensive unit test coverage.\n• Actively reviewed community PRs and mentored first-time contributors.",
     skills: [
       { skill_id: 9, skill_name: "Docker" },
       { skill_id: 8, skill_name: "Git" },
