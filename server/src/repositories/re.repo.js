@@ -25,14 +25,15 @@ export const getREById = async (user_id, re_id) => {
 
 export const createRE = async (user_id, fields) => {
     const sql = `
-        INSERT INTO resume_entity (user_id, re_type, title, description, skills_id, from_date, to_date, status) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, 'active') 
+        INSERT INTO resume_entity (user_id, re_type, title, subtitle, description, skills_id, from_date, to_date, status) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'active') 
         RETURNING *
     `;
     const values = [
         user_id, 
         fields.re_type, 
         fields.title, 
+        fields.subtitle,
         fields.description, 
         fields.skills_id || [], 
         fields.from_date, 
@@ -54,7 +55,7 @@ export const removeRE = async (user_id, re_id) => {
 
 export const updateRE = async (user_id, re_id, fields) => {
     const fieldMap = {
-        re_type: "re_type", title: "title", description: "description",
+        re_type: "re_type", title: "title", subtitle: "subtitle", description: "description",
         skills_id: "skills_id", from_date: "from_date", to_date: "to_date", status: "status"
     };
 

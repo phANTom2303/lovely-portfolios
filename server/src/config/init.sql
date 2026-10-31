@@ -144,6 +144,7 @@ CREATE TABLE IF NOT EXISTS resume_entity (
     user_id     UUID REFERENCES users(id) ON DELETE CASCADE,
     re_type     re_type_enum,
     title       TEXT,
+    subtitle    TEXT,
     description TEXT,
 
     -- IDs from the skills table

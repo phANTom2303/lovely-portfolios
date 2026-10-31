@@ -67,6 +67,7 @@ export const createRE = asyncHandler(async (req, res) => {
     const {
         re_type,
         title,
+        subtitle,
         description,
         skills_id,
         from_date,
@@ -100,6 +101,13 @@ export const createRE = asyncHandler(async (req, res) => {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
             success: false,
             message: "title must be a non-empty string",
+        });
+    }
+
+    if (subtitle !== undefined && typeof subtitle !== "string") {
+        return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
+            success: false,
+            message: "subtitle must be a string",
         });
     }
 
@@ -152,6 +160,7 @@ export const createRE = asyncHandler(async (req, res) => {
     const createdRE = await reService.createRE(user_id, {
         re_type,
         title,
+        subtitle,
         description,
         skills_id,
         from_date,
@@ -208,6 +217,7 @@ export const updateRE = asyncHandler(async (req, res) => {
         re_id,
         re_type,
         title,
+        subtitle,
         description,
         skills_id,
         from_date,
@@ -225,6 +235,7 @@ export const updateRE = asyncHandler(async (req, res) => {
     if (
         re_type === undefined &&
         title === undefined &&
+        subtitle === undefined &&
         description === undefined &&
         skills_id === undefined &&
         from_date === undefined &&
@@ -270,6 +281,13 @@ export const updateRE = asyncHandler(async (req, res) => {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
             success: false,
             message: "title must be a non-empty string",
+        });
+    }
+
+    if (subtitle !== undefined && typeof subtitle !== "string") {
+        return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
+            success: false,
+            message: "subtitle must be a string",
         });
     }
 
@@ -324,6 +342,7 @@ export const updateRE = asyncHandler(async (req, res) => {
         {
             re_type,
             title,
+            subtitle,
             description,
             skills_id,
             from_date,
