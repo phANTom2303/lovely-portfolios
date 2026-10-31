@@ -25,21 +25,20 @@ export const getREById = async (user_id, re_id) => {
 
 export const createRE = async (user_id, fields) => {
     const sql = `
-        INSERT INTO resume_entity (user_id, re_type, title, subtitle, description, skills_id, from_date, to_date, status) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'active') 
+        INSERT INTO resume_entity (user_id, re_type, title, subtitle, description, from_date, to_date, status) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, 'active') 
         RETURNING *
     `;
     const values = [
-        user_id, 
-        fields.re_type, 
-        fields.title, 
+        user_id,
+        fields.re_type,
+        fields.title,
         fields.subtitle,
-        fields.description, 
-        fields.skills_id || [], 
-        fields.from_date, 
-        fields.to_date
+        fields.description,
+        fields.from_date,
+        fields.to_date,
     ];
-    
+
     const { rows } = await query(sql, values);
     return rows[0];
 };
@@ -55,8 +54,12 @@ export const removeRE = async (user_id, re_id) => {
 
 export const updateRE = async (user_id, re_id, fields) => {
     const fieldMap = {
-        re_type: "re_type", title: "title", subtitle: "subtitle", description: "description",
-        skills_id: "skills_id", from_date: "from_date", to_date: "to_date", status: "status"
+        title: "title",
+        subtitle: "subtitle",
+        description: "description",
+        from_date: "from_date",
+        to_date: "to_date",
+        status: "status",
     };
 
     const setClauses = [];

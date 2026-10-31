@@ -284,6 +284,175 @@ DELETE /api/links?link_id=12
 **Response:** `200 OK`
 
 ---
+## Resume Entities — `/api/re`
+
+All routes are 🔒 _Protected_.
+
+Resume Entities (RE) are structured portfolio items such as projects, work experiences, certifications, etc. They can have associated links, assets, and skills.
+
+### `GET /api/re`
+Fetch resume entities for the authenticated user. Returns all non-deleted records when no filters are applied.
+
+| Location | Parameter | Type | Required | Description |
+|---|---|---|---|---|
+| Query | `re_id` | integer | ❌ | Fetch a specific resume entity by ID. When provided, the response also includes its nested `links`, `assets`, and `skills`. |
+| Query | `type` | string | ❌ | Filter by entity type. One of: `project`, `work_exp`, `certification`, `achievements`, `extra_curricular`, `others` |
+
+```
+// Fetch all resume entities:
+GET /api/re
+
+// Fetch all resume entities of a specific type:
+GET /api/re?type=project
+
+// Fetch a specific resume entity (includes nested links, assets & skills):
+GET /api/re?re_id=5
+```
+
+**Response:** `200 OK`
+
+```json
+// List response (no re_id)
+{
+  "success": true,
+  "count": 2,
+  "data": [
+    {
+      "re_id": 5,
+      "user_id": "550e8400-e29b-41d4-a716-446655440000",
+      "re_type": "project",
+      "title": "Portfolio Builder",
+      "subtitle": "Full-stack app",
+      "description": "A PERN stack application...",
+      "from_date": "2024-01-01",
+      "to_date": "2024-06-30",
+      "status": "active"
+    }
+  ]
+}
+
+// Single entity response (with re_id) — includes nested links, assets & skills
+{
+  "success": true,
+  "count": 1,
+  "data": {
+    "re_id": 5,
+    "user_id": "550e8400-e29b-41d4-a716-446655440000",
+    "re_type": "project",
+    "title": "Portfolio Builder",
+    "subtitle": "Full-stack app",
+    "description": "A PERN stack application...",
+    "from_date": "2024-01-01",
+    "to_date": "2024-06-30",
+    "status": "active",
+    "links": [ ... ],
+    "assets": [ ... ],
+    "skills": [
+      {
+        "skill_id": 1,
+        "skill_name": "React",
+        "user_id": "550e8400-e29b-41d4-a716-446655440000",
+        "re_id": 5
+      }
+    ]
+  }
+}
+```
+
+---
+
+### `POST /api/re`
+Create a new resume entity. Optionally attach links, assets, and skills inline.
+
+| Location | Parameter | Type | Required | Description |
+|---|---|---|---|---|
+| Body | `re_type` | string | ✅ | One of: `project`, `work_exp`, `certification`, `achievements`, `extra_curricular`, `others` |
+| Body | `title` | string | ✅ | Non-empty string |
+| Body | `subtitle` | string | ❌ | Optional subtitle / role / position |
+| Body | `description` | string | ❌ | Free-text description |
+| Body | `from_date` | string (date) | ❌ | ISO date string; must be ≤ `to_date` if both provided |
+| Body | `to_date` | string (date) | ❌ | ISO date string; must be ≥ `from_date` if both provided |
+| Body | `links` | object[] | ❌ | Array of link objects to create and attach to this entity |
+| Body | `links[].url` | string | ✅* | URL of the link (*required per link object) |
+| Body | `links[].title` | string | ✅* | Display title (*required per link object) |
+| Body | `links[].description` | string | ❌ | Optional description |
+| Body | `assets` | object[] | ❌ | Array of asset objects to create and attach to this entity |
+| Body | `assets[].title` | string | ✅* | Asset title (*required per asset object) |
+| Body | `assets[].asset_type` | string | ✅* | Asset type (*required per asset object) |
+| Body | `assets[].link` | string | ❌ | URL to the asset |
+| Body | `assets[].description` | string | ❌ | Optional description |
+| Body | `skills` | (string \| object)[] | ❌ | Array of skill name strings (e.g., `"React"`) or skill objects to create and attach to this entity |
+| Body | `skills[].skill_name` | string | ✅* | Skill name (*required if passing skill objects instead of strings) |
+
+> **Note:** The entity is created with `status: "active"` by default. Inline `links`, `assets`, and `skills` are created via the `/api/links`, `/api/assets`, and `/api/skills` services respectively and scoped to this entity's `re_id`.
+
+```json
+// Request body
+{
+  "re_type": "project",
+  "title": "Portfolio Builder",
+  "subtitle": "Full-stack app",
+  "description": "A PERN stack application for generating portfolios.",
+  "from_date": "2024-01-01",
+  "to_date": "2024-06-30",
+  "links": [
+    { "url": "[https://github.com/janedoe/portfolio](https://github.com/janedoe/portfolio)", "title": "GitHub Repo" }
+  ],
+  "assets": [
+    { "title": "Demo Screenshot", "asset_type": "image", "link": "[https://cdn.example.com/screenshot.png](https://cdn.example.com/screenshot.png)" }
+  ],
+  "skills": [
+    "React",
+    "Node.js",
+    { "skill_name": "PostgreSQL" }
+  ]
+}
+```
+
+**Response:** `200 OK` — Returns the created resume entity record (does **not** include the nested links/assets/skills in the response; fetch with `GET /api/re?re_id=<id>` to retrieve them).
+
+---
+
+### `PATCH /api/re`
+Update an existing resume entity. At least one updatable field is required. Modifications to associated `links`, `assets`, and `skills` are handled via their dedicated API endpoints.
+
+| Location | Parameter | Type | Required | Description |
+|---|---|---|---|---|
+| Body | `re_id` | integer | ✅ | ID of the resume entity to update |
+| Body | `title` | string | ❌ | Non-empty string |
+| Body | `subtitle` | string | ❌ | Optional subtitle / role / position |
+| Body | `description` | string | ❌ | Free-text description |
+| Body | `from_date` | string (date) | ❌ | Must be ≤ `to_date` if both provided |
+| Body | `to_date` | string (date) | ❌ | Must be ≥ `from_date` if both provided |
+| Body | `status` | string | ❌ | One of: `draft`, `active`, `deleted` |
+
+```json
+// Request body
+{
+  "re_id": 5,
+  "title": "Portfolio Builder v2",
+  "status": "draft"
+}
+```
+
+**Response:** `200 OK`
+
+---
+
+### `DELETE /api/re`
+Soft-delete a resume entity (sets `status` to `"deleted"`).
+
+| Location | Parameter | Type | Required | Description |
+|---|---|---|---|---|
+| Query | `re_id` | integer | ✅ | ID of the resume entity to delete |
+
+```
+DELETE /api/re?re_id=5
+```
+
+**Response:** `200 OK` — Returns the updated (deleted) record.
+
+---
 
 ## Skills — `/api/skills`
 
@@ -457,10 +626,16 @@ All endpoints return a consistent JSON envelope:
   "data": { ... }
 }
 
-// Error
+// Error (operational / validation errors)
 {
   "success": false,
-  "message": "Human-readable error description"
+  "error": "Human-readable error description"
+}
+
+// Error (unexpected internal errors)
+{
+  "success": false,
+  "error": "An unexpected internal server error occurred."
 }
 ```
 

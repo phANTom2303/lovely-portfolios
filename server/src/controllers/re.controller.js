@@ -19,7 +19,7 @@ const validStatuses = ["draft", "active", "deleted"];
 // GET RESUME ENTITIES
 export const getRE = asyncHandler(async (req, res) => {
     const user_id = req.user.id;
-    const {re_id, type } = req.query;
+    const { re_id, type } = req.query;
 
     if (!user_id) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
@@ -69,11 +69,11 @@ export const createRE = asyncHandler(async (req, res) => {
         title,
         subtitle,
         description,
-        skills_id,
         from_date,
         to_date,
         links,
-        assets
+        assets,
+        skills,
     } = req.body;
 
     if (user_id === undefined || re_type === undefined || title === undefined) {
@@ -118,10 +118,10 @@ export const createRE = asyncHandler(async (req, res) => {
         });
     }
 
-    if (skills_id !== undefined && !Array.isArray(skills_id)) {
+    if (skills !== undefined && !Array.isArray(skills)) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
             success: false,
-            message: "skills_id must be an array of integers",
+            message: "skills must be an array",
         });
     }
 
@@ -162,11 +162,11 @@ export const createRE = asyncHandler(async (req, res) => {
         title,
         subtitle,
         description,
-        skills_id,
         from_date,
         to_date,
         links,
-        assets
+        assets,
+        skills,
     });
 
     return res.status(RESPONSE_CODES.SUCCESS_CODE).json({
@@ -178,7 +178,7 @@ export const createRE = asyncHandler(async (req, res) => {
 // DELETE RESUME ENTITY
 export const deleteRE = asyncHandler(async (req, res) => {
     const user_id = req.user.id;
-    const {re_id } = req.query;
+    const { re_id } = req.query;
 
     if (!user_id || !re_id) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
@@ -215,14 +215,12 @@ export const updateRE = asyncHandler(async (req, res) => {
     const user_id = req.user.id;
     const {
         re_id,
-        re_type,
         title,
         subtitle,
         description,
-        skills_id,
         from_date,
         to_date,
-        status
+        status,
     } = req.body;
 
     if (user_id === undefined || re_id === undefined) {
@@ -233,11 +231,9 @@ export const updateRE = asyncHandler(async (req, res) => {
     }
 
     if (
-        re_type === undefined &&
         title === undefined &&
         subtitle === undefined &&
         description === undefined &&
-        skills_id === undefined &&
         from_date === undefined &&
         to_date === undefined &&
         status === undefined
@@ -260,13 +256,6 @@ export const updateRE = asyncHandler(async (req, res) => {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
             success: false,
             message: "re_id must be a positive integer",
-        });
-    }
-
-    if (re_type !== undefined && (typeof re_type !== "string" || !validRETypes.includes(re_type))) {
-        return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
-            success: false,
-            message: "Invalid re_type",
         });
     }
 
@@ -295,13 +284,6 @@ export const updateRE = asyncHandler(async (req, res) => {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
             success: false,
             message: "description must be a string",
-        });
-    }
-
-    if (skills_id !== undefined && !Array.isArray(skills_id)) {
-        return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
-            success: false,
-            message: "skills_id must be an array of integers",
         });
     }
 
@@ -340,14 +322,12 @@ export const updateRE = asyncHandler(async (req, res) => {
         user_id,
         reIdNum,
         {
-            re_type,
             title,
             subtitle,
             description,
-            skills_id,
             from_date,
             to_date,
-            status
+            status,
         }
     );
 
