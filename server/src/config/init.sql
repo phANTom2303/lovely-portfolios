@@ -93,8 +93,8 @@ CREATE TABLE IF NOT EXISTS users (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name                VARCHAR(75) NOT NULL,
     email               VARCHAR(100) UNIQUE NOT NULL,
-    password            VARCHAR(50),
-    phone_no            VARCHAR(10) UNIQUE NOT NULL,
+    password            TEXT NOT NULL,
+    phone_no            VARCHAR(15) UNIQUE,
     gender              gender_enum,
     profile_photo_link  TEXT,
 
@@ -228,6 +228,11 @@ VALUES
 (2, '550e8400-e29b-41d4-a716-446655440000', 'project', 'Portfolio Website', 'Built a personal portfolio website to showcase my projects.', '{1,3}', '2020-01-01', '2020-03-01', 'active'),
 (3, '550e8400-e29b-41d4-a716-446655440000', 'certification', 'AWS Certified Developer', 'Achieved AWS Certified Developer - Associate certification.', NULL, '2022-05-01', NULL, 'active'),
 (4, '550e8400-e29b-41d4-a716-446655440000', 'achievements', 'Hackathon Winner', 'Won 1st place in the annual city hackathon for developing an AI tool.', '{5}', '2019-10-01', '2019-10-03', 'active');
+
+SELECT setval(
+    pg_get_serial_sequence('resume_entity', 're_id'), 
+    (SELECT MAX(re_id) FROM resume_entity)
+);
 
 -- Insert User Profile Links (re_id is NULL)
 INSERT INTO links (user_id, re_id, link, title, description)

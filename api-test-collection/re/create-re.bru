@@ -1,0 +1,30 @@
+meta {
+  name: Create Resume Entity
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/re
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "re_type": "project",
+    "title": "Portfolio Website",
+    "description": "A personal portfolio site built with React",
+    "skills_id": [1, 2],
+    "from_date": "2024-01-01",
+    "to_date": "2024-06-30"
+  }
+}

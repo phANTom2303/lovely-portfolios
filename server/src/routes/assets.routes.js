@@ -1,7 +1,10 @@
 import { Router } from "express";
+import { userLoggedIn } from "#middlewares/auth.middleware.js";
 import * as assetController from "#controllers/assets.controller.js"
 import multer from "multer";
 const router = Router();
+
+router.use(userLoggedIn);
 
 const storage = multer.memoryStorage();
 

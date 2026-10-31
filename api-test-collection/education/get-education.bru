@@ -1,0 +1,19 @@
+meta {
+  name: Get Education
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/education
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+query {
+  edu_id: 1
+}

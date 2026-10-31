@@ -12,7 +12,8 @@ export const getAllLinks = asyncHandler(async (req, res) => {
 });
 
 export const getLinksByParams = asyncHandler(async (req, res) => {
-    const { user_id, re_id } = req.body;
+    const user_id = req.user.id;
+    const { re_id } = req.query;
 
     if (user_id !== undefined) {
         const links = await linkService.getLinksByParams(user_id, re_id);
@@ -30,7 +31,8 @@ export const getLinksByParams = asyncHandler(async (req, res) => {
 });
 
 export const createLink = asyncHandler(async (req, res) => {
-    const { user_id, re_id, link, title, description } = req.body;
+    const user_id = req.user.id;
+    const { re_id, link, title, description } = req.body;
     if (!user_id) return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
         success: false,
         message: "user_id field is mandatory"
@@ -54,7 +56,8 @@ export const createLink = asyncHandler(async (req, res) => {
 });
 
 export const deleteLink = asyncHandler(async (req, res) => {
-    const { user_id, link_id } = req.body;
+    const user_id = req.user.id;
+    const { link_id } = req.query;
     if (!link_id || !user_id) return res.status(400).json({
         success: false,
         message: "Please provide both user_id and link_id",
@@ -69,7 +72,8 @@ export const deleteLink = asyncHandler(async (req, res) => {
 });
 
 export const updateLink = asyncHandler(async (req, res) => {
-    const { user_id, link_id, title, link, description } = req.body;
+    const user_id = req.user.id;
+    const { link_id, title, link, description } = req.body;
 
     if (!link_id || !user_id) return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
         success: false,
