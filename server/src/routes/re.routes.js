@@ -1,7 +1,10 @@
 import { Router } from "express";
+import { userLoggedIn } from "#middlewares/auth.middleware.js";
 import * as reController from "#controllers/re.controller.js";
 
 const router = Router();
+
+router.use(userLoggedIn);
 
 router.get('/', reController.getRE);
 
