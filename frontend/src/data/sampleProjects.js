@@ -8,9 +8,7 @@ const sampleProjects = [
     endDate: "2023-10",
     isCurrent: false,
     description:
-      "An intelligent portfolio builder designed for creators, developers, and designers to showcase their career journey with clean modular layouts.",
-    keyPoints:
-      "• Engineered modular resume entity components mapping directly to PostgreSQL schemas.\n• Built responsive mobile-first navigation with sticky blur headers and touch drawer.\n• Integrated client-side preview for media attachments and drag-and-drop uploads.",
+      "An intelligent portfolio builder designed for creators, developers, and designers to showcase their career journey with clean modular layouts.\n\n• Engineered modular resume entity components mapping directly to PostgreSQL schemas.\n• Built responsive mobile-first navigation with sticky blur headers and touch drawer.\n• Integrated client-side preview for media attachments and drag-and-drop uploads.",
     skills: [
       { skill_id: 2, skill_name: "React" },
       { skill_id: 6, skill_name: "TypeScript" },
@@ -62,9 +60,7 @@ const sampleProjects = [
     endDate: "2024-03",
     isCurrent: false,
     description:
-      "High-performance telemetry dashboard monitoring container metrics, latency spikes, and server vitals across distributed cloud clusters.",
-    keyPoints:
-      "• Streaming real-time telemetry over WebSockets with sub-50ms render latency.\n• Automated anomaly detection pipeline triggering Slack alerts for critical thresholds.\n• Reduced telemetry bundle size by 45% using Protobuf binary encoding.",
+      "High-performance telemetry dashboard monitoring container metrics, latency spikes, and server vitals across distributed cloud clusters.\n\n• Streaming real-time telemetry over WebSockets with sub-50ms render latency.\n• Automated anomaly detection pipeline triggering Slack alerts for critical thresholds.\n• Reduced telemetry bundle size by 45% using Protobuf binary encoding.",
     skills: [
       { skill_id: 9, skill_name: "Docker" },
       { skill_id: 8, skill_name: "Git" },
@@ -109,9 +105,7 @@ const sampleProjects = [
     endDate: "2024-06",
     isCurrent: false,
     description:
-      "Autonomous CLI and editor extension that parses ASTs to generate developer documentation, OpenAPI contracts, and interactive endpoint mocks.",
-    keyPoints:
-      "• Built AST visitor pipeline analyzing TypeScript, Python, and Go source files.\n• Generated complete TypeDoc and Markdown documentation matching repository style.\n• Adopted by 2,500+ developers on VSCode marketplace with 4.9 rating.",
+      "Autonomous CLI and editor extension that parses ASTs to generate developer documentation, OpenAPI contracts, and interactive endpoint mocks.\n\n• Built AST visitor pipeline analyzing TypeScript, Python, and Go source files.\n• Generated complete TypeDoc and Markdown documentation matching repository style.\n• Adopted by 2,500+ developers on VSCode marketplace with 4.9 rating.",
     skills: [
       { skill_id: 6, skill_name: "TypeScript" },
       { skill_id: 2, skill_name: "React" },
@@ -156,9 +150,7 @@ const sampleProjects = [
     endDate: "2023-12",
     isCurrent: false,
     description:
-      "Low-friction developer SDK and checkout portal facilitating global micro-transactions with instant settlement and multi-currency exchange.",
-    keyPoints:
-      "• Processed $1.2M+ in cross-border volume with 99.98% gateway availability.\n• Implemented double-entry transaction ledger with cryptographic proof audits.\n• Designed zero-dependency embeddable checkout script under 18kB gzip.",
+      "Low-friction developer SDK and checkout portal facilitating global micro-transactions with instant settlement and multi-currency exchange.\n\n• Processed $1.2M+ in cross-border volume with 99.98% gateway availability.\n• Implemented double-entry transaction ledger with cryptographic proof audits.\n• Designed zero-dependency embeddable checkout script under 18kB gzip.",
     skills: [
       { skill_id: 4, skill_name: "PostgreSQL" },
       { skill_id: 9, skill_name: "Docker" },
@@ -209,9 +201,7 @@ const sampleProjects = [
     endDate: "2023-04",
     isCurrent: false,
     description:
-      "Comprehensive design token pipeline and accessible React component library built with strict WCAG AA contrast compliance and dark mode.",
-    keyPoints:
-      "• 40+ accessible UI primitives built on headless accessible patterns.\n• Automated visual regression test suite across 4 responsive breakpoints.\n• Published to NPM with zero runtime CSS-in-JS overhead via vanilla CSS modules.",
+      "Comprehensive design token pipeline and accessible React component library built with strict WCAG AA contrast compliance and dark mode.\n\n• 40+ accessible UI primitives built on headless accessible patterns.\n• Automated visual regression test suite across 4 responsive breakpoints.\n• Published to NPM with zero runtime CSS-in-JS overhead via vanilla CSS modules.",
     skills: [
       { skill_id: 2, skill_name: "React" },
       { skill_id: 7, skill_name: "CSS Modules" },

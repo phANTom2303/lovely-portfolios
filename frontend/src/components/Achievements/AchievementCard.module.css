@@ -100,34 +100,51 @@
 }
 
 .imageWrapper {
-  position: relative;
-  width: 140px;
-  height: 90px;
+  width: 160px;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--border-soft);
-  background: var(--surface-dim);
+  background: var(--background);
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 140ms ease;
+}
+
+.imageWrapper:hover {
+  border-color: var(--border);
 }
 
 .imageThumb {
   width: 100%;
-  height: 100%;
+  height: 90px;
   object-fit: cover;
   display: block;
 }
 
 .imageCaption {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 4px 6px;
-  background: rgba(25, 25, 25, 0.72);
-  color: #ffffff;
+  padding: 6px 8px;
+  background: var(--background);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.imageTitle {
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.imageDesc {
   font-family: var(--font-body);
   font-size: 0.68rem;
-  font-weight: 600;
+  font-weight: 500;
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -146,23 +163,7 @@
   font-size: 0.88rem;
   line-height: 1.55;
   color: var(--text);
-}
-
-.keyPointsBox {
-  padding: 12px 14px;
-  background: var(--background);
-  border: 1px solid var(--border-soft);
-  border-radius: 9px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.keyPointLine {
-  font-family: var(--font-body);
-  font-size: 0.84rem;
-  line-height: 1.5;
-  color: var(--text);
+  white-space: pre-line;
 }
 
 .cardFooter {
