@@ -16,7 +16,7 @@ http:
         "re_type": "project",
         "title": "Portfolio Website",
         "description": "A personal portfolio site built with React",
-        "skills_id": [1, 2],
+        "skills": [ "hehe", "haha"],
         "from_date": "2024-01-01",
         "to_date": "2024-06-30"
       }

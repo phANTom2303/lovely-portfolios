@@ -4,20 +4,33 @@ import * as assetsService from "#services/assets.service.js";
 import * as skillsService from "#services/skils.service.js";
 import { NotFoundError } from "#src/lib/errors.js";
 
+const populateRE = async (user_id, reData) => {
+    const [links, assets, skills] = await Promise.all([
+        linksService.getLinksByParams(user_id, reData.re_id),
+        assetsService.getAssetsByParams(user_id, reData.re_id),
+        skillsService.getSkillsByParams(user_id, reData.re_id),
+    ]);
+
+    reData.links = links;
+    reData.assets = assets;
+    reData.skills = skills;
+
+    return reData;
+};
+
 export const getRE = async (user_id, re_id, type) => {
     if (re_id === undefined) {
-        return await reRepo.getAllREs(user_id, type);
+        const reList = await reRepo.getAllREs(user_id, type);
+        return await Promise.all(
+            reList.map((reData) => populateRE(user_id, reData))
+        );
     } else {
         const reData = await reRepo.getREById(user_id, re_id);
         if (!reData) {
             throw new NotFoundError(`Resume Entity with id "${re_id}" not found`);
         }
 
-        reData.links = await linksService.getLinksByParams(user_id, re_id);
-        reData.assets = await assetsService.getAssetsByParams(user_id, re_id);
-        reData.skills = await skillsService.getSkillsByParams(user_id, re_id);
-
-        return reData;
+        return await populateRE(user_id, reData);
     }
 };
 
@@ -68,7 +81,8 @@ export const createRE = async (user_id, fields) => {
         }
     }
 
-    return createdRE;
+    //to get the fully populated object.
+    return getRE(user_id, createdRE.re_id);
 };
 
 export const deleteRE = async (user_id, re_id) => {

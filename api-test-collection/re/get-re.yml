@@ -5,11 +5,12 @@ info:
 
 http:
   method: GET
-  url: "{{baseUrl}}/api/re?re_id=5"
+  url: "{{baseUrl}}/api/re"
   params:
     - name: re_id
       value: "5"
       type: query
+      disabled: true
     - name: type
       value: project
       type: query
