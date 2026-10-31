@@ -12,7 +12,8 @@ export const getAllAssets = asyncHandler(async (req, res) => {
 });
 
 export const getAssetsByParams = asyncHandler(async (req, res) => {
-    const { user_id, re_id } = req.body;
+    const user_id = req.user.id;
+    const { re_id } = req.query;
     if (user_id !== undefined) {
         const assets = await assetService.getAssetsByParams(user_id, re_id);
         res.status(RESPONSE_CODES.SUCCESS_CODE).json({
@@ -29,7 +30,8 @@ export const getAssetsByParams = asyncHandler(async (req, res) => {
 })
 
 export const createAsset = asyncHandler(async (req, res) => {
-    const { user_id, re_id, title, link, description, asset_type } = req.body;
+    const user_id = req.user.id;
+    const { re_id, title, link, description, asset_type } = req.body;
 
     if (!asset_type || !title) return res.status(400).json("both Assets type and Title required");
 
@@ -43,7 +45,8 @@ export const createAsset = asyncHandler(async (req, res) => {
 
 
 export const createImageAsset = asyncHandler(async (req, res) => {
-    const { user_id, re_id, title, description, asset_type } = req.body;
+    const user_id = req.user.id;
+    const { re_id, title, description, asset_type } = req.body;
 
     if (!asset_type || !title) return res.status(400).json("both Assets type and Title required");
 
@@ -65,7 +68,7 @@ export const createImageAsset = asyncHandler(async (req, res) => {
 });
 
 export const deleteAsset = asyncHandler(async (req, res) => {
-    const { asset_id } = req.body;
+    const { asset_id } = req.query;
     if (!asset_id) return res.status(400).json({
         success: false,
         message: "Please provide asset_id",

@@ -18,7 +18,8 @@ const validStatuses = ["draft", "active", "deleted"];
 
 // GET RESUME ENTITIES
 export const getRE = asyncHandler(async (req, res) => {
-    const { user_id, re_id, type } = req.body;
+    const user_id = req.user.id;
+    const {re_id, type } = req.query;
 
     if (!user_id) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
@@ -62,8 +63,8 @@ export const getRE = asyncHandler(async (req, res) => {
 
 // POST RESUME ENTITY
 export const createRE = asyncHandler(async (req, res) => {
+    const user_id = req.user.id;
     const {
-        user_id,
         re_type,
         title,
         description,
@@ -167,7 +168,8 @@ export const createRE = asyncHandler(async (req, res) => {
 
 // DELETE RESUME ENTITY
 export const deleteRE = asyncHandler(async (req, res) => {
-    const { user_id, re_id } = req.body;
+    const user_id = req.user.id;
+    const {re_id } = req.query;
 
     if (!user_id || !re_id) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
@@ -201,9 +203,9 @@ export const deleteRE = asyncHandler(async (req, res) => {
 
 // UPDATE RESUME ENTITY
 export const updateRE = asyncHandler(async (req, res) => {
+    const user_id = req.user.id;
     const {
         re_id,
-        user_id,
         re_type,
         title,
         description,
