@@ -26,7 +26,7 @@ export const createRELink = async (user_id, re_id, link, title, description) => 
 }
 
 export const deleteLink = async (user_id, link_id) => {
-    const deleted = await linkRepo.removeLink(user_id, link_id);
+    const deleted = await linkRepo.remove(user_id, link_id);
 
     if (!deleted) throw new NotFoundError(`Link with id "${link_id}" or user_id "${user_id}" not found`);
 

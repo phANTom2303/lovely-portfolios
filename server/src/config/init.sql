@@ -229,6 +229,11 @@ VALUES
 (3, '550e8400-e29b-41d4-a716-446655440000', 'certification', 'AWS Certified Developer', 'Achieved AWS Certified Developer - Associate certification.', NULL, '2022-05-01', NULL, 'active'),
 (4, '550e8400-e29b-41d4-a716-446655440000', 'achievements', 'Hackathon Winner', 'Won 1st place in the annual city hackathon for developing an AI tool.', '{5}', '2019-10-01', '2019-10-03', 'active');
 
+SELECT setval(
+    pg_get_serial_sequence('resume_entity', 're_id'), 
+    (SELECT MAX(re_id) FROM resume_entity)
+);
+
 -- Insert User Profile Links (re_id is NULL)
 INSERT INTO links (user_id, re_id, link, title, description)
 VALUES 
