@@ -10,12 +10,12 @@ patch {
   auth: bearer
 }
 
-auth:bearer {
-  token: {{token}}
-}
-
 headers {
   Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{token}}
 }
 
 body:json {
@@ -23,6 +23,7 @@ body:json {
     "re_id": 1,
     "title": "Updated Portfolio",
     "status": "active",
-    "skills_id": [1, 2, 3]
+    "skills_id": [1, 2, 3],
+    "links": ["sampleurl"]
   }
 }
