@@ -4,14 +4,7 @@ import * as skillsController from "#controllers/skills.controller.js";
 
 const router = Router();
 
-// router.use(userLoggedIn);
-
-router.use((req, res, next) => {
-  req.user = req.user || {};
-  req.user.id = "550e8400-e29b-41d4-a716-446655440000";
-  next();
-});
-
+router.use(userLoggedIn);
 
 // GET all skills (admin/debug)
 router.get('/', skillsController.getAllSkills);
