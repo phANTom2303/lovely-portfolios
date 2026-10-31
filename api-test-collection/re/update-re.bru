@@ -1,0 +1,28 @@
+meta {
+  name: Update Resume Entity
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/re
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "re_id": 1,
+    "title": "Updated Portfolio",
+    "status": "active",
+    "skills_id": [1, 2, 3]
+  }
+}

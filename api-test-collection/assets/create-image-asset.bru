@@ -1,0 +1,22 @@
+meta {
+  name: Create Image Asset
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/assets/image
+  body: multipart-form
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:multipart-form {
+  assets: @file(/path/to/test-image.jpg)
+  title: Profile Photo
+  asset_type: image
+  description: My profile picture
+}

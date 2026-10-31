@@ -1,0 +1,28 @@
+meta {
+  name: Create Asset
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/assets
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "title": "Resume PDF",
+    "link": "https://example.com/resume.pdf",
+    "description": "My latest resume",
+    "asset_type": "document"
+  }
+}
