@@ -82,10 +82,7 @@ export const deleteAsset = asyncHandler(async (req, res) => {
 });
 
 export const updateAsset = asyncHandler(async (req, res) => {
-    console.log("req.user from middleware:", req.user);
-    const user_id = req.user?.id || req.user?.user_id || req.body.user_id;
-    console.log("Resolved user_id:", user_id);
-    
+    const user_id = req.user.id;
     const { asset_id, title, link, description, asset_type } = req.body;
     if (!asset_id) return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
         success: false,
