@@ -1,6 +1,8 @@
 import styles from "./Auth.module.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "../../context/authContext";
+import { getErrorMessage } from "../../utils/getErrorMessage";
 function getPasswordStrength(password) {
   if (!password) return "";
 
@@ -28,19 +30,24 @@ function validatePassword(password) {
   return "";
 }
 function SignUp() {
+  const { signup } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone_no: "",
     password: "",
     confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const passwordStrength = getPasswordStrength(formData.password);
 
   function handleChange(event) {
     const { name, value } = event.target;
     setFormData((previous) => ({ ...previous, [name]: value }));
+    setServerError("");
 
     setErrors((previous) => ({
       ...previous,
@@ -56,6 +63,9 @@ function SignUp() {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Enter a valid email address.";
     }
+    if (formData.phone_no.length > 15) {
+      newErrors.phone_no = "Phone number must be 15 characters or fewer.";
+    }
     const passwordError = validatePassword(formData.password);
     if (passwordError) {
       newErrors.password = passwordError;
@@ -69,7 +79,7 @@ function SignUp() {
 
     return Object.keys(newErrors).length === 0;
   }
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
     const isValid = validateForm();
@@ -78,7 +88,21 @@ function SignUp() {
       return;
     }
 
-    navigate("/home");
+    setIsSubmitting(true);
+    setServerError("");
+    try {
+      await signup({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        phone_no: formData.phone_no,
+      });
+      navigate("/home", { replace: true });
+    } catch (requestError) {
+      setServerError(getErrorMessage(requestError, "Unable to create your account."));
+    } finally {
+      setIsSubmitting(false);
+    }
   }
   return (
     <main className={styles.authPage}>
@@ -126,6 +150,21 @@ function SignUp() {
               />
               {errors.email && (
                 <span className={styles.error}>{errors.email}</span>
+              )}
+            </div>
+            <div className={styles.formField}>
+              <label htmlFor="phone_no">Phone (optional)</label>
+              <input
+                id="phone_no"
+                name="phone_no"
+                type="tel"
+                maxLength={15}
+                placeholder="Enter your phone number"
+                value={formData.phone_no}
+                onChange={handleChange}
+              />
+              {errors.phone_no && (
+                <span className={styles.error}>{errors.phone_no}</span>
               )}
             </div>
             {/* Password */}
@@ -183,7 +222,10 @@ function SignUp() {
                 )
               )}
             </div>
-            <button type="submit">Sign Up</button>
+            {serverError && <span className={styles.error}>{serverError}</span>}
+            <button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Signing Up..." : "Sign Up"}
+            </button>
           </form>
         </div>
       </section>

@@ -14,9 +14,18 @@ import Projects from "../../components/Projects/Projects";
 import Achievements from "../../components/Achievements/Achievements";
 import Certifications from "../../components/Certifications/Certifications";
 import ExtraCurricular from "../../components/ExtraCurricular/ExtraCurricular";
+import { useAuth } from "../../context/authContext";
 
 function Profile() {
-  const [profile, setProfile] = useState(sampleProfile);
+  const { user } = useAuth();
+  const [profile, setProfile] = useState(() => ({
+    ...sampleProfile,
+    ...user,
+    phone: user?.phone_no || sampleProfile.phone,
+    professionalTitle: user?.professional_title || sampleProfile.professionalTitle,
+    location: user?.current_location || sampleProfile.location,
+    profileImage: user?.profile_photo_link || sampleProfile.profileImage,
+  }));
   const [activeSection, setActiveSection] = useState("profile");
 
   return (

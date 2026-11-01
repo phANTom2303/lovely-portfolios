@@ -47,6 +47,11 @@ function CoreDetails({ profile, setProfile }) {
             <p className={styles.value}>{profile.name || "—"}</p>
           </div>
 
+          <div className={`${styles.field} ${styles.fullWidth}`}>
+            <span className={styles.label}>Email</span>
+            <p className={styles.value}>{profile.email || "—"}</p>
+          </div>
+
           <div className={styles.field}>
             <span className={styles.label}>Gender</span>
             <p className={styles.value}>{profile.gender || "—"}</p>
