@@ -1,0 +1,20 @@
+meta {
+  name: Delete Resume Entity
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseUrl}}/api/re
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+query {
+  re_id: 1
+  user_id: 00000000-0000-0000-0000-000000000000
+}

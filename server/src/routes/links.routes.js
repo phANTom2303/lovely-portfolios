@@ -1,6 +1,9 @@
 import { Router } from "express";
+import { userLoggedIn } from "#middlewares/auth.middleware.js";
 import * as linkController from "#controllers/links.controller.js"
 const router = Router();
+
+router.use(userLoggedIn);
 
 router.get('/', linkController.getAllLinks);
 

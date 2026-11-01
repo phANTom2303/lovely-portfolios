@@ -1,39 +1,61 @@
 import { query } from "#src/config/db.js";
+import { getRedisClient } from "#src/config/redis.js";
+
+const CACHE_TTL = 3600;
 
 export const findAll = async () => {
+  const redisClient = getRedisClient();
+  const cacheKey = 'links:all';
+
+  const cachedData = await redisClient.get(cacheKey);
+  if (cachedData) return JSON.parse(cachedData);
+
   const sql = `SELECT * FROM links`;
   const { rows } = await query(sql);
+
+  if (rows.length > 0) {
+    await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(rows));
+  }
   return rows;
 };
 
 export const getProfileLinks = async (user_id) => {
+  const redisClient = getRedisClient();
+  const cacheKey = `user:${user_id}:links:profile`;
+
+  const cachedData = await redisClient.get(cacheKey);
+  if (cachedData) return JSON.parse(cachedData);
+
   const sql = `
         SELECT * from links
-        WHERE id = ANY (
-            SELECT UNNEST(links)
-            FROM users
-            WHERE id=$1
-        )
+        WHERE user_id = $1 AND re_id IS NULL 
     `;
 
   const { rows } = await query(sql, [user_id]);
+  if (rows.length > 0) {
+    await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(rows));
+  }
 
   return rows;
 };
 
 export const getResumeEntityLinks = async (user_id, re_id) => {
+  const redisClient = getRedisClient();
+  const cacheKey = `user:${user_id}:re:${re_id}:links`;
+
+  const cachedData = await redisClient.get(cacheKey);
+  if (cachedData) return JSON.parse(cachedData);
+
   const sql = `
         SELECT * FROM links 
-        WHERE id = any(
-            SELECT UNNEST(links_id)
-            FROM resume_entity 
-            WHERE user_id=$1 AND re_id=$2
-        )
+        WHERE user_id = $1 AND re_id = $2
     `;
 
-
   const { rows } = await query(sql, [user_id, re_id]);
-
+  
+  if (rows.length > 0) {
+    await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(rows));
+  }
   return rows;
 }
 
@@ -46,21 +68,40 @@ export const create = async (user_id, re_id = null, link, title, description = n
 
   const { rows } = await query(sql, [link, title, description, user_id, re_id]);
 
+  const redisClient = getRedisClient();
+  if (re_id) {
+    await redisClient.del(`user:${user_id}:re:${re_id}:links`);
+  } else {
+    await redisClient.del(`user:${user_id}:links:profile`);
+  }
+  await redisClient.del('links:all');
+
   return rows[0];
 };
 
-export const remove = async (id) => {
+export const remove = async (user_id, id) => {
   const sql = `
     DELETE FROM links
-    WHERE id=$1
+    WHERE id=$1 AND user_id = $2
     RETURNING *
     `;
 
-  const { rows } = await query(sql, [id]);
-  return rows[0];
+  const { rows } = await query(sql, [id,user_id]);
+  const deletedRow = rows[0];
+
+  if (deletedRow) {
+    const redisClient = getRedisClient();
+    if (deletedRow.re_id) {
+      await redisClient.del(`user:${user_id}:re:${deletedRow.re_id}:links`);
+    } else {
+      await redisClient.del(`user:${user_id}:links:profile`);
+    }
+     await redisClient.del('links:all');
+  }
+  return deletedRow ?? null;
 };
 
-export const update = async (id, fields) => {
+export const update = async (user_id, id, fields) => {
   const allowedKeys = ['title', 'link', 'description'];
   let setClauses = [];
   let values = [];
@@ -74,14 +115,31 @@ export const update = async (id, fields) => {
   }
 
   values.push(id);
+  const idIndex = paramIndex;
+  paramIndex++;
+
+  values.push(user_id);
+  const userIdIndex = paramIndex;
 
   const sql = `
     UPDATE links
     SET ${setClauses.join(', ')}
-    WHERE id = $${paramIndex}
+    WHERE id = $${idIndex} AND user_id = $${userIdIndex}
     RETURNING *;
     `;
 
   const { rows } = await query(sql, values);
-  return rows[0] ?? null;
+  const updatedRow = rows[0];
+
+  if (updatedRow) {
+    const redisClient = getRedisClient();
+    if (updatedRow.re_id) {
+      await redisClient.del(`user:${user_id}:re:${updatedRow.re_id}:links`);
+    } else {
+      await redisClient.del(`user:${user_id}:links:profile`);
+    }
+      await redisClient.del('links:all');
+  }
+
+  return updatedRow ?? null;
 };

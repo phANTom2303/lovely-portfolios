@@ -1,0 +1,27 @@
+meta {
+  name: Update Asset
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{baseUrl}}/api/assets
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "asset_id": 1,
+    "title": "Updated Resume",
+    "link": "https://example.com/resume-v2.pdf"
+  }
+}
