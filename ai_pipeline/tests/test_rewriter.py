@@ -137,3 +137,19 @@ def test_rewriter_retries_on_invalid_json(sample_scored_entities, sample_jd, sam
 
         assert len(portfolio["sections"]) == 1
         assert portfolio["sections"][0]["entities"][0]["reId"] == 2
+
+
+def test_rewriter_prompt_contains_guardrails_and_no_leakage():
+    from pipeline.rewriter import PROMPT_PATH
+    with open(PROMPT_PATH, "r", encoding="utf-8") as f:
+        prompt_content = f.read()
+
+    # Ensure no leaking specific project examples
+    assert "Share Market Tracker" not in prompt_content
+    assert "optimized database query latency for streaming financial data" not in prompt_content
+
+    # Ensure strict guardrails are present
+    assert "ZERO FABRICATION" in prompt_content
+    assert "NO INVENTED ACTIONS OR OUTCOMES" in prompt_content
+    assert "NEVER attribute JD responsibilities to candidate projects" in prompt_content
+

@@ -203,3 +203,158 @@ def test_score_and_rank_retry_on_bad_json(sample_entities, sample_jd):
 
         assert len(ranked) == 3
         assert ranked[0]["reId"] == 2
+
+
+def test_score_and_rank_string_reid_matching(sample_jd):
+    """Ensure that if the LLM returns reId as a string ('2'), it matches int reId (2) correctly."""
+    entities = [
+        {
+            "reId": 2,
+            "reType": "project",
+            "title": "REST API for College ERP",
+            "normalizedSkills": ["python", "fastapi"],
+        }
+    ]
+    mock_llm_output = {
+        "scored_entities": [
+            {"reId": "2", "score": 0.92, "reasoning": "Strong match for backend role"}
+        ]
+    }
+    mock_response = MagicMock()
+    mock_response.choices = [
+        MagicMock(message=MagicMock(content=__import__("json").dumps(mock_llm_output)))
+    ]
+
+    with patch("pipeline.scorer.Groq") as mock_groq:
+        mock_groq.return_value.chat.completions.create.return_value = mock_response
+        ranked = score_and_rank(entities, sample_jd)
+
+        assert len(ranked) == 1
+        assert ranked[0]["reId"] == 2
+        assert ranked[0]["score"] == 0.92
+
+
+def test_score_and_rank_whitespace_and_float_string_reid(sample_jd):
+    """Ensure robust ID matching across whitespace and float formatted string IDs."""
+    entities = [
+        {
+            "reId": 10,
+            "reType": "project",
+            "title": "Project A",
+            "normalizedSkills": ["python"],
+        },
+        {
+            "reId": 20,
+            "reType": "work_exp",
+            "title": "Work B",
+            "normalizedSkills": ["fastapi"],
+        },
+    ]
+    mock_llm_output = {
+        "scored_entities": [
+            {"reId": " 10 ", "score": 0.88, "reasoning": "Match with leading/trailing spaces"},
+            {"reId": "20.0", "score": 0.75, "reasoning": "Match with float-like string ID"},
+        ]
+    }
+    mock_response = MagicMock()
+    mock_response.choices = [
+        MagicMock(message=MagicMock(content=__import__("json").dumps(mock_llm_output)))
+    ]
+
+    with patch("pipeline.scorer.Groq") as mock_groq:
+        mock_groq.return_value.chat.completions.create.return_value = mock_response
+        ranked = score_and_rank(entities, sample_jd)
+
+        assert len(ranked) == 2
+        assert ranked[0]["reId"] == 10
+        assert ranked[0]["score"] == 0.88
+        assert ranked[1]["reId"] == 20
+        assert ranked[1]["score"] == 0.75
+
+
+def test_score_and_rank_alternative_field_names(sample_jd):
+    """Ensure model returning 're_id' or 'id' still matches properly."""
+    entities = [
+        {
+            "reId": 1,
+            "reType": "project",
+            "title": "Project One",
+            "normalizedSkills": ["python"],
+        },
+        {
+            "reId": 2,
+            "reType": "project",
+            "title": "Project Two",
+            "normalizedSkills": ["docker"],
+        },
+    ]
+    mock_llm_output = {
+        "scored_entities": [
+            {"re_id": 1, "score": 0.80, "reasoning": "Using snake_case re_id"},
+            {"id": "2", "score": 0.85, "reasoning": "Using short id with string value"},
+        ]
+    }
+    mock_response = MagicMock()
+    mock_response.choices = [
+        MagicMock(message=MagicMock(content=__import__("json").dumps(mock_llm_output)))
+    ]
+
+    with patch("pipeline.scorer.Groq") as mock_groq:
+        mock_groq.return_value.chat.completions.create.return_value = mock_response
+        ranked = score_and_rank(entities, sample_jd)
+
+        assert len(ranked) == 2
+        assert ranked[0]["reId"] == 2
+        assert ranked[0]["score"] == 0.85
+        assert ranked[1]["reId"] == 1
+        assert ranked[1]["score"] == 0.80
+
+
+def test_score_and_rank_batching_large_profile(sample_jd):
+    """Ensure large profiles (e.g. 25 entities) are processed in batches without overflowing context."""
+    large_entities = []
+    for i in range(1, 26):
+        large_entities.append(
+            {
+                "reId": i,
+                "reType": "project" if i <= 15 else "work_exp",
+                "title": f"Entity {i}",
+                "description": f"Description for entity {i}",
+                "normalizedSkills": ["python"],
+            }
+        )
+
+    # Let's say batch_size=10. 25 entities should result in 3 batches: [10, 10, 5]
+    def make_response(batch_chunk):
+        items = [
+            {"reId": e["reId"], "score": 0.50 + (e["reId"] * 0.01), "reasoning": "Match"}
+            for e in batch_chunk
+        ]
+        resp = MagicMock()
+        resp.choices = [
+            MagicMock(message=MagicMock(content=__import__("json").dumps({"scored_entities": items})))
+        ]
+        return resp
+
+    batch_1_resp = make_response(large_entities[0:10])
+    batch_2_resp = make_response(large_entities[10:20])
+    batch_3_resp = make_response(large_entities[20:25])
+
+    with patch("pipeline.scorer.Groq") as mock_groq:
+        mock_groq.return_value.chat.completions.create.side_effect = [
+            batch_1_resp,
+            batch_2_resp,
+            batch_3_resp,
+        ]
+        ranked = score_and_rank(large_entities, sample_jd, batch_size=10)
+
+        # Groq completions should have been called exactly 3 times
+        assert mock_groq.return_value.chat.completions.create.call_count == 3
+
+        # Category caps: project cap 3, work_exp cap 2 -> total 5 selected
+        projects = [e for e in ranked if e["reType"] == "project"]
+        work_exps = [e for e in ranked if e["reType"] == "work_exp"]
+        assert len(projects) == 3
+        assert len(work_exps) == 2
+        assert len(ranked) == 5
+
