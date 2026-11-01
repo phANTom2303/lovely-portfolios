@@ -82,6 +82,10 @@ export const deleteAsset = asyncHandler(async (req, res) => {
 });
 
 export const updateAsset = asyncHandler(async (req, res) => {
+    console.log("req.user from middleware:", req.user);
+    const user_id = req.user?.id || req.user?.user_id || req.body.user_id;
+    console.log("Resolved user_id:", user_id);
+    
     const { asset_id, title, link, description, asset_type } = req.body;
     if (!asset_id) return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
         success: false,
@@ -91,7 +95,7 @@ export const updateAsset = asyncHandler(async (req, res) => {
         success: false,
         message: "Please Provide at least one parameter",
     });
-    const updated = await assetService.updateAsset(asset_id, {
+    const updated = await assetService.updateAsset(user_id, asset_id, {
         title, link, description, asset_type,
     });
     return res.status(RESPONSE_CODES.SUCCESS_CODE).json({

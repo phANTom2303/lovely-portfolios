@@ -56,7 +56,7 @@ export const createUser = async ({ name, email, password, phone_no = null }) => 
     const sql = `
         INSERT INTO users (name, email, password, phone_no)
         VALUES ($1, $2, $3, $4)
-        RETURNING id, name, email, phone_no, gender, profile_photo_link, professional_title, about, current_location
+        RETURNING id, name, email, password, phone_no, gender, profile_photo_link, professional_title, about, current_location
     `;
     const { rows } = await query(sql, [
         name.trim(),
@@ -74,3 +74,69 @@ export const createUser = async ({ name, email, password, phone_no = null }) => 
 
     return newUser;
 };
+
+export const update = async (id, fields) => {
+    const allowedKeys = [
+        'name', 'phone_no', 'gender', 'profile_photo_link', 
+        'professional_title', 'about', 'current_location', 'skills'
+    ];
+    
+    let setClauses = [];
+    let values = [];
+    let paramIndex = 1;
+    
+    for (const key of allowedKeys) {
+        if (fields[key] !== undefined) {
+            setClauses.push(`${key}=$${paramIndex}`);
+            values.push(fields[key]);
+            paramIndex++;
+        }
+    }
+    
+    if (setClauses.length === 0) return null; 
+
+    values.push(id);
+    const sql = `
+        UPDATE users 
+        SET ${setClauses.join(', ')} 
+        WHERE id = $${paramIndex} 
+        RETURNING id, name, email, phone_no, gender, profile_photo_link, skills, professional_title, about, current_location
+    `;
+
+    const { rows } = await query(sql, values);
+    const updatedRow = rows[0];
+
+    if (updatedRow) {
+        const redisClient = getRedisClient();
+        await redisClient.del(`user:${updatedRow.id}:profile`);
+        if (updatedRow.email) {
+            await redisClient.del(`user:email:${updatedRow.email}`);
+        }
+    }
+
+    return updatedRow ?? null;
+};
+
+
+export const remove = async (id) => {
+    const sql = `
+        DELETE FROM users
+        WHERE id = $1
+        RETURNING *
+    `;
+
+    const { rows } = await query(sql, [id]);
+    const deletedRow = rows[0];
+
+    if (deletedRow) {
+        const redisClient = getRedisClient();
+        await redisClient.del(`user:${deletedRow.id}:profile`);
+        if (deletedRow.email) {
+            await redisClient.del(`user:email:${deletedRow.email}`);
+        }
+    }
+
+    return deletedRow ?? null;
+};
+
+
