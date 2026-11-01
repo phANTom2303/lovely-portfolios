@@ -13,7 +13,7 @@ export const findByEmail = async (email) => {
     if (cachedData) return JSON.parse(cachedData);
 
     const sql = `
-        SELECT id, name, email, password, phone_no, gender, profile_photo_link, professional_title, about, current_location
+        SELECT id, name, email, phone_no, gender, profile_photo_link, professional_title, about, current_location
         FROM users
         WHERE email = $1
     `;
