@@ -1,0 +1,21 @@
+meta {
+  name: Create Skill
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/skills
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "skill_name": "React"
+  }
+}

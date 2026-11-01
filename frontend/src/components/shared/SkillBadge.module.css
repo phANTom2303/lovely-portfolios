@@ -1,0 +1,76 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(25, 25, 25, 0.03);
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.badge:hover {
+  border-color: var(--border-dark);
+}
+
+.small {
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  border-radius: 7px;
+}
+
+.removeButton,
+.restoreButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.removeButton {
+  color: var(--text-muted);
+}
+
+.removeButton:hover {
+  background: var(--coral-soft);
+  color: var(--coral);
+}
+
+.restoreBadge {
+  background: var(--surface-dim);
+  border: 1px dashed var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.restoreBadge:hover {
+  background: var(--teal-soft);
+  border-color: var(--teal);
+  color: var(--text);
+}
+
+.restoreButton {
+  color: var(--teal);
+  font-weight: 700;
+  font-size: 0.95rem;
+}

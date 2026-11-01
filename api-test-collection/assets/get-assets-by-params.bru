@@ -1,0 +1,19 @@
+meta {
+  name: Get Assets By Params
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/assets/params
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+query {
+  re_id: 1
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Update Education
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/education
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "edu_id": 1,
+    "institute_name": "Updated University",
+    "marks": 9.0,
+    "total_mark": 10
+  }
+}

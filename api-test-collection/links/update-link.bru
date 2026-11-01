@@ -1,0 +1,28 @@
+meta {
+  name: Update Link
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/api/links
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "link_id": 1,
+    "title": "Updated GitHub",
+    "link": "https://github.com/johndoe-updated",
+    "description": "Updated description"
+  }
+}

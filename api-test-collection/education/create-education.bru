@@ -1,0 +1,32 @@
+meta {
+  name: Create Education
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/education
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "education_type": "under_graduate",
+    "start_date": "2019-06-01",
+    "end_date": "2023-05-31",
+    "marks": 8.5,
+    "marks_type": "gpa",
+    "total_mark": 10,
+    "institute_name": "State University",
+    "stream": "Computer Science"
+  }
+}
