@@ -13,6 +13,7 @@ import skillsRouter from '#routes/skills.route.js';
 import assetRouter from '#routes/assets.routes.js';
 import authRouter from '#routes/auth.routes.js';
 import reRouter from '#routes/re.routes.js';
+import userRouter from '#routes/user.routes.js';
 import { query } from '#config/db.js';
 import { initDatabase } from '#config/initDB.js';
 
@@ -46,6 +47,7 @@ app.use('/api/education', educationRouter);
 app.use('/api/skills', skillsRouter);
 app.use('/api/assets', assetRouter);
 app.use('/api/re', reRouter);
+app.use('/api/user', userRouter);
 
 // Global Error Handler
 app.use((err, req, res, next) => {
