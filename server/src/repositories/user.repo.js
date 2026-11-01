@@ -70,8 +70,10 @@ export const createUser = async ({ name, email, password, phone_no = null }) => 
         const redisClient = getRedisClient();
         await redisClient.setEx(`user:email:${normalizedEmail}`, CACHE_TTL, JSON.stringify(newUser));
         await redisClient.setEx(`user:${newUser.id}:profile`, CACHE_TTL, JSON.stringify(newUser));
-    }
 
+        if (newUser.password) delete newUser.password;
+    }
+    
     return newUser;
 };
 
