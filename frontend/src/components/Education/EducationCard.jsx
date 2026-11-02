@@ -6,7 +6,7 @@ function EducationCard({ education, onEdit }) {
       <div className={styles.level}>{education.level}</div>
       <div className={styles.cardHeader}>
         <div className={styles.titleArea}>
-          <h2 className={styles.degree}>{education.degree}</h2>
+          <h2 className={styles.degree}>{education.degree || education.level}</h2>
           <p className={styles.branch}>in {education.branch}</p>
         </div>
         <button
