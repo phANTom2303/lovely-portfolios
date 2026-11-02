@@ -32,15 +32,15 @@ function ProjectCard({ project, onEdit }) {
         <div className={styles.cardHeader}>
           <div className={styles.titleGroup}>
             <h3 className={styles.projectTitle}>
-              {project.role || project.title}
+              {project.title || project.role}
             </h3>
-            {project.company && (
-              <span className={styles.projectSubtitle}>{project.company}</span>
+            {(project.subtitle || project.company) && (
+              <span className={styles.projectSubtitle}>{project.subtitle || project.company}</span>
             )}
             <span className={styles.timelineLabel}>
               {formatTimeline(
-                project.startDate,
-                project.endDate,
+                project.from_date || project.startDate,
+                project.to_date || project.endDate,
                 project.isCurrent,
               )}
             </span>
@@ -107,7 +107,7 @@ function ProjectCard({ project, onEdit }) {
 
       {isLinksOpen && (
         <ProjectLinksModal
-          projectName={project.role || project.title}
+          projectName={project.title || project.role}
           links={links}
           onClose={() => setIsLinksOpen(false)}
         />

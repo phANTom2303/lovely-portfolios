@@ -1,8 +1,13 @@
 import styles from "./Experience.module.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ExperienceCard from "./ExperienceCard";
 import ResumeEntityDialog from "../resumeEntity/ResumeEntityDialog";
-import sampleExperience from "../../data/sampleExperience";
+import {
+  fetchResumeEntities,
+  createResumeEntity,
+  updateResumeEntity,
+  deleteResumeEntity,
+} from "../../api/resumeEntityApi";
 
 function formatDateRange(startDate, endDate, isCurrent) {
   function formatMonthYear(val) {
@@ -19,10 +24,32 @@ function formatDateRange(startDate, endDate, isCurrent) {
   return `${start} — ${end}`;
 }
 
+function toMonthInput(isoStr) {
+  if (!isoStr) return "";
+  return isoStr.slice(0, 7);
+}
+
 function Experience() {
-  const [experiences, setExperiences] = useState(sampleExperience);
+  const [experiences, setExperiences] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingExperience, setEditingExperience] = useState(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        setIsLoading(true);
+        const data = await fetchResumeEntities("work_exp");
+        setExperiences(data.filter((item) => item.status !== "deleted"));
+      } catch (err) {
+        setError("Failed to load experiences. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   function handleOpenAdd() {
     setEditingExperience(null);
@@ -39,31 +66,100 @@ function Experience() {
     setEditingExperience(null);
   }
 
-  function handleSaveExperience(formData) {
-    if (editingExperience) {
-      setExperiences((previous) =>
-        previous.map((item) =>
-          item.id === editingExperience.id ? { ...item, ...formData } : item,
-        ),
-      );
-    } else {
-      const newExperience = {
-        id: crypto.randomUUID(),
-        ...formData,
-      };
-      setExperiences((previous) => [...previous, newExperience]);
+  async function handleSaveExperience(formData) {
+    try {
+      if (editingExperience) {
+        const payload = {
+          re_id: editingExperience.re_id,
+          title: formData.role,
+          subtitle: formData.company || null,
+          description: formData.description,
+          from_date: formData.startDate
+            ? formData.startDate.length === 7
+              ? `${formData.startDate}-01`
+              : formData.startDate
+            : null,
+          to_date:
+            !formData.isCurrent && formData.endDate
+              ? formData.endDate.length === 7
+                ? `${formData.endDate}-01`
+                : formData.endDate
+              : null,
+        };
+        const updated = await updateResumeEntity(payload);
+        setExperiences((prev) =>
+          prev.map((item) =>
+            item.re_id === updated.re_id ? { ...item, ...updated } : item,
+          ),
+        );
+      } else {
+        const payload = {
+          re_type: "work_exp",
+          title: formData.role,
+          subtitle: formData.company || null,
+          description: formData.description,
+          from_date: formData.startDate
+            ? formData.startDate.length === 7
+              ? `${formData.startDate}-01`
+              : formData.startDate
+            : null,
+          to_date:
+            !formData.isCurrent && formData.endDate
+              ? formData.endDate.length === 7
+                ? `${formData.endDate}-01`
+                : formData.endDate
+              : null,
+          links: formData.links.map((l) => ({
+            url: l.url || l.link,
+            title: l.title,
+            description: l.description || "",
+          })),
+          assets: formData.images.map((img) => ({
+            title: img.title || "",
+            asset_type: "image",
+            link: img.url || img.link,
+            description: img.description || "",
+          })),
+          skills: formData.skills.map((s) => s.skill_name || s.name || s),
+        };
+        const created = await createResumeEntity(payload);
+        setExperiences((prev) => [...prev, created]);
+      }
+      handleCloseDialog();
+    } catch (err) {
+      alert("Error saving experience. Please try again.");
     }
-    handleCloseDialog();
   }
 
-  function handleDeleteExperience(id) {
+  async function handleDeleteExperience(id) {
     const confirmed = window.confirm(
       "Are you sure you want to delete this experience entry?",
     );
     if (!confirmed) return;
 
-    setExperiences((previous) => previous.filter((item) => item.id !== id));
-    handleCloseDialog();
+    try {
+      await deleteResumeEntity(id);
+      setExperiences((prev) => prev.filter((item) => item.re_id !== id));
+      handleCloseDialog();
+    } catch (err) {
+      alert("Error deleting experience. Please try again.");
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <section className={styles.experiencePage}>
+        <p>Loading experiences...</p>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className={styles.experiencePage}>
+        <p>{error}</p>
+      </section>
+    );
   }
 
   return (
@@ -83,10 +179,10 @@ function Experience() {
 
             <div className={styles.timeline}>
               {experiences.map((exp) => (
-                <div key={exp.id} className={styles.timelineItem}>
+                <div key={exp.re_id} className={styles.timelineItem}>
                   <div className={styles.timelineMarker} />
                   <span className={styles.dateLabel}>
-                    {formatDateRange(exp.startDate, exp.endDate, exp.isCurrent)}
+                    {formatDateRange(exp.from_date, exp.to_date, exp.isCurrent)}
                   </span>
                   <ExperienceCard
                     experience={exp}
@@ -113,7 +209,15 @@ function Experience() {
       {isDialogOpen && (
         <ResumeEntityDialog
           entityType="work_exp"
-          entity={editingExperience}
+          entity={
+            editingExperience
+              ? {
+                  ...editingExperience,
+                  from_date: toMonthInput(editingExperience.from_date),
+                  to_date: toMonthInput(editingExperience.to_date),
+                }
+              : null
+          }
           onSave={handleSaveExperience}
           onDelete={handleDeleteExperience}
           onClose={handleCloseDialog}

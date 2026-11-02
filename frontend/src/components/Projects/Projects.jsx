@@ -1,13 +1,40 @@
 import styles from "./Projects.module.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProjectCard from "./ProjectCard";
 import ResumeEntityDialog from "../resumeEntity/ResumeEntityDialog";
-import sampleProjects from "../../data/sampleProjects";
+import {
+  fetchResumeEntities,
+  createResumeEntity,
+  updateResumeEntity,
+  deleteResumeEntity,
+} from "../../api/resumeEntityApi";
+
+function toMonthInput(isoStr) {
+  if (!isoStr) return "";
+  return isoStr.slice(0, 7);
+}
 
 function Projects() {
-  const [projects, setProjects] = useState(sampleProjects);
+  const [projects, setProjects] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        setIsLoading(true);
+        const data = await fetchResumeEntities("project");
+        setProjects(data.filter((item) => item.status !== "deleted"));
+      } catch (err) {
+        setError("Failed to load projects. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   function handleOpenAdd() {
     setEditingProject(null);
@@ -24,32 +51,100 @@ function Projects() {
     setEditingProject(null);
   }
 
-  function handleSaveProject(formData) {
-    if (editingProject) {
-      setProjects((previous) =>
-        previous.map((item) =>
-          item.id === editingProject.id ? { ...item, ...formData } : item,
-        ),
-      );
-    } else {
-      const newProject = {
-        id: crypto.randomUUID(),
-        re_type: "project",
-        ...formData,
-      };
-      setProjects((previous) => [...previous, newProject]);
+  async function handleSaveProject(formData) {
+    try {
+      if (editingProject) {
+        const payload = {
+          re_id: editingProject.re_id,
+          title: formData.role,
+          subtitle: formData.company || null,
+          description: formData.description,
+          from_date: formData.startDate
+            ? formData.startDate.length === 7
+              ? `${formData.startDate}-01`
+              : formData.startDate
+            : null,
+          to_date:
+            !formData.isCurrent && formData.endDate
+              ? formData.endDate.length === 7
+                ? `${formData.endDate}-01`
+                : formData.endDate
+              : null,
+        };
+        const updated = await updateResumeEntity(payload);
+        setProjects((prev) =>
+          prev.map((item) =>
+            item.re_id === updated.re_id ? { ...item, ...updated } : item,
+          ),
+        );
+      } else {
+        const payload = {
+          re_type: "project",
+          title: formData.role,
+          subtitle: formData.company || null,
+          description: formData.description,
+          from_date: formData.startDate
+            ? formData.startDate.length === 7
+              ? `${formData.startDate}-01`
+              : formData.startDate
+            : null,
+          to_date:
+            !formData.isCurrent && formData.endDate
+              ? formData.endDate.length === 7
+                ? `${formData.endDate}-01`
+                : formData.endDate
+              : null,
+          links: formData.links.map((l) => ({
+            url: l.url || l.link,
+            title: l.title,
+            description: l.description || "",
+          })),
+          assets: formData.images.map((img) => ({
+            title: img.title || "",
+            asset_type: "image",
+            link: img.url || img.link,
+            description: img.description || "",
+          })),
+          skills: formData.skills.map((s) => s.skill_name || s.name || s),
+        };
+        const created = await createResumeEntity(payload);
+        setProjects((prev) => [...prev, created]);
+      }
+      handleCloseDialog();
+    } catch (err) {
+      alert("Error saving project. Please try again.");
     }
-    handleCloseDialog();
   }
 
-  function handleDeleteProject(id) {
+  async function handleDeleteProject(id) {
     const confirmed = window.confirm(
       "Are you sure you want to delete this project entry?",
     );
     if (!confirmed) return;
 
-    setProjects((previous) => previous.filter((item) => item.id !== id));
-    handleCloseDialog();
+    try {
+      await deleteResumeEntity(id);
+      setProjects((prev) => prev.filter((item) => item.re_id !== id));
+      handleCloseDialog();
+    } catch (err) {
+      alert("Error deleting project. Please try again.");
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <section className={styles.projectsSection}>
+        <p>Loading projects...</p>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className={styles.projectsSection}>
+        <p>{error}</p>
+      </section>
+    );
   }
 
   return (
@@ -70,7 +165,7 @@ function Projects() {
             <div className={styles.projectsGrid}>
               {projects.map((project) => (
                 <ProjectCard
-                  key={project.id}
+                  key={project.re_id}
                   project={project}
                   onEdit={() => handleOpenEdit(project)}
                 />
@@ -105,7 +200,15 @@ function Projects() {
       {isDialogOpen && (
         <ResumeEntityDialog
           entityType="project"
-          entity={editingProject}
+          entity={
+            editingProject
+              ? {
+                  ...editingProject,
+                  from_date: toMonthInput(editingProject.from_date),
+                  to_date: toMonthInput(editingProject.to_date),
+                }
+              : null
+          }
           onSave={handleSaveProject}
           onDelete={handleDeleteProject}
           onClose={handleCloseDialog}
