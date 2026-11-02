@@ -192,32 +192,52 @@ async def save_portfolio(
     user_id: str, job_role: str, jd_text: str, portfolio_json: dict
 ) -> str:
     """
-    Saves generated portfolio JSON to PostgreSQL 'portfolios' table.
-    Expects the table to be managed and created by the backend database migrations.
+    Saves generated portfolio JSON to PostgreSQL 'portfolio' table.
+    Matches the backend schema: table 'portfolio' (singular), columns (user_id, user_email, portfolio_name, portfolio_date).
+    Falls back gracefully if 'portfolios' (plural) table is used.
     """
     uid = _parse_user_id(user_id)
 
     conn = await get_db_connection()
 
     try:
-        # Directly insert portfolio into backend-managed portfolios table
-        inserted_id = await conn.fetchval(
-            """
-            INSERT INTO portfolios (user_id, job_role, jd_text, portfolio_json)
-            VALUES ($1, $2, $3, $4::jsonb)
-            RETURNING portfolio_id
-            """,
-            uid,
-            job_role,
-            jd_text,
-            json.dumps(portfolio_json),
-        )
+        # Check if table is 'portfolio' (singular, backend standard) or 'portfolios' (plural)
+        is_singular = await conn.fetchval("SELECT to_regclass('public.portfolio')") is not None
+
+        if is_singular:
+            user_email = await conn.fetchval("SELECT email FROM users WHERE id = $1", uid) or ""
+            portfolio_name = job_role or portfolio_json.get("jobRole") or "Generated Portfolio"
+
+            inserted_id = await conn.fetchval(
+                """
+                INSERT INTO portfolio (user_id, user_email, portfolio_name, portfolio_date, create_date)
+                VALUES ($1, $2, $3, $4::jsonb, CURRENT_DATE)
+                RETURNING portfolio_id
+                """,
+                uid,
+                user_email,
+                portfolio_name,
+                json.dumps(portfolio_json),
+            )
+        else:
+            inserted_id = await conn.fetchval(
+                """
+                INSERT INTO portfolios (user_id, job_role, jd_text, portfolio_json)
+                VALUES ($1, $2, $3, $4::jsonb)
+                RETURNING portfolio_id
+                """,
+                uid,
+                job_role,
+                jd_text,
+                json.dumps(portfolio_json),
+            )
+
         if not inserted_id:
             raise RuntimeError("Database did not return a generated portfolio_id.")
         return str(inserted_id)
 
     except Exception as e:
-        print(f"[db] Error inserting into portfolios table: {e}")
+        print(f"[db] Error inserting into portfolio table: {e}")
         raise RuntimeError(f"Database error while saving portfolio: {e}")
 
     finally:

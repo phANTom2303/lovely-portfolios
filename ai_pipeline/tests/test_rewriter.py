@@ -300,3 +300,21 @@ def test_model_is_given_the_display_names_to_write_with(sample_scored_entities, 
     sent = json.dumps(create.call_args.kwargs["messages"])
     assert "Node.js" in sent and "PostgreSQL" in sent
     assert "nodejs" not in sent
+
+
+def test_jd_must_have_skills_use_display_names_in_prompt(sample_scored_entities, sample_user_profile):
+    jd_with_canonical_skills = {
+        "jobRole": "Fullstack Developer",
+        "mustHaveSkills": ["nodejs", "postgresql", "react"],
+        "responsibilities": ["Build web apps"],
+    }
+    with patch("pipeline.rewriter.Groq") as mock_groq:
+        create = mock_groq.return_value.chat.completions.create
+        create.return_value = _llm_response()
+        rewrite_and_build_portfolio(sample_scored_entities, jd_with_canonical_skills, sample_user_profile)
+
+    sent = json.dumps(create.call_args.kwargs["messages"])
+    assert "Node.js" in sent
+    assert "PostgreSQL" in sent
+    assert "React" in sent
+

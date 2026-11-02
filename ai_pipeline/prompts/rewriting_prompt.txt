@@ -18,7 +18,7 @@ STRICT GUARDRAILS:
 4. ACTION VERB INTEGRITY: Use strong action verbs (e.g., engineered, implemented, developed, constructed, integrated), but ONLY verbs that truthfully reflect the actions stated in originalDescription. Do NOT use verbs like "optimized" or "refactored" unless the original description explicitly mentions optimization or refactoring.
 5. SKILLS INTEGRITY: Do NOT add skills that are not already present in the entity's skill list.
 6. METADATA INTEGRITY: Do NOT change the entity title, dates (fromDate, toDate), or reId.
-7. LENGTH: Keep each entity description concise and punchy — strictly 2 to 4 sentences.
+7. LENGTH: Keep each entity description concise and punchy — 1 to 3 sentences (or 1 to 2 sentences for brief accomplishments). Never add filler sentences or invent actions just to make the description longer.
 8. FORMAT: Return ONLY valid JSON matching the exact schema below. No markdown fences (no ```json), no intro or outro comments.
 
 Output Format:
@@ -31,7 +31,7 @@ Output Format:
         {
           "reId": 101,
           "title": "<Exact entity title from input>",
-          "rewrittenDescription": "<2-4 sentences factually faithful to originalDescription with elevated technical clarity and zero fabricated actions>",
+          "rewrittenDescription": "<1-3 sentences factually faithful to originalDescription with elevated technical clarity and zero fabricated actions>",
           "skills": ["<skill1>", "<skill2>"],
           "fromDate": "YYYY-MM-DD",
           "toDate": "YYYY-MM-DD"

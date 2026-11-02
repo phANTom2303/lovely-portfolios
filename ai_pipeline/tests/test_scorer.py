@@ -358,3 +358,42 @@ def test_score_and_rank_batching_large_profile(sample_jd):
         assert len(work_exps) == 2
         assert len(ranked) == 5
 
+
+def test_score_and_rank_achievements_and_others_caps(sample_jd):
+    """Ensure 'achievements' and 'others' caps match schema and are enforced."""
+    entities = [
+        {"reId": 1, "reType": "achievements", "title": "Hackathon 1", "normalizedSkills": ["python"]},
+        {"reId": 2, "reType": "achievements", "title": "Hackathon 2", "normalizedSkills": ["python"]},
+        {"reId": 3, "reType": "achievements", "title": "Hackathon 3", "normalizedSkills": ["python"]},
+        {"reId": 4, "reType": "others", "title": "Volunteer 1", "normalizedSkills": ["python"]},
+        {"reId": 5, "reType": "others", "title": "Volunteer 2", "normalizedSkills": ["python"]},
+    ]
+    mock_llm_output = {
+        "scored_entities": [
+            {"reId": 1, "score": 0.90},
+            {"reId": 2, "score": 0.85},
+            {"reId": 3, "score": 0.80},
+            {"reId": 4, "score": 0.70},
+            {"reId": 5, "score": 0.60},
+        ]
+    }
+    mock_response = MagicMock()
+    mock_response.choices = [
+        MagicMock(message=MagicMock(content=__import__("json").dumps(mock_llm_output)))
+    ]
+
+    with patch("pipeline.scorer.Groq") as mock_groq:
+        mock_groq.return_value.chat.completions.create.return_value = mock_response
+        ranked = score_and_rank(entities, sample_jd)
+
+        achievements = [e for e in ranked if e["reType"] == "achievements"]
+        others = [e for e in ranked if e["reType"] == "others"]
+
+        # achievements capped at 2, others capped at 1
+        assert len(achievements) == 2
+        assert [a["reId"] for a in achievements] == [1, 2]
+        assert len(others) == 1
+        assert [o["reId"] for o in others] == [4]
+        assert len(ranked) == 3
+
+

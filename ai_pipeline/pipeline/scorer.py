@@ -17,8 +17,10 @@ CATEGORY_CAPS = {
     "project": 3,
     "work_exp": 2,
     "certification": 2,
-    "achievement": 2,
+    "achievements": 2,
+    "achievement": 2,  # alias for backwards compatibility
     "extra_curricular": 1,
+    "others": 1,
 }
 DEFAULT_CAP = 2
 

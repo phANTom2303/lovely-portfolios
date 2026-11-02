@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field, field_validator
 from groq import Groq, BadRequestError
 
 from config import GROQ_API_KEY, GROQ_MODEL
+from pipeline.skill_normalizer import display_list
 
 PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "rewriting_prompt.txt"
 MAX_ATTEMPTS = 3
@@ -83,10 +84,11 @@ def rewrite_and_build_portfolio(
             }
         )
 
+    must_have_display = display_list(jd_extraction.get("mustHaveSkills", []))
     filled_prompt = (
         prompt_template
         .replace("{job_role}", str(jd_extraction.get("jobRole", "N/A")))
-        .replace("{must_have_skills}", ", ".join(jd_extraction.get("mustHaveSkills", [])) or "None specified")
+        .replace("{must_have_skills}", ", ".join(must_have_display) or "None specified")
         .replace("{responsibilities}", "; ".join(jd_extraction.get("responsibilities", [])) or "None specified")
         .replace("{entities}", json.dumps(clean_entities, indent=2))
     )
