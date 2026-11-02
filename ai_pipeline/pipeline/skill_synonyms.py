@@ -3,7 +3,10 @@ Canonical skill names and the aliases that should map to them.
 
 Keys are the canonical form used everywhere downstream (lowercase, no dots).
 Values are alternative spellings, abbreviations and versions, written in lowercase.
-To support a new skill, add a key; to catch a new spelling, add it to the list.
+To support a new skill, add a key here AND a display name in SKILL_DISPLAY_NAMES below
+(a test fails if either is missing); to catch a new spelling, add it to the list.
+
+The key is for matching only. SKILL_DISPLAY_NAMES holds the name shown on the portfolio.
 """
 
 SKILL_SYNONYMS: dict[str, list[str]] = {
@@ -73,9 +76,96 @@ SKILL_SYNONYMS: dict[str, list[str]] = {
     "numpy": [],
     "scikit-learn": ["sklearn", "scikit learn"],
 
+    # AI and LLM
+    "langchain": ["lang chain"],
+    "langgraph": ["lang graph"],
+    "agentic pipeline": ["agentic pipelines", "agentic workflow", "agentic workflows"],
+
     # Other
     "system design": [],
     "data structures and algorithms": ["dsa", "data structures", "algorithms"],
     "figma": [],
     "excel": ["ms excel", "microsoft excel"],
+}
+
+
+# What a person reads on the portfolio. One entry per key of SKILL_SYNONYMS.
+# Follows each tool's own official spelling (scikit-learn stays lowercase, gRPC, PyTorch, NumPy).
+SKILL_DISPLAY_NAMES: dict[str, str] = {
+    # Languages
+    "javascript": "JavaScript",
+    "typescript": "TypeScript",
+    "python": "Python",
+    "java": "Java",
+    "c": "C",
+    "c++": "C++",
+    "c#": "C#",
+    "go": "Go",
+    "rust": "Rust",
+    "kotlin": "Kotlin",
+    "swift": "Swift",
+    "sql": "SQL",
+    "html": "HTML",
+    "css": "CSS",
+
+    # Frontend
+    "react": "React",
+    "angular": "Angular",
+    "vuejs": "Vue.js",
+    "nextjs": "Next.js",
+    "tailwind css": "Tailwind CSS",
+    "redux": "Redux",
+    "flutter": "Flutter",
+
+    # Backend
+    "nodejs": "Node.js",
+    "expressjs": "Express.js",
+    "fastapi": "FastAPI",
+    "django": "Django",
+    "flask": "Flask",
+    "spring boot": "Spring Boot",
+    "rest apis": "REST APIs",
+    "graphql": "GraphQL",
+    "grpc": "gRPC",
+    "microservices": "Microservices",
+
+    # Databases and caches
+    "postgresql": "PostgreSQL",
+    "mysql": "MySQL",
+    "mongodb": "MongoDB",
+    "redis": "Redis",
+    "elasticsearch": "Elasticsearch",
+    "sqlite": "SQLite",
+
+    # Cloud and DevOps
+    "aws": "AWS",
+    "gcp": "GCP",
+    "azure": "Azure",
+    "docker": "Docker",
+    "kubernetes": "Kubernetes",
+    "terraform": "Terraform",
+    "ci/cd": "CI/CD",
+    "git": "Git",
+    "linux": "Linux",
+    "kafka": "Kafka",
+
+    # Data and ML
+    "machine learning": "Machine Learning",
+    "deep learning": "Deep Learning",
+    "tensorflow": "TensorFlow",
+    "pytorch": "PyTorch",
+    "pandas": "Pandas",
+    "numpy": "NumPy",
+    "scikit-learn": "scikit-learn",
+
+    # AI and LLM
+    "langchain": "LangChain",
+    "langgraph": "LangGraph",
+    "agentic pipeline": "Agentic Pipeline",
+
+    # Other
+    "system design": "System Design",
+    "data structures and algorithms": "Data Structures and Algorithms",
+    "figma": "Figma",
+    "excel": "Excel",
 }

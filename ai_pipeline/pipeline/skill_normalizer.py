@@ -1,6 +1,6 @@
 from thefuzz import fuzz, process
 
-from pipeline.skill_synonyms import SKILL_SYNONYMS
+from pipeline.skill_synonyms import SKILL_DISPLAY_NAMES, SKILL_SYNONYMS
 
 # Fuzzy layer settings. Against our own dictionary, real typos score 83-95 with
 # fuzz.ratio, while the closest look-alike *different* skills an unknown string
@@ -73,9 +73,27 @@ def normalize_list(skills: list | None) -> list[str]:
     return list(seen)
 
 
+def display_list(skills: list | None) -> list[str]:
+    """
+    The skills as a person should read them on the portfolio. Each skill is matched to its
+    canonical key first (so "Nod.js" becomes nodejs), then shown with the key's display name
+    ("Node.js"). A skill we have no entry for keeps the user's own spelling, tidied. Duplicates
+    are removed by canonical key, keeping first-seen order and the first spelling.
+    """
+    shown: dict[str, str] = {}
+    for skill in skills or []:
+        if not isinstance(skill, str):
+            continue
+        canonical = normalize_one(skill)
+        if canonical:
+            shown.setdefault(canonical, SKILL_DISPLAY_NAMES.get(canonical) or " ".join(skill.split()))
+    return list(shown.values())
+
+
 def normalize_skills(user_entities: list) -> list:
     """
-    Step 2: add `normalizedSkills` (canonical names) to each of the user's entities.
+    Step 2: add `normalizedSkills` (canonical keys, used for matching and scoring) and
+    `displaySkills` (the names shown on the portfolio) to each of the user's entities.
     Every other field passes through, since Steps 3 and 4 read them. Entities are
     copied, never mutated. `jd_extraction` is unused here; it stays in the signature
     because main.py passes it. The JD's own skills go through normalize_jd.
@@ -84,6 +102,7 @@ def normalize_skills(user_entities: list) -> list:
     for entity in user_entities:
         item = dict(entity)
         item["normalizedSkills"] = normalize_list(entity.get("originalSkills"))
+        item["displaySkills"] = display_list(entity.get("originalSkills"))
         normalized.append(item)
     return normalized
 

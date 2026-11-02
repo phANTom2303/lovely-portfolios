@@ -244,3 +244,59 @@ def test_prompt_does_not_ask_the_model_to_output_links_or_assets():
         prompt_content = f.read()
     assert '"links"' not in prompt_content
     assert '"assets"' not in prompt_content
+
+
+# --- skills shown on the portfolio come from displaySkills, not from the model ---
+
+def test_output_skills_come_from_display_skills_not_from_the_model(
+    sample_scored_entities, sample_jd, sample_user_profile
+):
+    sample_scored_entities[0].update(
+        normalizedSkills=["nodejs", "postgresql"], displaySkills=["Node.js", "PostgreSQL"]
+    )
+
+    with patch("pipeline.rewriter.Groq") as mock_groq:
+        mock_groq.return_value.chat.completions.create.return_value = _llm_response(
+            {"skills": ["nodejs", "cobol"]}   # the model echoes the internal keys and invents one
+        )
+        portfolio = rewrite_and_build_portfolio(sample_scored_entities, sample_jd, sample_user_profile)
+
+    assert portfolio["sections"][0]["entities"][0]["skills"] == ["Node.js", "PostgreSQL"]
+
+
+def test_entity_with_no_skills_gets_an_empty_skills_list(
+    sample_scored_entities, sample_jd, sample_user_profile
+):
+    sample_scored_entities[0].update(normalizedSkills=[], displaySkills=[])
+
+    with patch("pipeline.rewriter.Groq") as mock_groq:
+        mock_groq.return_value.chat.completions.create.return_value = _llm_response({"skills": ["invented"]})
+        portfolio = rewrite_and_build_portfolio(sample_scored_entities, sample_jd, sample_user_profile)
+
+    assert portfolio["sections"][0]["entities"][0]["skills"] == []
+
+
+def test_entities_without_display_skills_keep_the_models_skills(
+    sample_scored_entities, sample_jd, sample_user_profile
+):
+    # callers that skip the normalizer (no displaySkills key) must not lose their skills
+    with patch("pipeline.rewriter.Groq") as mock_groq:
+        mock_groq.return_value.chat.completions.create.return_value = _llm_response({"skills": ["python"]})
+        portfolio = rewrite_and_build_portfolio(sample_scored_entities, sample_jd, sample_user_profile)
+
+    assert portfolio["sections"][0]["entities"][0]["skills"] == ["python"]
+
+
+def test_model_is_given_the_display_names_to_write_with(sample_scored_entities, sample_jd, sample_user_profile):
+    sample_scored_entities[0].update(
+        normalizedSkills=["nodejs", "postgresql"], displaySkills=["Node.js", "PostgreSQL"]
+    )
+
+    with patch("pipeline.rewriter.Groq") as mock_groq:
+        create = mock_groq.return_value.chat.completions.create
+        create.return_value = _llm_response()
+        rewrite_and_build_portfolio(sample_scored_entities, sample_jd, sample_user_profile)
+
+    sent = json.dumps(create.call_args.kwargs["messages"])
+    assert "Node.js" in sent and "PostgreSQL" in sent
+    assert "nodejs" not in sent
