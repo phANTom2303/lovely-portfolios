@@ -3,6 +3,7 @@ import Footer from "../../components/Footer/Footer";
 import sampleProfile from "../../data/sampleProfile";
 import styles from "./Profile.module.css";
 import { useState } from "react";
+import { useEffect } from "react";
 import CoreDetails from "../../components/profile/CoreDetails";
 import ProfileImage from "../../components/profile/ProfileImage";
 import About from "../../components/profile/About";
@@ -14,10 +15,56 @@ import Projects from "../../components/Projects/Projects";
 import Achievements from "../../components/Achievements/Achievements";
 import Certifications from "../../components/Certifications/Certifications";
 import ExtraCurricular from "../../components/ExtraCurricular/ExtraCurricular";
+import { useAuth } from "../../context/authContext";
+import { getProfileLinks } from "../../api/linksApi";
+import { getAllAssets } from "../../api/assetsApi";
 
 function Profile() {
-  const [profile, setProfile] = useState(sampleProfile);
+  const { user } = useAuth();
+  const [profile, setProfile] = useState(() => ({
+    ...sampleProfile,
+    ...user,
+    phone: user?.phone_no || sampleProfile.phone,
+    professionalTitle: user?.professional_title || sampleProfile.professionalTitle,
+    location: user?.current_location || sampleProfile.location,
+    profileImage: user?.profile_photo_link || sampleProfile.profileImage,
+  }));
   const [activeSection, setActiveSection] = useState("profile");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadProfileData() {
+      try {
+        const [links, assets] = await Promise.all([getProfileLinks(), getAllAssets()]);
+        const profileImageAsset = assets
+          .filter(
+            (asset) =>
+              asset.user_id === user.id &&
+              asset.re_id === null &&
+              asset.asset_type === "image" &&
+              asset.link === user.profile_photo_link,
+          )
+          .sort((left, right) => right.asset_id - left.asset_id)[0];
+
+        if (isMounted) {
+          setProfile((previous) => ({
+            ...previous,
+            socials: links,
+            profileImageAssetId: profileImageAsset?.asset_id || null,
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to load profile data:", error);
+      }
+    }
+
+    if (user) loadProfileData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
 
   return (
     <>

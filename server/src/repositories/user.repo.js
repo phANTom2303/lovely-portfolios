@@ -36,7 +36,7 @@ export const findById = async (id) => {
     if (cachedData) return JSON.parse(cachedData);
 
     const sql = `
-        SELECT id, name, email, phone_no, gender, profile_photo_link, skills, professional_title, about, current_location
+        SELECT id, name, email, phone_no, gender, profile_photo_link, professional_title, about, current_location
         FROM users
         WHERE id = $1
     `;
@@ -80,7 +80,7 @@ export const createUser = async ({ name, email, password, phone_no = null }) => 
 export const update = async (id, fields) => {
     const allowedKeys = [
         'name', 'phone_no', 'gender', 'profile_photo_link', 
-        'professional_title', 'about', 'current_location', 'skills'
+        'professional_title', 'about', 'current_location'
     ];
     
     let setClauses = [];
@@ -102,7 +102,7 @@ export const update = async (id, fields) => {
         UPDATE users 
         SET ${setClauses.join(', ')} 
         WHERE id = $${paramIndex} 
-        RETURNING id, name, email, phone_no, gender, profile_photo_link, skills, professional_title, about, current_location
+        RETURNING id, name, email, phone_no, gender, profile_photo_link, professional_title, about, current_location
     `;
 
     const { rows } = await query(sql, values);

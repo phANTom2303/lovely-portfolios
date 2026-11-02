@@ -4,6 +4,9 @@ import SkillBadge from "../shared/SkillBadge";
 import SkillPickerDialog from "../shared/SkillPickerDialog";
 import LinkDialog from "../shared/LinkDialog";
 import ImageDialog from "../shared/ImageDialog";
+import { createSkill, deleteSkill } from "../../api/skillsApi";
+import { uploadImageAsset, updateAsset, deleteAsset } from "../../api/assetsApi";
+import { createLink, updateLink, deleteLink } from "../../api/linksApi";
 
 const ENTITY_CONFIGS = {
   work_exp: {
@@ -99,7 +102,7 @@ function ResumeEntityDialog({
   const config = ENTITY_CONFIGS[entityType] || ENTITY_CONFIGS.work_exp;
 
   const [formData, setFormData] = useState({
-    id: entity?.id || crypto.randomUUID(),
+    id: entity?.re_id || entity?.id || crypto.randomUUID(),
     re_type: entityType,
     role: entity?.role || entity?.title || "",
     company: entity?.company || entity?.subtitle || "",
@@ -109,7 +112,13 @@ function ResumeEntityDialog({
     description: entity?.description || "",
     skills: entity?.skills || [],
     links: entity?.links || [],
-    images: entity?.images || [],
+    images: (entity?.assets || entity?.images || []).map(asset => ({
+      id: asset.asset_id || asset.id,
+      title: asset.title || '',
+      url: asset.link || asset.url || '',
+      description: asset.description || '',
+      asset_type: asset.asset_type || 'image',
+    })),
   });
 
   const [isSkillsDialogOpen, setIsSkillsDialogOpen] = useState(false);
@@ -126,8 +135,62 @@ function ResumeEntityDialog({
     }));
   }
 
-  function handleSaveSkills(newSkills) {
-    setFormData((previous) => ({ ...previous, skills: newSkills }));
+  async function handleSaveSkills(newSkills) {
+    const isEditingExistingEntity =
+      entity && typeof entity.re_id === "number";
+
+    try {
+      if (isEditingExistingEntity) {
+        const originalSkills = formData.skills;
+
+        // Skills with integer IDs were already in the DB; UUID strings are newly typed
+        const toAdd = newSkills.filter((newSkill) => {
+          const newId = newSkill.skill_id;
+          if (typeof newId === "number") {
+            return !originalSkills.some((orig) => orig.skill_id === newId);
+          }
+          return true; // newly typed skill — always create
+        });
+
+        const toRemove = originalSkills.filter((orig) => {
+          if (typeof orig.skill_id !== "number") return false;
+          return !newSkills.some((ns) => ns.skill_id === orig.skill_id);
+        });
+
+        // Delete removed skills
+        for (const skill of toRemove) {
+          await deleteSkill(skill.skill_id);
+        }
+
+        // Create added skills scoped to this RE
+        const createdSkills = [];
+        for (const skill of toAdd) {
+          const created = await createSkill({
+            skill_name: skill.skill_name || skill.name,
+            re_id: entity.re_id,
+          });
+          createdSkills.push(created);
+        }
+
+        // Kept skills = existing DB skills that were not removed
+        const keptSkills = originalSkills.filter(
+          (orig) =>
+            typeof orig.skill_id === "number" &&
+            !toRemove.some((r) => r.skill_id === orig.skill_id),
+        );
+
+        setFormData((prev) => ({
+          ...prev,
+          skills: [...keptSkills, ...createdSkills],
+        }));
+      } else {
+        // Creating a new entity — store locally; backend handles inline on submit
+        setFormData((prev) => ({ ...prev, skills: newSkills }));
+      }
+    } catch {
+      console.error("[handleSaveSkills] Failed to sync skills with API.");
+    }
+
     setIsSkillsDialogOpen(false);
   }
 
@@ -141,20 +204,67 @@ function ResumeEntityDialog({
     setIsLinkDialogOpen(true);
   }
 
-  function handleSaveLink(linkData) {
-    setFormData((previous) => {
-      const exists = previous.links.some((l) => l.id === linkData.id);
-      return {
-        ...previous,
-        links: exists
-          ? previous.links.map((l) => (l.id === linkData.id ? linkData : l))
-          : [...previous.links, linkData],
-      };
-    });
+  async function handleSaveLink(linkData) {
+    const isEditingExistingEntity = entity && typeof entity.re_id === 'number';
+
+    if (isEditingExistingEntity) {
+      const isExistingLink = typeof linkData.id === 'number';
+
+      try {
+        if (isExistingLink) {
+          const updated = await updateLink({
+            link_id: linkData.id,
+            title: linkData.title,
+            link: linkData.url || linkData.link,
+            description: linkData.description,
+          });
+          setFormData((prev) => ({
+            ...prev,
+            links: prev.links.map((l) => (l.id === updated.id ? updated : l)),
+          }));
+        } else {
+          const created = await createLink({
+            link: linkData.url || linkData.link,
+            title: linkData.title,
+            description: linkData.description,
+            re_id: entity.re_id,
+          });
+          setFormData((prev) => ({ ...prev, links: [...prev.links, created] }));
+        }
+      } catch (err) {
+        console.error('Failed to save link:', err);
+        alert('Failed to save link');
+        return;
+      }
+    } else {
+      setFormData((previous) => {
+        const exists = previous.links.some((l) => l.id === linkData.id);
+        return {
+          ...previous,
+          links: exists
+            ? previous.links.map((l) => (l.id === linkData.id ? linkData : l))
+            : [...previous.links, linkData],
+        };
+      });
+    }
+
     setIsLinkDialogOpen(false);
   }
 
-  function handleDeleteLink(linkId) {
+  async function handleDeleteLink(linkId) {
+    const isEditingExistingEntity = entity && typeof entity.re_id === 'number';
+    const isDbLink = typeof linkId === 'number';
+
+    if (isEditingExistingEntity && isDbLink) {
+      try {
+        await deleteLink(linkId);
+      } catch (err) {
+        console.error('Failed to delete link:', err);
+        alert('Failed to delete link');
+        return;
+      }
+    }
+
     setFormData((previous) => ({
       ...previous,
       links: previous.links.filter((l) => l.id !== linkId),
@@ -171,25 +281,83 @@ function ResumeEntityDialog({
     setIsImageDialogOpen(true);
   }
 
-  function handleSaveImage(imageData) {
-    setFormData((previous) => {
-      const exists = previous.images.some((img) => img.id === imageData.id);
-      return {
-        ...previous,
-        images: exists
-          ? previous.images.map((img) =>
-              img.id === imageData.id ? imageData : img,
-            )
-          : [...previous.images, imageData],
-      };
-    });
+  async function handleSaveImage(imageData) {
+    const isEditingExistingEntity = entity && typeof entity.re_id === 'number';
+
+    try {
+      if (isEditingExistingEntity) {
+        const isExistingAsset = typeof imageData.id === 'number'; // DB IDs are integers
+
+        if (isExistingAsset) {
+          // PATCH existing asset
+          const updated = await updateAsset({
+            asset_id: imageData.id,
+            title: imageData.title,
+            description: imageData.description,
+          });
+          setFormData(prev => ({
+            ...prev,
+            images: prev.images.map(img =>
+              img.id === updated.asset_id
+                ? { ...updated, id: updated.asset_id, url: updated.link }
+                : img,
+            ),
+          }));
+        } else {
+          // Upload new image asset
+          if (imageData.file) {
+            const formData = new FormData();
+            formData.append('title', imageData.title || 'Image');
+            formData.append('asset_type', 'image');
+            formData.append('re_id', String(entity.re_id));
+            if (imageData.description) formData.append('description', imageData.description);
+            formData.append('assets', imageData.file);
+
+            const created = await uploadImageAsset(formData);
+            setFormData(prev => ({
+              ...prev,
+              images: [...prev.images, { ...created, id: created.asset_id, url: created.link }],
+            }));
+          }
+        }
+      } else {
+        // Local state (creating new entity — inline handling by POST /api/re)
+        setFormData(prev => {
+          const exists = prev.images.some(img => img.id === imageData.id);
+          return {
+            ...prev,
+            images: exists
+              ? prev.images.map(img => img.id === imageData.id ? imageData : img)
+              : [...prev.images, imageData],
+          };
+        });
+      }
+    } catch (error) {
+      console.error('[handleSaveImage] Failed to save image asset:', error);
+      alert('Failed to save image');
+      return;
+    }
+
     setIsImageDialogOpen(false);
   }
 
-  function handleDeleteImage(imageId) {
-    setFormData((previous) => ({
-      ...previous,
-      images: previous.images.filter((img) => img.id !== imageId),
+  async function handleDeleteImage(imageId) {
+    const isEditingExistingEntity = entity && typeof entity.re_id === 'number';
+    const isDbAsset = typeof imageId === 'number';
+
+    try {
+      if (isEditingExistingEntity && isDbAsset) {
+        await deleteAsset(imageId);
+      }
+    } catch (error) {
+      console.error('[handleDeleteImage] Failed to delete image asset:', error);
+      alert('Failed to save image');
+      return;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter(img => img.id !== imageId),
     }));
   }
 
@@ -257,7 +425,7 @@ function ResumeEntityDialog({
                   <button
                     type="button"
                     className={styles.deleteButton}
-                    onClick={() => onDelete(entity.id)}
+                    onClick={() => onDelete(entity?.re_id || entity?.id)}
                   >
                     Delete
                   </button>

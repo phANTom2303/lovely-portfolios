@@ -3,12 +3,13 @@ import { useState } from "react";
 
 function EducationDialog({ education, onSave, onClose, onDelete }) {
   const [formData, setFormData] = useState({
-    level: education?.level || "",
+    level: education?.level || "under_graduate",
     degree: education?.degree || "",
     institute: education?.institute || "",
     branch: education?.branch || "",
     gradingSystem: education?.gradingSystem || "",
     grade: education?.grade || "",
+    totalMark: education?.totalMark || "",
     startDate: education?.startDate || "",
     endDate: education?.endDate || "",
   });
@@ -59,15 +60,20 @@ function EducationDialog({ education, onSave, onClose, onDelete }) {
         <div className={styles.formBody}>
           <div className={styles.formField}>
             <label htmlFor="level">Level Of Education</label>
-            <input
+            <select
               id="level"
               name="level"
-              type="text"
               value={formData.level}
-              placeholder="e.g. Undergraduate, Postgraduate"
               onChange={handleChange}
               required
-            />
+            >
+              <option value="secondary">Secondary</option>
+              <option value="higher_secondary">Higher secondary</option>
+              <option value="under_graduate">Undergraduate</option>
+              <option value="post_graduate">Postgraduate</option>
+              <option value="diploma">Diploma</option>
+              <option value="phd">PhD</option>
+            </select>
           </div>
 
           <div className={styles.formField}>
@@ -79,7 +85,6 @@ function EducationDialog({ education, onSave, onClose, onDelete }) {
               value={formData.degree}
               placeholder="e.g. Bachelor of Technology"
               onChange={handleChange}
-              required
             />
           </div>
 
@@ -131,6 +136,21 @@ function EducationDialog({ education, onSave, onClose, onDelete }) {
                 type="text"
                 value={formData.grade}
                 placeholder="e.g. 9.0 or 91%"
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className={styles.formField}>
+              <label htmlFor="totalMark">Total Mark</label>
+              <input
+                id="totalMark"
+                name="totalMark"
+                type="number"
+                min="0.01"
+                step="any"
+                value={formData.totalMark}
+                placeholder="e.g. 10 or 100"
                 onChange={handleChange}
                 required
               />
