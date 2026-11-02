@@ -52,9 +52,9 @@ def sample_entities():
 def test_score_and_rank_success(sample_entities, sample_jd):
     mock_llm_output = {
         "scored_entities": [
-            {"reId": 2, "score": 0.95, "reasoning": "Direct match for Python/FastAPI"},
-            {"reId": 3, "score": 0.78, "reasoning": "Microservices and REST APIs"},
-            {"reId": 1, "score": 0.45, "reasoning": "Partial Postgres match"},
+            {"reId": 2, "score": 0.95},
+            {"reId": 3, "score": 0.78},
+            {"reId": 1, "score": 0.45},
         ]
     }
 
@@ -80,9 +80,9 @@ def test_score_and_rank_success(sample_entities, sample_jd):
 def test_score_and_rank_filters_below_threshold(sample_entities, sample_jd):
     mock_llm_output = {
         "scored_entities": [
-            {"reId": 2, "score": 0.90, "reasoning": "Strong match"},
-            {"reId": 1, "score": 0.10, "reasoning": "Irrelevant match below threshold"},
-            {"reId": 3, "score": 0.05, "reasoning": "Irrelevant match below threshold"},
+            {"reId": 2, "score": 0.90},
+            {"reId": 1, "score": 0.10},
+            {"reId": 3, "score": 0.05},
         ]
     }
 
@@ -104,9 +104,9 @@ def test_score_and_rank_filters_below_threshold(sample_entities, sample_jd):
 def test_score_and_rank_no_entity_clears_threshold_raises(sample_entities, sample_jd):
     mock_llm_output = {
         "scored_entities": [
-            {"reId": 1, "score": 0.12, "reasoning": "Below threshold"},
-            {"reId": 2, "score": 0.08, "reasoning": "Below threshold"},
-            {"reId": 3, "score": 0.05, "reasoning": "Below threshold"},
+            {"reId": 1, "score": 0.12},
+            {"reId": 2, "score": 0.08},
+            {"reId": 3, "score": 0.05},
         ]
     }
 
@@ -178,9 +178,9 @@ def test_score_and_rank_category_caps(sample_jd):
 def test_score_and_rank_retry_on_bad_json(sample_entities, sample_jd):
     valid_output = {
         "scored_entities": [
-            {"reId": 1, "score": 0.60, "reasoning": "Valid"},
-            {"reId": 2, "score": 0.85, "reasoning": "Valid"},
-            {"reId": 3, "score": 0.70, "reasoning": "Valid"},
+            {"reId": 1, "score": 0.60},
+            {"reId": 2, "score": 0.85},
+            {"reId": 3, "score": 0.70},
         ]
     }
 
@@ -217,7 +217,7 @@ def test_score_and_rank_string_reid_matching(sample_jd):
     ]
     mock_llm_output = {
         "scored_entities": [
-            {"reId": "2", "score": 0.92, "reasoning": "Strong match for backend role"}
+            {"reId": "2", "score": 0.92}
         ]
     }
     mock_response = MagicMock()
@@ -252,8 +252,8 @@ def test_score_and_rank_whitespace_and_float_string_reid(sample_jd):
     ]
     mock_llm_output = {
         "scored_entities": [
-            {"reId": " 10 ", "score": 0.88, "reasoning": "Match with leading/trailing spaces"},
-            {"reId": "20.0", "score": 0.75, "reasoning": "Match with float-like string ID"},
+            {"reId": " 10 ", "score": 0.88},
+            {"reId": "20.0", "score": 0.75},
         ]
     }
     mock_response = MagicMock()
@@ -290,8 +290,8 @@ def test_score_and_rank_alternative_field_names(sample_jd):
     ]
     mock_llm_output = {
         "scored_entities": [
-            {"re_id": 1, "score": 0.80, "reasoning": "Using snake_case re_id"},
-            {"id": "2", "score": 0.85, "reasoning": "Using short id with string value"},
+            {"re_id": 1, "score": 0.80},
+            {"id": "2", "score": 0.85},
         ]
     }
     mock_response = MagicMock()
@@ -327,7 +327,7 @@ def test_score_and_rank_batching_large_profile(sample_jd):
     # Let's say batch_size=10. 25 entities should result in 3 batches: [10, 10, 5]
     def make_response(batch_chunk):
         items = [
-            {"reId": e["reId"], "score": 0.50 + (e["reId"] * 0.01), "reasoning": "Match"}
+            {"reId": e["reId"], "score": 0.50 + (e["reId"] * 0.01)}
             for e in batch_chunk
         ]
         resp = MagicMock()

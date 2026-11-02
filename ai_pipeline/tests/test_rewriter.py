@@ -41,7 +41,6 @@ def sample_scored_entities():
             "fromDate": "2024-06-01",
             "toDate": "2024-08-01",
             "score": 0.95,
-            "reasoning": "Direct match for Python/FastAPI",
         }
     ]
 
