@@ -28,4 +28,84 @@
 
   --font-heading: "Epilogue", sans-serif;
   --font-body: "Manrope", sans-serif;
+
+  /* ==========================================================================
+     PORTFOLIO
+     Curated color tokens for the Portfolio pages (Light & Dark theme variables)
+     ========================================================================== */
+
+  /* ── Colors already defined above (reused for Portfolio to avoid duplication) ──
+     --portfolio-bg: #f7f5f0; (already defined as --background above)
+     --portfolio-surface: #fffdf8; (already defined as --surface above)
+     --portfolio-surface-dim: #e6e1d8; (already defined as --surface-dim above)
+     --portfolio-text: #191919; (already defined as --text above)
+     --portfolio-text-muted: #6b6b67; (already defined as --text-muted above)
+     --portfolio-accent-teal: #2ec4a6; (already defined as --teal above)
+     --portfolio-accent-coral: #ff6b5a; (already defined as --coral above)
+     --portfolio-accent-mustard: #f4c95d; (already defined as --mustard above)
+     --portfolio-border-base: #dcd9d9; (already defined as --border above)
+     --portfolio-dark: #202322; (already defined as --dark above)
+  */
+
+  /* Portfolio Light Theme Variables (Default) */
+  --portfolio-bg: var(--background);
+  --portfolio-canvas: var(--background);
+  --portfolio-card-bg: #ffffff;
+  --portfolio-card-bg-subtle: #fcfbf7;
+  --portfolio-border: #e2dcce;
+  --portfolio-border-dashed: #ded7c9;
+  --portfolio-text: var(--text);
+  --portfolio-text-heading: #11141a;
+  --portfolio-text-body: #334155;
+  --portfolio-text-subtle: #64748b;
+  --portfolio-text-muted: var(--text-muted);
+  --portfolio-accent-primary: var(--teal);
+  --portfolio-accent-teal: var(--teal);
+  --portfolio-accent-coral: var(--coral);
+  --portfolio-accent-mustard: var(--mustard);
+  --portfolio-accent-sky: #0284c7;
+  --portfolio-accent-gold: #854d0e;
+  --portfolio-accent-gold-border: #d4af37;
+  --portfolio-pill-bg: #f1ede4;
+  --portfolio-pill-text: #475569;
+  --portfolio-pill-border: #ded7c9;
+  --portfolio-drawing-color: #11141a;
+  --portfolio-drawing-opacity: 0.85;
+  --portfolio-footer-bg: #f0eee6;
+  --portfolio-footer-border: #e2dcce;
+  --portfolio-footer-text: var(--text-muted);
+  --portfolio-card-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.02);
+  --portfolio-card-shadow-hover: 0 18px 42px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* ── Portfolio Dark Theme Variables ── */
+[data-theme="dark"] {
+  --portfolio-bg: #0d1117;
+  --portfolio-canvas: #0d1117;
+  --portfolio-card-bg: #161b22;
+  --portfolio-card-bg-subtle: #1c212d;
+  --portfolio-border: #30363d;
+  --portfolio-border-dashed: #30363d;
+  --portfolio-text: #f8fafc;
+  --portfolio-text-heading: #f8fafc;
+  --portfolio-text-body: #cbd5e1;
+  --portfolio-text-subtle: #8b949e;
+  --portfolio-text-muted: #8b949e;
+  --portfolio-accent-primary: #38bdf8;
+  --portfolio-accent-teal: #38d9a9;
+  --portfolio-accent-coral: #ff7b72;
+  --portfolio-accent-mustard: #e3b341;
+  --portfolio-accent-sky: #38bdf8;
+  --portfolio-accent-gold: #fbbf24;
+  --portfolio-accent-gold-border: #f59e0b;
+  --portfolio-pill-bg: #21262d;
+  --portfolio-pill-text: #8b949e;
+  --portfolio-pill-border: #30363d;
+  --portfolio-drawing-color: #f8fafc;
+  --portfolio-drawing-opacity: 0.65;
+  --portfolio-footer-bg: #161b22;
+  --portfolio-footer-border: #30363d;
+  --portfolio-footer-text: #8b949e;
+  --portfolio-card-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+  --portfolio-card-shadow-hover: 0 20px 50px rgba(0, 0, 0, 0.6);
 }

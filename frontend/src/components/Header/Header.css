@@ -61,6 +61,21 @@
   opacity: 0.9;
 }
 
+.header-view-live {
+  padding: 6px 14px;
+  background: var(--teal, #2ec4a6);
+  color: #0b1f1a !important;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: all 140ms ease;
+}
+
+.header-view-live:hover {
+  background: #27ad92;
+  opacity: 1 !important;
+}
+
 .hamburger-button {
   display: none;
   flex-direction: column;

@@ -1,0 +1,426 @@
+.homeLayout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--background, #f7f5f0);
+  color: var(--text, #191919);
+}
+
+.mainContainer {
+  flex: 1;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+/* Toast Banner */
+.toastBanner {
+  position: sticky;
+  top: 70px;
+  z-index: 100;
+  max-width: 600px;
+  margin: 0.5rem auto 0 auto;
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 0.65rem 1.25rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Spotlight Section */
+.spotlightSection {
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #e2dcce);
+  border-radius: 18px;
+  padding: 2rem 2.25rem;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.spotlightSection::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--teal, #2ec4a6), #38bdf8, var(--mustard, #f4c95d));
+}
+
+.spotlightContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.spotlightHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.spotlightBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(46, 196, 166, 0.12);
+  color: #0d8a73;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(46, 196, 166, 0.3);
+}
+
+.spotlightDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0d8a73;
+  animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(13, 138, 115, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(13, 138, 115, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(13, 138, 115, 0);
+  }
+}
+
+.spotlightSlug {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.82rem;
+  color: var(--text-muted, #6b6b67);
+  background: var(--surface-dim, #f1ede4);
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid var(--border, #e2dcce);
+}
+
+.spotlightTitle {
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  font-weight: 800;
+  color: var(--text, #191919);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.02em;
+}
+
+.spotlightDesc {
+  font-size: 0.95rem;
+  color: var(--text-muted, #6b6b67);
+  margin: 0 0 1.5rem 0;
+  max-width: 720px;
+  line-height: 1.55;
+}
+
+.spotlightControls {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.viewLiveBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--teal, #2ec4a6);
+  color: #0b1f1a;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.viewLiveBtn:hover {
+  background: #27ad92;
+  transform: translateY(-1px);
+}
+
+.copyLiveBtn {
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #dcd9d9);
+  color: var(--text, #191919);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.65rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.copyLiveBtn:hover {
+  border-color: var(--teal, #2ec4a6);
+  color: var(--teal, #2ec4a6);
+}
+
+.copyLiveSuccess {
+  background: rgba(46, 196, 166, 0.15);
+  border-color: var(--teal, #2ec4a6);
+  color: #0d8a73;
+}
+
+.editContentBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--text-muted, #6b6b67);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.65rem 1.1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.editContentBtn:hover {
+  color: var(--text, #191919);
+  background: var(--surface-dim, #f1ede4);
+}
+
+/* Hub Section */
+.hubSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.hubToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.toolbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.hubTitle {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text, #191919);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.portfolioCount {
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: var(--surface-dim, #f1ede4);
+  color: var(--text-muted, #6b6b67);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border, #e2dcce);
+}
+
+.filterPills {
+  display: flex;
+  gap: 0.35rem;
+  background: var(--surface, #ffffff);
+  padding: 0.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--border, #e2dcce);
+}
+
+.filterPill {
+  background: transparent;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted, #6b6b67);
+  padding: 0.35rem 0.7rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filterPill:hover {
+  color: var(--text, #191919);
+}
+
+.filterPillActive {
+  background: var(--background, #f7f5f0);
+  color: var(--text, #191919);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.toolbarRight {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.searchBox {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchInput {
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 0.55rem 2rem 0.55rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--border, #dcd9d9);
+  background: var(--surface, #ffffff);
+  color: var(--text, #191919);
+  width: 200px;
+  transition: width 0.2s ease, border-color 0.15s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  width: 250px;
+  border-color: var(--teal, #2ec4a6);
+}
+
+.clearSearch {
+  position: absolute;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #6b6b67);
+  cursor: pointer;
+  padding: 0.2rem;
+  font-size: 0.8rem;
+}
+
+.createBtn {
+  background: var(--text, #191919);
+  color: #ffffff;
+  border: none;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 0.55rem 1.15rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.createBtn:hover {
+  background: #334155;
+  transform: translateY(-1px);
+}
+
+/* Portfolio Grid */
+.portfolioGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+.emptyState {
+  background: var(--surface, #ffffff);
+  border: 1px dashed var(--border, #dcd9d9);
+  border-radius: 14px;
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.emptyText {
+  font-size: 0.95rem;
+  color: var(--text-muted, #6b6b67);
+  margin: 0;
+}
+
+.resetFilterBtn {
+  background: transparent;
+  border: 1px solid var(--border, #dcd9d9);
+  color: var(--text, #191919);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Mobile & Tablet Styles */
+@media (max-width: 768px) {
+  .mainContainer {
+    padding: 1.5rem 1rem 3rem 1rem;
+    gap: 1.75rem;
+  }
+  .spotlightSection {
+    padding: 1.5rem;
+  }
+  .spotlightControls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .viewLiveBtn,
+  .copyLiveBtn,
+  .editContentBtn {
+    min-height: 48px;
+    width: 100%;
+  }
+  .hubToolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  .toolbarLeft,
+  .toolbarRight {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .searchBox {
+    flex: 1;
+  }
+  .searchInput {
+    width: 100%;
+  }
+  .searchInput:focus {
+    width: 100%;
+  }
+  .createBtn {
+    min-height: 44px;
+  }
+  .portfolioGrid {
+    grid-template-columns: 1fr;
+  }
+}

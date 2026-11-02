@@ -31,9 +31,10 @@ function Header() {
         </Link>
 
         <nav className="header-actions">
-          <Link to="/signin">Sign In</Link>
-          <Link to="/signup" className="header-create">
-            Create Profile
+          <Link to="/">My Portfolios</Link>
+          <Link to="/profile">Edit Profile</Link>
+          <Link to="/portfolio" className="header-view-live">
+            Live View ↗
           </Link>
         </nav>
 
@@ -57,10 +58,13 @@ function Header() {
             onClick={(event) => event.stopPropagation()}
           >
             <Link to="/" className="mobile-link" onClick={closeMenu}>
-              Home
+              My Portfolios
             </Link>
             <Link to="/profile" className="mobile-link" onClick={closeMenu}>
-              Profile
+              Edit Profile
+            </Link>
+            <Link to="/portfolio" className="mobile-link" onClick={closeMenu}>
+              Live View ↗
             </Link>
             <Link to="/signin" className="mobile-link" onClick={closeMenu}>
               Sign In
@@ -70,7 +74,7 @@ function Header() {
               className="mobile-link mobile-create"
               onClick={closeMenu}
             >
-              Create Profile
+              Create Account
             </Link>
           </nav>
         </div>

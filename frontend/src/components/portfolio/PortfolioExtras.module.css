@@ -1,0 +1,464 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   PORTFOLIO EXTRACURRICULAR — Left/Right Navigable Showcase
+   (Auto-advance, arrow navigation, responsive split layout, theme support)
+───────────────────────────────────────────────────────────────────────────── */
+
+.section {
+  padding: 100px 72px 130px;
+  background: var(--portfolio-bg);
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.3s ease;
+}
+
+.inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+/* ── Pure Vector Background Artwork (Zero Text) ── */
+.backgroundArtwork {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: var(--portfolio-drawing-opacity);
+  z-index: 1;
+  color: var(--portfolio-drawing-color);
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+:global([data-theme="dark"]) .backgroundArtwork {
+  color: var(--portfolio-drawing-color);
+  opacity: var(--portfolio-drawing-opacity);
+}
+
+/* ── Section Header & Controls ── */
+.headerRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  border-bottom: 2px dashed var(--portfolio-border-dashed);
+  padding-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.headlineGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.boardTag {
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--portfolio-accent-gold);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.headline {
+  font-family: var(--font-heading, sans-serif);
+  font-size: clamp(2.4rem, 4.2vw, 3.4rem);
+  font-weight: 800;
+  color: #11141a;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.counter {
+  font-family: monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.currentNum {
+  color: #11141a;
+  font-weight: 800;
+}
+
+.counterDivider {
+  opacity: 0.4;
+}
+
+.arrowGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.arrowBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid #ded7c9;
+  color: #11141a;
+  font-size: 1.2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.arrowBtn:hover {
+  background: #11141a;
+  color: #ffffff;
+  border-color: #11141a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* ── Carousel Slide Card ── */
+.carouselContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.slideCard {
+  background: #ffffff;
+  border: 2px solid #e2dcce;
+  border-radius: 24px;
+  padding: 44px 48px;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 48px;
+  align-items: center;
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.04),
+    0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+  animation: slideFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes slideFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slideCard:hover {
+  border-color: #11141a;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+}
+
+/* Left Column */
+.leftCol {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.badgeRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.activeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #ecfccb;
+  border: 1px solid #84cc16;
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #3f6212;
+}
+
+.activeBeacon {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #65a30d;
+  box-shadow: 0 0 6px #84cc16;
+}
+
+.periodBadge {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #f1ede4;
+  border: 1px solid #ded7c9;
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.roleTitle {
+  font-family: var(--font-heading, sans-serif);
+  font-size: clamp(1.8rem, 2.8vw, 2.3rem);
+  font-weight: 800;
+  color: #11141a;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.orgName {
+  font-family: var(--font-body, sans-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+/* Right Column */
+.rightCol {
+  background: #f9f8f5;
+  border-radius: 16px;
+  border: 1px solid #e8e2d5;
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.summaryText {
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.96rem;
+  color: #334155;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.tagsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding-top: 6px;
+}
+
+.tagPill {
+  padding: 4px 11px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #ded7c9;
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+/* ── Media Support in Extracurricular Slide ── */
+.slideCardWithMedia {
+  grid-template-columns: 1fr 1.05fr;
+  align-items: stretch;
+}
+
+.summaryWithMedia {
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.94rem;
+  color: #334155;
+  line-height: 1.65;
+  margin: 0;
+}
+
+:global([data-theme="dark"]) .summaryWithMedia {
+  color: #cbd5e1;
+}
+
+.mediaCol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+/* ── Pagination Track ── */
+.paginationTrack {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.dotPill {
+  width: 24px;
+  height: 6px;
+  border-radius: 999px;
+  background: #ded7c9;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  padding: 0;
+}
+
+.dotPill:hover {
+  background: #94a3b8;
+}
+
+.dotPillActive {
+  width: 48px;
+  background: #11141a;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DARK THEME OVERRIDES
+───────────────────────────────────────────────────────────────────────────── */
+:global([data-theme="dark"]) .section {
+  background: var(--portfolio-bg);
+}
+
+:global([data-theme="dark"]) .headerRow {
+  border-bottom-color: var(--portfolio-border-dashed);
+}
+
+:global([data-theme="dark"]) .boardTag {
+  color: var(--portfolio-accent-gold);
+}
+
+:global([data-theme="dark"]) .headline {
+  color: var(--portfolio-text-heading);
+}
+
+:global([data-theme="dark"]) .currentNum {
+  color: var(--portfolio-text-heading);
+}
+
+:global([data-theme="dark"]) .arrowBtn {
+  background: var(--portfolio-card-bg);
+  border-color: var(--portfolio-border);
+  color: var(--portfolio-text);
+}
+
+:global([data-theme="dark"]) .arrowBtn:hover {
+  background: var(--portfolio-accent-primary);
+  color: #0f172a;
+  border-color: var(--portfolio-accent-primary);
+}
+
+:global([data-theme="dark"]) .slideCard {
+  background: var(--portfolio-card-bg);
+  border-color: var(--portfolio-border);
+  box-shadow: var(--portfolio-card-shadow);
+}
+
+:global([data-theme="dark"]) .slideCard:hover {
+  border-color: var(--portfolio-accent-primary);
+  box-shadow: var(--portfolio-card-shadow-hover);
+}
+
+:global([data-theme="dark"]) .roleTitle {
+  color: var(--portfolio-text-heading);
+}
+
+:global([data-theme="dark"]) .orgName {
+  color: var(--portfolio-accent-sky);
+}
+
+:global([data-theme="dark"]) .periodBadge {
+  background: var(--portfolio-pill-bg);
+  border-color: var(--portfolio-border);
+  color: var(--portfolio-pill-text);
+}
+
+:global([data-theme="dark"]) .rightCol {
+  background: var(--portfolio-card-bg-subtle);
+  border-color: var(--portfolio-border);
+}
+
+:global([data-theme="dark"]) .summaryText {
+  color: var(--portfolio-text-body);
+}
+
+:global([data-theme="dark"]) .tagPill {
+  background: var(--portfolio-pill-bg);
+  border-color: var(--portfolio-border);
+  color: var(--portfolio-pill-text);
+}
+
+:global([data-theme="dark"]) .dotPill {
+  background: var(--portfolio-border);
+}
+
+:global([data-theme="dark"]) .dotPillActive {
+  background: var(--portfolio-accent-primary);
+}
+
+/* ── Responsive ── */
+@media (max-width: 960px) {
+  .section {
+    padding: 80px 28px 100px;
+  }
+  .slideCard {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 28px 24px;
+  }
+}
+
+@media (max-width: 600px) {
+  .section {
+    padding: 50px 16px 70px;
+  }
+  .headerRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .headline {
+    font-size: clamp(1.8rem, 6.5vw, 2.5rem);
+  }
+  .slideCard {
+    padding: 22px 16px;
+    border-radius: 18px;
+  }
+  .roleTitle {
+    font-size: clamp(1.3rem, 5.5vw, 1.7rem);
+  }
+  .rightCol {
+    padding: 18px 14px;
+    border-radius: 14px;
+  }
+  .arrowBtn {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .section {
+    padding: 40px 12px 60px;
+  }
+  .slideCard {
+    padding: 18px 12px;
+  }
+}
