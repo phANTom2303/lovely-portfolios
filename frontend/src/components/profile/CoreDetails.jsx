@@ -1,15 +1,33 @@
 import styles from "./CoreDetails.module.css";
 import { useState } from "react";
 import CoreDetailsDialog from "./CoreDetailsDialog";
+import { updateUser } from "../../api/userApi";
 
 function CoreDetails({ profile, setProfile }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  function handleSave(formData) {
-    setProfile((previous) => ({
-      ...previous,
-      ...formData,
-    }));
+  async function handleSave(formData) {
+    try {
+      const updatedUser = await updateUser({
+        name: formData.name,
+        gender: formData.gender || undefined,
+        phone_no: formData.phone || undefined,
+        professional_title: formData.professionalTitle || undefined,
+        current_location: formData.location || undefined,
+      });
+
+      setProfile((previous) => ({
+        ...previous,
+        ...updatedUser,
+        phone: updatedUser.phone_no || "",
+        professionalTitle: updatedUser.professional_title || "",
+        location: updatedUser.current_location || "",
+      }));
+    } catch (error) {
+      console.error("Failed to save core details:", error);
+      alert("Failed to save core details");
+      return;
+    }
     setIsDialogOpen(false);
   }
 
