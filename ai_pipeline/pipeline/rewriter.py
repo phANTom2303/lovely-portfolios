@@ -17,6 +17,7 @@ INITIAL_BACKOFF_SECONDS = 1.0
 class ValidatedEntity(BaseModel):
     reId: int
     title: str
+    subtitle: str = ""
     rewrittenDescription: str = Field(..., min_length=15)
     skills: List[str] = []
     links: List[Any] = []
@@ -79,8 +80,6 @@ def rewrite_and_build_portfolio(
                 "skills": entity.get("normalizedSkills") or entity.get("originalSkills") or [],
                 "fromDate": entity.get("fromDate"),
                 "toDate": entity.get("toDate"),
-                "links": entity.get("links", []),
-                "assets": entity.get("assets", []),
             }
         )
 
@@ -166,6 +165,16 @@ def rewrite_and_build_portfolio(
 
     # Convert Pydantic sections to dict format
     sections_list = [section.model_dump() for section in validated_data.sections]
+
+    # subtitle, links and assets come from the database rows, never from the model, so the
+    # model cannot change or invent a URL. They are matched to the output by reId.
+    source_by_id = {e.get("reId"): e for e in scored_entities}
+    for section in sections_list:
+        for entity in section["entities"]:
+            source = source_by_id.get(entity["reId"], {})
+            entity["subtitle"] = source.get("subtitle") or ""
+            entity["links"] = source.get("links") or []
+            entity["assets"] = source.get("assets") or []
 
     portfolio = {
         "jobRole": jd_extraction.get("jobRole", "Software Engineer"),

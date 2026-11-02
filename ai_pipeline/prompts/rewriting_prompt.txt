@@ -33,8 +33,6 @@ Output Format:
           "title": "<Exact entity title from input>",
           "rewrittenDescription": "<2-4 sentences factually faithful to originalDescription with elevated technical clarity and zero fabricated actions>",
           "skills": ["<skill1>", "<skill2>"],
-          "links": [],
-          "assets": [],
           "fromDate": "YYYY-MM-DD",
           "toDate": "YYYY-MM-DD"
         }

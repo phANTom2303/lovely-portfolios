@@ -152,3 +152,95 @@ def test_rewriter_prompt_contains_guardrails_and_no_leakage():
     assert "NO INVENTED ACTIONS OR OUTCOMES" in prompt_content
     assert "NEVER attribute JD responsibilities to candidate projects" in prompt_content
 
+
+
+# --- subtitle, links and assets are copied from the database rows, never from the model ---
+
+SOURCE_LINKS = [{"id": 7, "title": "Live Demo", "link": "https://demo.example.com", "description": "Live site"}]
+SOURCE_ASSETS = [
+    {"asset_id": 3, "title": "Home page", "link": "https://img.example.com/a.png",
+     "description": "", "asset_type": "image"}
+]
+
+
+def _llm_response(entity_overrides=None):
+    entity = {
+        "reId": 2,
+        "title": "REST API for College ERP",
+        "rewrittenDescription": "Built a REST API for a college management system using FastAPI and PostgreSQL.",
+        "skills": ["python", "fastapi", "postgresql"],
+        "fromDate": "2024-06-01",
+        "toDate": "2024-08-01",
+    }
+    entity.update(entity_overrides or {})
+    payload = {"sections": [{"reType": "project", "sectionTitle": "Projects", "entities": [entity]}]}
+    return MagicMock(choices=[MagicMock(message=MagicMock(content=json.dumps(payload)))])
+
+
+def test_subtitle_links_and_assets_are_attached_from_the_source_entity(
+    sample_scored_entities, sample_jd, sample_user_profile
+):
+    sample_scored_entities[0].update(subtitle="Academic Project", links=SOURCE_LINKS, assets=SOURCE_ASSETS)
+
+    with patch("pipeline.rewriter.Groq") as mock_groq:
+        mock_groq.return_value.chat.completions.create.return_value = _llm_response()
+        portfolio = rewrite_and_build_portfolio(sample_scored_entities, sample_jd, sample_user_profile)
+
+    entity = portfolio["sections"][0]["entities"][0]
+    assert entity["subtitle"] == "Academic Project"
+    assert entity["links"] == SOURCE_LINKS
+    assert entity["assets"] == SOURCE_ASSETS
+
+
+def test_model_cannot_change_or_invent_links_assets_or_subtitle(
+    sample_scored_entities, sample_jd, sample_user_profile
+):
+    sample_scored_entities[0].update(subtitle="Academic Project", links=SOURCE_LINKS, assets=SOURCE_ASSETS)
+    tampered = {
+        "subtitle": "Google",
+        "links": [{"title": "Fake", "link": "https://evil.example.com"}],
+        "assets": [{"title": "Fake", "link": "https://evil.example.com/x.png"}],
+    }
+
+    with patch("pipeline.rewriter.Groq") as mock_groq:
+        mock_groq.return_value.chat.completions.create.return_value = _llm_response(tampered)
+        portfolio = rewrite_and_build_portfolio(sample_scored_entities, sample_jd, sample_user_profile)
+
+    entity = portfolio["sections"][0]["entities"][0]
+    assert entity["subtitle"] == "Academic Project"
+    assert entity["links"] == SOURCE_LINKS
+    assert entity["assets"] == SOURCE_ASSETS
+
+
+def test_entity_without_subtitle_links_or_assets_gets_empty_defaults(
+    sample_scored_entities, sample_jd, sample_user_profile
+):
+    with patch("pipeline.rewriter.Groq") as mock_groq:
+        mock_groq.return_value.chat.completions.create.return_value = _llm_response()
+        portfolio = rewrite_and_build_portfolio(sample_scored_entities, sample_jd, sample_user_profile)
+
+    entity = portfolio["sections"][0]["entities"][0]
+    assert entity["subtitle"] == ""
+    assert entity["links"] == []
+    assert entity["assets"] == []
+
+
+def test_links_and_assets_are_not_sent_to_the_model(sample_scored_entities, sample_jd, sample_user_profile):
+    sample_scored_entities[0].update(subtitle="Academic Project", links=SOURCE_LINKS, assets=SOURCE_ASSETS)
+
+    with patch("pipeline.rewriter.Groq") as mock_groq:
+        create = mock_groq.return_value.chat.completions.create
+        create.return_value = _llm_response()
+        rewrite_and_build_portfolio(sample_scored_entities, sample_jd, sample_user_profile)
+
+    sent = json.dumps(create.call_args.kwargs["messages"])
+    assert "demo.example.com" not in sent
+    assert "img.example.com" not in sent
+
+
+def test_prompt_does_not_ask_the_model_to_output_links_or_assets():
+    from pipeline.rewriter import PROMPT_PATH
+    with open(PROMPT_PATH, "r", encoding="utf-8") as f:
+        prompt_content = f.read()
+    assert '"links"' not in prompt_content
+    assert '"assets"' not in prompt_content
