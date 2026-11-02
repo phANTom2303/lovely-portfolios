@@ -1,5 +1,10 @@
 import api from './api';
 
+export async function getAllAssets() {
+  const response = await api.get('/api/assets');
+  return response.data.data;
+}
+
 export async function createYoutubeAsset(payload) {
   // payload: { title, asset_type: 'youtube', link, re_id?, description? }
   const response = await api.post('/api/assets', payload);

@@ -1,5 +1,10 @@
 import api from './api';
 
+export async function getProfileLinks() {
+  const response = await api.get('/api/links/params');
+  return response.data.data;
+}
+
 export async function createLink(payload) {
   const response = await api.post('/api/links', payload);
   return response.data.data;

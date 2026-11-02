@@ -1,25 +1,56 @@
 import styles from "./ProfileImage.module.css";
 import { useState } from "react";
 import ProfileImageDialog from "./ProfileImageDialog";
+import { deleteAsset, uploadImageAsset } from "../../api/assetsApi";
+import { updateUser } from "../../api/userApi";
 
 function ProfileImage({ profile, setProfile }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  function handleSave({ file, previewUrl }) {
-    setProfile((previous) => ({
-      ...previous,
-      profileImage: previewUrl,
-      profileImageFile: file,
-    }));
+  async function handleSave({ file }) {
+    if (!file) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("title", "Profile image");
+      formData.append("asset_type", "image");
+      formData.append("assets", file);
+
+      const asset = await uploadImageAsset(formData);
+      const updatedUser = await updateUser({ profile_photo_link: asset.link });
+
+      if (profile.profileImageAssetId) {
+        await deleteAsset(profile.profileImageAssetId);
+      }
+
+      setProfile((previous) => ({
+        ...previous,
+        profileImage: updatedUser.profile_photo_link || asset.link,
+        profileImageAssetId: asset.asset_id,
+      }));
+    } catch (error) {
+      console.error("Failed to save profile image:", error);
+      alert("Failed to save profile image");
+      return;
+    }
     setIsDialogOpen(false);
   }
 
-  function handleRemove() {
-    setProfile((previous) => ({
-      ...previous,
-      profileImage: null,
-      profileImageFile: null,
-    }));
+  async function handleRemove() {
+    try {
+      if (profile.profileImageAssetId) {
+        await deleteAsset(profile.profileImageAssetId);
+      }
+      await updateUser({ profile_photo_link: null });
+      setProfile((previous) => ({
+        ...previous,
+        profileImage: null,
+        profileImageAssetId: null,
+      }));
+    } catch (error) {
+      console.error("Failed to remove profile image:", error);
+      alert("Failed to remove profile image");
+    }
   }
 
   return (
