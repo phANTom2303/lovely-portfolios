@@ -15,10 +15,11 @@ function Skills() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
-    setIsLoading(true);
     fetchProfileSkills()
       .then((data) => {
         setSkills(data);
+      })
+      .then(() => {
         setError(null);
       })
       .catch(() => {
@@ -47,24 +48,22 @@ function Skills() {
       }
 
       // Create newly typed skills (no re_id → profile-level)
-      const createdSkills = [];
       for (const skill of toAdd) {
-        const created = await createSkill({
+        await createSkill({
           skill_name: skill.skill_name || skill.name,
         });
-        createdSkills.push(created);
       }
 
-      // Kept skills = existing DB skills not removed
-      const keptSkills = originalSkills.filter(
-        (orig) =>
-          typeof orig.skill_id === "number" &&
-          !toRemove.some((r) => r.skill_id === orig.skill_id),
-      );
-
-      setSkills([...keptSkills, ...createdSkills]);
+      const refreshedSkills = await fetchProfileSkills();
+      setSkills(refreshedSkills);
       setError(null);
     } catch {
+      try {
+        const refreshedSkills = await fetchProfileSkills();
+        setSkills(refreshedSkills);
+      } catch {
+        // Keep the original error when the recovery request also fails.
+      }
       setError("Failed to save skills. Please try again.");
     }
 
