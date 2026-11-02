@@ -5,6 +5,7 @@ import ResumeEntityDialog from "../resumeEntity/ResumeEntityDialog";
 import {
   fetchResumeEntities,
   createResumeEntity,
+  uploadResumeEntityImages,
   updateResumeEntity,
   deleteResumeEntity,
 } from "../../api/resumeEntityApi";
@@ -114,16 +115,17 @@ function Experience() {
             title: l.title,
             description: l.description || "",
           })),
-          assets: formData.images.map((img) => ({
-            title: img.title || "",
-            asset_type: "image",
-            link: img.url || img.link,
-            description: img.description || "",
-          })),
           skills: formData.skills.map((s) => s.skill_name || s.name || s),
         };
         const created = await createResumeEntity(payload);
-        setExperiences((prev) => [...prev, created]);
+        const uploadedImages = await uploadResumeEntityImages(
+          formData.images,
+          created.re_id,
+        );
+        setExperiences((prev) => [
+          ...prev,
+          { ...created, assets: uploadedImages },
+        ]);
       }
       handleCloseDialog();
     } catch (err) {
