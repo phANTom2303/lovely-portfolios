@@ -16,6 +16,7 @@ import reRouter from '#routes/re.routes.js';
 import userRouter from '#routes/user.routes.js';
 import { query } from '#config/db.js';
 import { initDatabase } from '#config/initDB.js';
+import { responseLogger } from '#middlewares/responseLogger.js';
 
 const app = express();
 // Global Middlewares
@@ -33,8 +34,9 @@ app.use(express.urlencoded({ extended: false }));
 await initRedis();
 if ((await query(`SELECT $1`, [1])).rowCount > 0) logger.info('DB Connected');
 else logger.info('DB Not connected');
-await initDatabase();
+// await initDatabase();
 
+app.use(responseLogger);
 
 app.get('/', async (req, res) => {
     return res.json("Server Running :)")

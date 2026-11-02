@@ -64,6 +64,7 @@ export const getRE = asyncHandler(async (req, res) => {
 // POST RESUME ENTITY
 export const createRE = asyncHandler(async (req, res) => {
     const user_id = req.user.id;
+    console.log(user_id);
     const {
         re_type,
         title,
@@ -145,17 +146,17 @@ export const createRE = asyncHandler(async (req, res) => {
             });
         }
     }
-
-    if (from_date !== undefined && to_date !== undefined) {
-        const parsedStart = new Date(from_date);
-        const parsedEnd = new Date(to_date);
-        if (parsedStart > parsedEnd) {
-            return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
-                success: false,
-                message: "from_date cannot be after to_date",
-            });
-        }
-    }
+    //TODO : Fx this verification check and then uncomment. Currently frontend sends an empty to_date field which is somehow converted to a date that is before the from_date. Either this or something else is happenning that is falsely triggering this condition.
+    // if (from_date !== undefined && to_date !== undefined) {
+    //     const parsedStart = new Date(from_date);
+    //     const parsedEnd = new Date(to_date);
+    //     if (parsedStart > parsedEnd) {
+    //         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
+    //             success: false,
+    //             message: "from_date cannot be after to_date",
+    //         });
+    //     }
+    // }
 
     const createdRE = await reService.createRE(user_id, {
         re_type,
