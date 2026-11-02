@@ -22,6 +22,7 @@ MOCK_USER_ENTITIES = [
         "reId": 1,
         "reType": "project",
         "title": "Share Market Tracker",
+        "subtitle": "Personal Project",
         "description": "Built a real time stock price tracker with live data feeds using WebSockets and Node.js.",
         "originalSkills": ["JS", "Node", "Postgres"],
         "fromDate": "2024-01-01",
@@ -31,6 +32,7 @@ MOCK_USER_ENTITIES = [
         "reId": 2,
         "reType": "project",
         "title": "REST API for College ERP",
+        "subtitle": "Academic Project",
         "description": "Designed and built a modular REST API for college management system with automated student grade calculation.",
         "originalSkills": ["Python", "FastAPI", "PostgreSQL"],
         "fromDate": "2024-06-01",
@@ -40,6 +42,7 @@ MOCK_USER_ENTITIES = [
         "reId": 3,
         "reType": "work_exp",
         "title": "Backend Intern at Startup",
+        "subtitle": "Startup",
         "description": "Worked on Node.js microservices and REST APIs with Redis caching layer.",
         "originalSkills": ["Node.js", "REST APIs", "Redis"],
         "fromDate": "2023-06-01",
@@ -120,7 +123,7 @@ async def fetch_user_re_data(user_id: str) -> Tuple[Dict[str, Any], List[Dict[st
         # 2. Fetch active resume entities
         entity_rows = await conn.fetch(
             """
-            SELECT re_id, re_type, title, description, skills_id, from_date, to_date
+            SELECT re_id, re_type, title, subtitle, description, from_date, to_date
             FROM resume_entity
             WHERE user_id = $1
               AND status = 'active'
@@ -132,39 +135,34 @@ async def fetch_user_re_data(user_id: str) -> Tuple[Dict[str, Any], List[Dict[st
         if not entity_rows:
             raise NoResumeEntities(f"User {user_id} has no active resume entities")
 
-        # 3. Resolve skill names from skills table
-        all_skill_ids = set()
-        for r in entity_rows:
-            if r["skills_id"]:
-                all_skill_ids.update(r["skills_id"])
+        # 3. Fetch the skills of these entities. Each skills row belongs to one entity (re_id);
+        #    rows with re_id NULL are profile-level skills and are not matched by ANY().
+        skill_rows = await conn.fetch(
+            """
+            SELECT re_id, skill_name
+            FROM skills
+            WHERE user_id = $1
+              AND re_id = ANY($2::int[])
+            ORDER BY skill_id
+            """,
+            uid,
+            [r["re_id"] for r in entity_rows],
+        )
 
-        skill_map = {}
-        if all_skill_ids:
-            skill_records = await conn.fetch(
-                """
-                SELECT skill_id, skill_name
-                FROM skills
-                WHERE skill_id = ANY($1::int[])
-                """,
-                list(all_skill_ids),
-            )
-            skill_map = {sr["skill_id"]: sr["skill_name"] for sr in skill_records}
+        skills_by_entity: Dict[int, List[str]] = {}
+        for sr in skill_rows:
+            skills_by_entity.setdefault(sr["re_id"], []).append(sr["skill_name"])
 
         entities = []
         for r in entity_rows:
-            skills_for_entity = []
-            if r["skills_id"]:
-                skills_for_entity = [
-                    skill_map[sid] for sid in r["skills_id"] if sid in skill_map
-                ]
-
             entities.append(
                 {
                     "reId": r["re_id"],
                     "reType": str(r["re_type"]),
                     "title": r["title"] or "",
+                    "subtitle": r["subtitle"] or "",
                     "description": r["description"] or "",
-                    "originalSkills": skills_for_entity,
+                    "originalSkills": skills_by_entity.get(r["re_id"], []),
                     "fromDate": str(r["from_date"]) if r["from_date"] else None,
                     "toDate": str(r["to_date"]) if r["to_date"] else None,
                 }
