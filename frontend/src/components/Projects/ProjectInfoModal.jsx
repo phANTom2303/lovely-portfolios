@@ -19,7 +19,9 @@ function formatTimeline(startDate, endDate, isCurrent) {
 
 function ProjectInfoModal({ project, onClose }) {
   const [activeImage, setActiveImage] = useState(
-    project.images && project.images.length > 0 ? project.images[0] : null,
+    (project.assets || project.images) && (project.assets || project.images).length > 0
+      ? (project.assets || project.images)[0]
+      : null,
   );
 
   return (
@@ -34,15 +36,15 @@ function ProjectInfoModal({ project, onClose }) {
         <div className={styles.header}>
           <div className={styles.headerTitleGroup}>
             <h2 id="infoModalTitle" className={styles.title}>
-              {project.role || project.title}
+              {project.title || project.role}
             </h2>
-            {project.company && (
-              <span className={styles.subtitle}>{project.company}</span>
+            {(project.subtitle || project.company) && (
+              <span className={styles.subtitle}>{project.subtitle || project.company}</span>
             )}
             <span className={styles.timelineBadge}>
               {formatTimeline(
-                project.startDate,
-                project.endDate,
+                project.from_date || project.startDate,
+                project.to_date || project.endDate,
                 project.isCurrent,
               )}
             </span>
@@ -58,11 +60,11 @@ function ProjectInfoModal({ project, onClose }) {
         </div>
 
         <div className={styles.body}>
-          {project.images && project.images.length > 0 && (
+          {(project.assets || project.images) && (project.assets || project.images).length > 0 && (
             <div className={styles.gallerySection}>
               <div className={styles.activePreviewWrap}>
                 <img
-                  src={activeImage?.url}
+                  src={activeImage?.link || activeImage?.url}
                   alt={activeImage?.title || "Project screenshot"}
                   className={styles.activePreviewImage}
                 />
@@ -80,17 +82,17 @@ function ProjectInfoModal({ project, onClose }) {
                 )}
               </div>
 
-              {project.images.length > 1 && (
+              {(project.assets || project.images).length > 1 && (
                 <div className={styles.thumbStrip}>
-                  {project.images.map((img) => (
+                  {(project.assets || project.images).map((img) => (
                     <button
-                      key={img.id}
+                      key={img.asset_id || img.id}
                       type="button"
-                      className={`${styles.thumbBtn} ${activeImage?.id === img.id ? styles.thumbActive : ""}`}
+                      className={`${styles.thumbBtn} ${activeImage?.asset_id === img.asset_id || activeImage?.id === img.id ? styles.thumbActive : ""}`}
                       onClick={() => setActiveImage(img)}
                     >
                       <img
-                        src={img.url}
+                        src={img.link || img.url}
                         alt={img.title}
                         className={styles.thumbImg}
                       />
@@ -129,7 +131,7 @@ function ProjectInfoModal({ project, onClose }) {
               <div className={styles.linksGrid}>
                 {project.links.map((link) => (
                   <a
-                    key={link.id || link.url}
+                    key={link.link_id || link.id || link.url}
                     href={link.url || link.link}
                     target="_blank"
                     rel="noreferrer"

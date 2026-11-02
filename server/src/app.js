@@ -14,8 +14,10 @@ import assetRouter from '#routes/assets.routes.js';
 import authRouter from '#routes/auth.routes.js';
 import reRouter from '#routes/re.routes.js';
 import userRouter from '#routes/user.routes.js';
+import portfolioRouter from '#routes/portfolio.routes.js';
 import { query } from '#config/db.js';
 import { initDatabase } from '#config/initDB.js';
+import { responseLogger } from '#middlewares/responseLogger.js';
 
 const app = express();
 // Global Middlewares
@@ -33,8 +35,9 @@ app.use(express.urlencoded({ extended: false }));
 await initRedis();
 if ((await query(`SELECT $1`, [1])).rowCount > 0) logger.info('DB Connected');
 else logger.info('DB Not connected');
-await initDatabase();
+// await initDatabase();
 
+app.use(responseLogger);
 
 app.get('/', async (req, res) => {
     return res.json("Server Running :)")
@@ -48,6 +51,7 @@ app.use('/api/skills', skillsRouter);
 app.use('/api/assets', assetRouter);
 app.use('/api/re', reRouter);
 app.use('/api/user', userRouter);
+app.use('/api/portfolio', portfolioRouter);
 
 // Global Error Handler
 app.use((err, req, res, next) => {

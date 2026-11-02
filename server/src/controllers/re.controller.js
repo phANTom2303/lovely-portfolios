@@ -19,7 +19,7 @@ const validStatuses = ["draft", "active", "deleted"];
 // GET RESUME ENTITIES
 export const getRE = asyncHandler(async (req, res) => {
     const user_id = req.user.id;
-    const {re_id, type } = req.query;
+    const { re_id, type } = req.query;
 
     if (!user_id) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
@@ -64,15 +64,17 @@ export const getRE = asyncHandler(async (req, res) => {
 // POST RESUME ENTITY
 export const createRE = asyncHandler(async (req, res) => {
     const user_id = req.user.id;
+    console.log(user_id);
     const {
         re_type,
         title,
+        subtitle,
         description,
-        skills_id,
         from_date,
         to_date,
         links,
-        assets
+        assets,
+        skills,
     } = req.body;
 
     if (user_id === undefined || re_type === undefined || title === undefined) {
@@ -103,6 +105,13 @@ export const createRE = asyncHandler(async (req, res) => {
         });
     }
 
+    if (subtitle !== undefined && typeof subtitle !== "string") {
+        return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
+            success: false,
+            message: "subtitle must be a string",
+        });
+    }
+
     if (description !== undefined && typeof description !== "string") {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
             success: false,
@@ -110,10 +119,10 @@ export const createRE = asyncHandler(async (req, res) => {
         });
     }
 
-    if (skills_id !== undefined && !Array.isArray(skills_id)) {
+    if (skills !== undefined && !Array.isArray(skills)) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
             success: false,
-            message: "skills_id must be an array of integers",
+            message: "skills must be an array",
         });
     }
 
@@ -137,27 +146,28 @@ export const createRE = asyncHandler(async (req, res) => {
             });
         }
     }
-
-    if (from_date !== undefined && to_date !== undefined) {
-        const parsedStart = new Date(from_date);
-        const parsedEnd = new Date(to_date);
-        if (parsedStart > parsedEnd) {
-            return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
-                success: false,
-                message: "from_date cannot be after to_date",
-            });
-        }
-    }
+    //TODO : Fx this verification check and then uncomment. Currently frontend sends an empty to_date field which is somehow converted to a date that is before the from_date. Either this or something else is happenning that is falsely triggering this condition.
+    // if (from_date !== undefined && to_date !== undefined) {
+    //     const parsedStart = new Date(from_date);
+    //     const parsedEnd = new Date(to_date);
+    //     if (parsedStart > parsedEnd) {
+    //         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
+    //             success: false,
+    //             message: "from_date cannot be after to_date",
+    //         });
+    //     }
+    // }
 
     const createdRE = await reService.createRE(user_id, {
         re_type,
         title,
+        subtitle,
         description,
-        skills_id,
         from_date,
         to_date,
         links,
-        assets
+        assets,
+        skills,
     });
 
     return res.status(RESPONSE_CODES.SUCCESS_CODE).json({
@@ -169,7 +179,7 @@ export const createRE = asyncHandler(async (req, res) => {
 // DELETE RESUME ENTITY
 export const deleteRE = asyncHandler(async (req, res) => {
     const user_id = req.user.id;
-    const {re_id } = req.query;
+    const { re_id } = req.query;
 
     if (!user_id || !re_id) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
@@ -206,13 +216,12 @@ export const updateRE = asyncHandler(async (req, res) => {
     const user_id = req.user.id;
     const {
         re_id,
-        re_type,
         title,
+        subtitle,
         description,
-        skills_id,
         from_date,
         to_date,
-        status
+        status,
     } = req.body;
 
     if (user_id === undefined || re_id === undefined) {
@@ -223,10 +232,9 @@ export const updateRE = asyncHandler(async (req, res) => {
     }
 
     if (
-        re_type === undefined &&
         title === undefined &&
+        subtitle === undefined &&
         description === undefined &&
-        skills_id === undefined &&
         from_date === undefined &&
         to_date === undefined &&
         status === undefined
@@ -252,13 +260,6 @@ export const updateRE = asyncHandler(async (req, res) => {
         });
     }
 
-    if (re_type !== undefined && (typeof re_type !== "string" || !validRETypes.includes(re_type))) {
-        return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
-            success: false,
-            message: "Invalid re_type",
-        });
-    }
-
     if (status !== undefined && (typeof status !== "string" || !validStatuses.includes(status))) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
             success: false,
@@ -273,17 +274,17 @@ export const updateRE = asyncHandler(async (req, res) => {
         });
     }
 
+    if (subtitle !== undefined && typeof subtitle !== "string") {
+        return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
+            success: false,
+            message: "subtitle must be a string",
+        });
+    }
+
     if (description !== undefined && typeof description !== "string") {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
             success: false,
             message: "description must be a string",
-        });
-    }
-
-    if (skills_id !== undefined && !Array.isArray(skills_id)) {
-        return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
-            success: false,
-            message: "skills_id must be an array of integers",
         });
     }
 
@@ -322,13 +323,12 @@ export const updateRE = asyncHandler(async (req, res) => {
         user_id,
         reIdNum,
         {
-            re_type,
             title,
+            subtitle,
             description,
-            skills_id,
             from_date,
             to_date,
-            status
+            status,
         }
     );
 

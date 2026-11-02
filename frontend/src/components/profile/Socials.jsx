@@ -1,15 +1,48 @@
 import styles from "./Socials.module.css";
 import { useState } from "react";
 import SocialsDialog from "./SocialsDialog";
+import { createLink, deleteLink, updateLink } from "../../api/linksApi";
 
 function Socials({ profile, setProfile }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  function handleSaveSocials(updatedSocials) {
-    setProfile((previous) => ({
-      ...previous,
-      socials: updatedSocials,
-    }));
+  async function handleSaveSocials(updatedSocials) {
+    try {
+      const existingLinks = profile.socials || [];
+      const existingIds = new Set(
+        updatedSocials.filter((link) => typeof link.id === "number").map((link) => link.id),
+      );
+
+      await Promise.all(
+        existingLinks
+          .filter((link) => typeof link.id === "number" && !existingIds.has(link.id))
+          .map((link) => deleteLink(link.id)),
+      );
+
+      const savedLinks = await Promise.all(
+        updatedSocials.map((link) =>
+          typeof link.id === "number"
+            ? updateLink({
+                link_id: link.id,
+                title: link.title,
+                link: link.url,
+              })
+            : createLink({
+                title: link.title,
+                link: link.url,
+              }),
+        ),
+      );
+
+      setProfile((previous) => ({
+        ...previous,
+        socials: savedLinks,
+      }));
+    } catch (error) {
+      console.error("Failed to save social links:", error);
+      alert("Failed to save social links");
+      return;
+    }
     setIsDialogOpen(false);
   }
 

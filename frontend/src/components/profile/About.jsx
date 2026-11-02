@@ -1,15 +1,23 @@
 import styles from "./About.module.css";
 import { useState } from "react";
 import AboutDialog from "./AboutDialog";
+import { updateUser } from "../../api/userApi";
 
 function About({ profile, setProfile }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  function handleSave(draftAbout) {
-    setProfile((previous) => ({
-      ...previous,
-      about: draftAbout,
-    }));
+  async function handleSave(draftAbout) {
+    try {
+      const updatedUser = await updateUser({ about: draftAbout });
+      setProfile((previous) => ({
+        ...previous,
+        about: updatedUser.about,
+      }));
+    } catch (error) {
+      console.error("Failed to save about section:", error);
+      alert("Failed to save about section");
+      return;
+    }
     setIsDialogOpen(false);
   }
 

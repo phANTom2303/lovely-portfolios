@@ -153,8 +153,7 @@ export const updateUser = asyncHandler(async (req, res) => {
         profile_photo_link,
         professional_title,
         about,
-        current_location,
-        skills
+        current_location        
     } = req.body;
 
     if (!user_id) {
@@ -178,8 +177,7 @@ export const updateUser = asyncHandler(async (req, res) => {
         profile_photo_link === undefined &&
         professional_title === undefined &&
         about === undefined &&
-        current_location === undefined &&
-        skills === undefined
+        current_location === undefined
     ) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
             success: false,
@@ -215,8 +213,7 @@ export const updateUser = asyncHandler(async (req, res) => {
         profile_photo_link,
         professional_title,
         about,
-        current_location,
-        skills
+        current_location
     });
 
     if (updatedUser?.password) delete updatedUser.password;

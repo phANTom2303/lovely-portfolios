@@ -1,13 +1,41 @@
 import styles from "./Achievements.module.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AchievementCard from "./AchievementCard";
 import ResumeEntityDialog from "../resumeEntity/ResumeEntityDialog";
-import sampleAchievements from "../../data/sampleAchievements";
+import {
+  fetchResumeEntities,
+  createResumeEntity,
+  uploadResumeEntityImages,
+  updateResumeEntity,
+  deleteResumeEntity,
+} from "../../api/resumeEntityApi";
+
+function toMonthInput(isoStr) {
+  if (!isoStr) return "";
+  return isoStr.slice(0, 7);
+}
 
 function Achievements() {
-  const [achievements, setAchievements] = useState(sampleAchievements);
+  const [achievements, setAchievements] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAchievement, setEditingAchievement] = useState(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        setIsLoading(true);
+        const data = await fetchResumeEntities("achievements");
+        setAchievements(data.filter((item) => item.status !== "deleted"));
+      } catch (err) {
+        setError("Failed to load achievements. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   function handleOpenAdd() {
     setEditingAchievement(null);
@@ -24,32 +52,101 @@ function Achievements() {
     setEditingAchievement(null);
   }
 
-  function handleSave(formData) {
-    if (editingAchievement) {
-      setAchievements((previous) =>
-        previous.map((item) =>
-          item.id === editingAchievement.id ? { ...item, ...formData } : item,
-        ),
-      );
-    } else {
-      const newAchievement = {
-        id: crypto.randomUUID(),
-        re_type: "achievements",
-        ...formData,
-      };
-      setAchievements((previous) => [...previous, newAchievement]);
+  async function handleSave(formData) {
+    try {
+      if (editingAchievement) {
+        const payload = {
+          re_id: editingAchievement.re_id,
+          title: formData.role,
+          subtitle: formData.company || null,
+          description: formData.description,
+          from_date: formData.startDate
+            ? formData.startDate.length === 7
+              ? `${formData.startDate}-01`
+              : formData.startDate
+            : null,
+          to_date:
+            !formData.isCurrent && formData.endDate
+              ? formData.endDate.length === 7
+                ? `${formData.endDate}-01`
+                : formData.endDate
+              : null,
+        };
+        const updated = await updateResumeEntity(payload);
+        setAchievements((prev) =>
+          prev.map((item) =>
+            item.re_id === updated.re_id ? { ...item, ...updated } : item,
+          ),
+        );
+      } else {
+        const payload = {
+          re_type: "achievements",
+          title: formData.role,
+          subtitle: formData.company || null,
+          description: formData.description,
+          from_date: formData.startDate
+            ? formData.startDate.length === 7
+              ? `${formData.startDate}-01`
+              : formData.startDate
+            : null,
+          to_date:
+            !formData.isCurrent && formData.endDate
+              ? formData.endDate.length === 7
+                ? `${formData.endDate}-01`
+                : formData.endDate
+              : null,
+          links: formData.links.map((l) => ({
+            url: l.url || l.link,
+            title: l.title,
+            description: l.description || "",
+          })),
+          skills: formData.skills.map((s) => s.skill_name || s.name || s),
+        };
+        const created = await createResumeEntity(payload);
+        const uploadedImages = await uploadResumeEntityImages(
+          formData.images,
+          created.re_id,
+        );
+        setAchievements((prev) => [
+          ...prev,
+          { ...created, assets: uploadedImages },
+        ]);
+      }
+      handleCloseDialog();
+    } catch (err) {
+      alert("Error saving achievement. Please try again.");
     }
-    handleCloseDialog();
   }
 
-  function handleDelete(id) {
+  async function handleDelete(id) {
     const confirmed = window.confirm(
       "Are you sure you want to delete this achievement?",
     );
     if (!confirmed) return;
 
-    setAchievements((previous) => previous.filter((item) => item.id !== id));
-    handleCloseDialog();
+    try {
+      await deleteResumeEntity(id);
+      setAchievements((prev) => prev.filter((item) => item.re_id !== id));
+      handleCloseDialog();
+    } catch (err) {
+      alert("Error deleting achievement. Please try again.");
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <section className={styles.section}>
+        <p>Loading achievements...</p>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className={styles.section}>
+        <p>{error}</p>
+      </section>
+    );
   }
 
   return (
@@ -70,7 +167,7 @@ function Achievements() {
             <div className={styles.grid}>
               {achievements.map((item) => (
                 <AchievementCard
-                  key={item.id}
+                  key={item.re_id}
                   achievement={item}
                   onEdit={() => handleOpenEdit(item)}
                 />
@@ -110,7 +207,15 @@ function Achievements() {
       {isDialogOpen && (
         <ResumeEntityDialog
           entityType="achievements"
-          entity={editingAchievement}
+          entity={
+            editingAchievement
+              ? {
+                  ...editingAchievement,
+                  from_date: toMonthInput(editingAchievement.from_date),
+                  to_date: toMonthInput(editingAchievement.to_date),
+                }
+              : null
+          }
           onSave={handleSave}
           onDelete={handleDelete}
           onClose={handleCloseDialog}
