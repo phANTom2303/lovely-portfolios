@@ -53,13 +53,13 @@ export const getPortfolioById = async (portfolio_id) => {
     return result;
 };
 
-export const makePortfolio = async (user_id, user_email, portfolio_name, portfolio_date) => {
+export const makePortfolio = async (user_id, user_email, portfolio_name, profile_data) => {
     const sql = `
-    INSERT INTO portfolio (user_id, user_email, portfolio_name, portfolio_date, create_date)
+    INSERT INTO portfolio (user_id, user_email, portfolio_name, profile_data, create_date)
     VALUES ($1, $2, $3, $4, CURRENT_DATE)
     RETURNING *
     `;
-    const { rows } = await query(sql, [user_id, user_email, portfolio_name, portfolio_date ?? null]);
+    const { rows } = await query(sql, [user_id, user_email, portfolio_name, profile_data ?? null]);
 
     const redisClient = getRedisClient();
     await redisClient.del(`user:${user_id}:portfolios`);
@@ -86,7 +86,7 @@ export const removePortfolio = async (user_id, portfolio_id) => {
 export const update = async (user_id, portfolio_id, fields) => {
     const fieldMap = {
         portfolio_name: "portfolio_name",
-        portfolio_date: "portfolio_date",
+        profile_data: "profile_data",
         user_email: "user_email",
     };
 
