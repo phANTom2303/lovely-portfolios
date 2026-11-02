@@ -185,7 +185,17 @@ CREATE TABLE IF NOT EXISTS assets (
     asset_type  asset_type_enum
 );
 
-
+-- ============================================================
+-- Portfolio
+-- ============================================================
+CREATE TABLE IF NOT EXISTS portfolio(
+    user_id     UUID REFERENCES users(id) ON DELETE CASCADE,
+    portfolio_id    SERIAL PRIMARY KEY,
+    user_email  VARCHAR(100)  NOT NULL,
+    portfolio_date      JSONB,
+    portfolio_name      TEXT,
+    create_date         DATE
+);
 -- ============================================================
 -- INSERT DUMMY DATA
 -- ============================================================
