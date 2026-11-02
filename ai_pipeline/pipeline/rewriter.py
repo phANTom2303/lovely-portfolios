@@ -105,7 +105,11 @@ def rewrite_and_build_portfolio(
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a professional portfolio writer. Rewrite descriptions with active verbs and zero hallucination. Return strictly valid JSON.",
+                        "content": (
+                            "You are a professional portfolio writer. Rewrite descriptions with active verbs and zero hallucination. "
+                            "Stay strictly faithful to the candidate's actual accomplishments without inventing unmentioned actions, optimizations, or responsibilities. "
+                            "Return strictly valid JSON."
+                        ),
                     },
                     {"role": "user", "content": filled_prompt},
                 ],
