@@ -6,8 +6,8 @@ function ExperienceCard({ experience, onEdit }) {
     <article className={styles.card}>
       <div className={styles.cardHeader}>
         <div className={styles.titleArea}>
-          <h2 className={styles.role}>{experience.role}</h2>
-          <span className={styles.company}>{experience.company}</span>
+          <h2 className={styles.role}>{experience.title || experience.role}</h2>
+          <span className={styles.company}>{experience.subtitle || experience.company}</span>
         </div>
         <button
           type="button"
@@ -40,7 +40,7 @@ function ExperienceCard({ experience, onEdit }) {
         <div className={styles.linksSection}>
           {experience.links.map((link) => (
             <a
-              key={link.id}
+              key={link.link_id || link.id || link.url}
               href={link.url || link.link}
               target="_blank"
               rel="noreferrer"
@@ -53,16 +53,16 @@ function ExperienceCard({ experience, onEdit }) {
         </div>
       )}
 
-      {experience.images?.length > 0 && (
+      {(experience.assets || experience.images)?.length > 0 && (
         <div className={styles.imagesSection}>
-          {experience.images.map((img) => (
+          {(experience.assets || experience.images).map((img) => (
             <div
-              key={img.id || img.url}
+              key={img.asset_id || img.id || img.link || img.url}
               className={styles.imageWrapper}
               title={img.description ? `${img.title} — ${img.description}` : img.title}
             >
               <img
-                src={img.url}
+                src={img.link || img.url}
                 alt={img.title || "Experience photo"}
                 className={styles.imageThumb}
               />

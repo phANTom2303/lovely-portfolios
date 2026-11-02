@@ -1,9 +1,12 @@
 import "./Header.css";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useAuth } from "../../context/authContext";
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
 
   useEffect(() => {
     function handleResize() {
@@ -23,6 +26,23 @@ function Header() {
     setIsMenuOpen(false);
   }
 
+  function toggleUserMenu() {
+    setIsUserMenuOpen((prev) => !prev);
+  }
+
+  function closeUserMenu() {
+    setIsUserMenuOpen(false);
+  }
+
+  async function handleLogout() {
+    try {
+      await logout();
+    } finally {
+      closeMenu();
+      closeUserMenu();
+    }
+  }
+
   return (
     <header className="site-header">
       <div className="header-container">
@@ -30,12 +50,47 @@ function Header() {
           Lovely Portfolio
         </Link>
 
-        <nav className="header-actions">
-          <Link to="/">My Portfolios</Link>
-          <Link to="/profile">Edit Profile</Link>
-          <Link to="/portfolio" className="header-view-live">
-            Live View ↗
-          </Link>
+        <nav
+          className={`header-actions ${isAuthenticated ? "authenticated-actions" : ""}`}
+        >
+          {isAuthenticated ? (
+            <div className="user-menu">
+              <button
+                type="button"
+                className="user-menu-button"
+                onClick={toggleUserMenu}
+                aria-expanded={isUserMenuOpen}
+                aria-haspopup="true"
+              >
+                {user?.name || "Account"}
+              </button>
+
+              {isUserMenuOpen && (
+                <div className="user-dropdown">
+                  <Link to="/profile" onClick={closeUserMenu}>
+                    My profile
+                  </Link>
+                  <Link to="/home" onClick={closeUserMenu}>
+                    Home
+                  </Link>
+                  <button
+                    type="button"
+                    className="user-dropdown-link logout-button"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Link to="/signin">Sign In</Link>
+              <Link to="/signup" className="header-create">
+                Create Profile
+              </Link>
+            </>
+          )}
         </nav>
 
         <button
@@ -57,25 +112,45 @@ function Header() {
             className="mobile-menu"
             onClick={(event) => event.stopPropagation()}
           >
-            <Link to="/" className="mobile-link" onClick={closeMenu}>
-              My Portfolios
-            </Link>
-            <Link to="/profile" className="mobile-link" onClick={closeMenu}>
-              Edit Profile
-            </Link>
-            <Link to="/portfolio" className="mobile-link" onClick={closeMenu}>
-              Live View ↗
-            </Link>
-            <Link to="/signin" className="mobile-link" onClick={closeMenu}>
-              Sign In
-            </Link>
-            <Link
-              to="/signup"
-              className="mobile-link mobile-create"
-              onClick={closeMenu}
-            >
-              Create Account
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <div className="mobile-link mobile-user-name">
+                  {user?.name || "Account"}
+                </div>
+                <Link to="/profile" className="mobile-link" onClick={closeMenu}>
+                  My profile
+                </Link>
+                <Link to="/home" className="mobile-link" onClick={closeMenu}>
+                  Home
+                </Link>
+                <button
+                  type="button"
+                  className="mobile-link logout-button"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/" className="mobile-link" onClick={closeMenu}>
+                  Home
+                </Link>
+                <Link to="/profile" className="mobile-link" onClick={closeMenu}>
+                  Profile
+                </Link>
+                <Link to="/signin" className="mobile-link" onClick={closeMenu}>
+                  Sign In
+                </Link>
+                <Link
+                  to="/signup"
+                  className="mobile-link mobile-create"
+                  onClick={closeMenu}
+                >
+                  Create Profile
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       )}

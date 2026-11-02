@@ -11,17 +11,17 @@ function formatDate(dateVal) {
 function CertificationCard({ certification, onEdit }) {
   const skills = certification.skills || [];
   const links = certification.links || [];
-  const images = certification.images || [];
+  const images = certification.assets || certification.images || [];
 
   return (
     <article className={styles.card}>
       <div className={styles.cardHeader}>
         <div className={styles.titleGroup}>
           <h3 className={styles.title}>
-            {certification.role || certification.title}
+            {certification.title || certification.role}
           </h3>
-          {certification.company && (
-            <span className={styles.issuer}>{certification.company}</span>
+          {(certification.subtitle || certification.company) && (
+            <span className={styles.issuer}>{certification.subtitle || certification.company}</span>
           )}
         </div>
 
@@ -52,12 +52,12 @@ function CertificationCard({ certification, onEdit }) {
         <div className={styles.imagesGrid}>
           {images.map((img) => (
             <div
-              key={img.id || img.url}
+              key={img.asset_id || img.id || img.link || img.url}
               className={styles.imageWrapper}
               title={img.description ? `${img.title} — ${img.description}` : img.title}
             >
               <img
-                src={img.url}
+                src={img.link || img.url}
                 alt={img.title || "Certification photo"}
                 className={styles.imageThumb}
               />
@@ -97,15 +97,15 @@ function CertificationCard({ certification, onEdit }) {
           <div className={styles.dateCol}>
             <span className={styles.dateLabel}>Issued:</span>
             <span className={styles.dateVal}>
-              {formatDate(certification.startDate)}
+              {formatDate(certification.from_date || certification.startDate)}
             </span>
           </div>
 
           <div className={styles.dateCol}>
             <span className={styles.dateLabel}>Expiry on:</span>
             <span className={styles.dateVal}>
-              {certification.endDate
-                ? formatDate(certification.endDate)
+              {(certification.to_date || certification.endDate)
+                ? formatDate(certification.to_date || certification.endDate)
                 : "Lifetime"}
             </span>
           </div>
@@ -115,7 +115,7 @@ function CertificationCard({ certification, onEdit }) {
           <div className={styles.linksRow}>
             {links.map((link) => (
               <a
-                key={link.id || link.url}
+                key={link.link_id || link.id || link.url}
                 href={link.url || link.link}
                 target="_blank"
                 rel="noreferrer"

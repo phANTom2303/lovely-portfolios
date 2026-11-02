@@ -1,13 +1,41 @@
 import styles from "./Certifications.module.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CertificationCard from "./CertificationCard";
 import ResumeEntityDialog from "../resumeEntity/ResumeEntityDialog";
-import sampleCertifications from "../../data/sampleCertifications";
+import {
+  fetchResumeEntities,
+  createResumeEntity,
+  uploadResumeEntityImages,
+  updateResumeEntity,
+  deleteResumeEntity,
+} from "../../api/resumeEntityApi";
+
+function toMonthInput(isoStr) {
+  if (!isoStr) return "";
+  return isoStr.slice(0, 7);
+}
 
 function Certifications() {
-  const [certifications, setCertifications] = useState(sampleCertifications);
+  const [certifications, setCertifications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCert, setEditingCert] = useState(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        setIsLoading(true);
+        const data = await fetchResumeEntities("certification");
+        setCertifications(data.filter((item) => item.status !== "deleted"));
+      } catch (err) {
+        setError("Failed to load certifications. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   function handleOpenAdd() {
     setEditingCert(null);
@@ -24,32 +52,101 @@ function Certifications() {
     setEditingCert(null);
   }
 
-  function handleSave(formData) {
-    if (editingCert) {
-      setCertifications((previous) =>
-        previous.map((item) =>
-          item.id === editingCert.id ? { ...item, ...formData } : item,
-        ),
-      );
-    } else {
-      const newCert = {
-        id: crypto.randomUUID(),
-        re_type: "certification",
-        ...formData,
-      };
-      setCertifications((previous) => [...previous, newCert]);
+  async function handleSave(formData) {
+    try {
+      if (editingCert) {
+        const payload = {
+          re_id: editingCert.re_id,
+          title: formData.role,
+          subtitle: formData.company || null,
+          description: formData.description,
+          from_date: formData.startDate
+            ? formData.startDate.length === 7
+              ? `${formData.startDate}-01`
+              : formData.startDate
+            : null,
+          to_date:
+            !formData.isCurrent && formData.endDate
+              ? formData.endDate.length === 7
+                ? `${formData.endDate}-01`
+                : formData.endDate
+              : null,
+        };
+        const updated = await updateResumeEntity(payload);
+        setCertifications((prev) =>
+          prev.map((item) =>
+            item.re_id === updated.re_id ? { ...item, ...updated } : item,
+          ),
+        );
+      } else {
+        const payload = {
+          re_type: "certification",
+          title: formData.role,
+          subtitle: formData.company || null,
+          description: formData.description,
+          from_date: formData.startDate
+            ? formData.startDate.length === 7
+              ? `${formData.startDate}-01`
+              : formData.startDate
+            : null,
+          to_date:
+            !formData.isCurrent && formData.endDate
+              ? formData.endDate.length === 7
+                ? `${formData.endDate}-01`
+                : formData.endDate
+              : null,
+          links: formData.links.map((l) => ({
+            url: l.url || l.link,
+            title: l.title,
+            description: l.description || "",
+          })),
+          skills: formData.skills.map((s) => s.skill_name || s.name || s),
+        };
+        const created = await createResumeEntity(payload);
+        const uploadedImages = await uploadResumeEntityImages(
+          formData.images,
+          created.re_id,
+        );
+        setCertifications((prev) => [
+          ...prev,
+          { ...created, assets: uploadedImages },
+        ]);
+      }
+      handleCloseDialog();
+    } catch (err) {
+      alert("Error saving certification. Please try again.");
     }
-    handleCloseDialog();
   }
 
-  function handleDelete(id) {
+  async function handleDelete(id) {
     const confirmed = window.confirm(
       "Are you sure you want to delete this certification?",
     );
     if (!confirmed) return;
 
-    setCertifications((previous) => previous.filter((item) => item.id !== id));
-    handleCloseDialog();
+    try {
+      await deleteResumeEntity(id);
+      setCertifications((prev) => prev.filter((item) => item.re_id !== id));
+      handleCloseDialog();
+    } catch (err) {
+      alert("Error deleting certification. Please try again.");
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <section className={styles.section}>
+        <p>Loading certifications...</p>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className={styles.section}>
+        <p>{error}</p>
+      </section>
+    );
   }
 
   return (
@@ -70,7 +167,7 @@ function Certifications() {
             <div className={styles.grid}>
               {certifications.map((cert) => (
                 <CertificationCard
-                  key={cert.id}
+                  key={cert.re_id}
                   certification={cert}
                   onEdit={() => handleOpenEdit(cert)}
                 />
@@ -107,7 +204,15 @@ function Certifications() {
       {isDialogOpen && (
         <ResumeEntityDialog
           entityType="certification"
-          entity={editingCert}
+          entity={
+            editingCert
+              ? {
+                  ...editingCert,
+                  from_date: toMonthInput(editingCert.from_date),
+                  to_date: toMonthInput(editingCert.to_date),
+                }
+              : null
+          }
           onSave={handleSave}
           onDelete={handleDelete}
           onClose={handleCloseDialog}

@@ -97,23 +97,9 @@ CREATE TABLE IF NOT EXISTS users (
     phone_no            VARCHAR(15) UNIQUE,
     gender              gender_enum,
     profile_photo_link  TEXT,
-
-    -- IDs from the skills table
-    skills              INTEGER[],
-
     professional_title  TEXT,
     about               TEXT,
     current_location    TEXT
-);
-
-
--- ============================================================
--- SKILLS
--- ============================================================
-
-CREATE TABLE IF NOT EXISTS skills (
-    skill_id   SERIAL PRIMARY KEY,
-    skill_name TEXT
 );
 
 
@@ -144,15 +130,23 @@ CREATE TABLE IF NOT EXISTS resume_entity (
     user_id     UUID REFERENCES users(id) ON DELETE CASCADE,
     re_type     re_type_enum,
     title       TEXT,
+    subtitle    TEXT,
     description TEXT,
-
-    -- IDs from the skills table
-    skills_id   INTEGER[],
-
     from_date   DATE,
     to_date     DATE,
-
     status      status_enum
+);
+
+
+-- ============================================================
+-- SKILLS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS skills (
+    skill_id   SERIAL PRIMARY KEY,
+    skill_name TEXT NOT NULL,
+    user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    re_id      INTEGER REFERENCES resume_entity(re_id) ON DELETE CASCADE
 );
 
 
@@ -185,21 +179,23 @@ CREATE TABLE IF NOT EXISTS assets (
     asset_type  asset_type_enum
 );
 
-
+-- ============================================================
+-- Portfolio
+-- ============================================================
+CREATE TABLE IF NOT EXISTS portfolio(
+    user_id     UUID REFERENCES users(id) ON DELETE CASCADE,
+    portfolio_id    SERIAL PRIMARY KEY,
+    user_email  VARCHAR(100)  NOT NULL,
+    portfolio_date      JSONB,
+    portfolio_name      TEXT,
+    create_date         DATE
+);
 -- ============================================================
 -- INSERT DUMMY DATA
 -- ============================================================
 
--- Insert Skills
-INSERT INTO skills (skill_name) VALUES 
-('JavaScript'),
-('PostgreSQL'),
-('React'),
-('Node.js'),
-('Python');
-
 -- Insert User
-INSERT INTO users (id, name, email, password, phone_no, gender, profile_photo_link, skills, professional_title, about, current_location)
+INSERT INTO users (id, name, email, password, phone_no, gender, profile_photo_link, professional_title, about, current_location)
 VALUES (
     '550e8400-e29b-41d4-a716-446655440000', 
     'Guddu Bhaiya', 
@@ -208,7 +204,6 @@ VALUES (
     '1234567890', 
     'male', 
     'https://example.com/photo.jpg', 
-    '{1,2,3,4,5}', 
     'Full Stack Developer', 
     'Passionate developer with 5 years of experience.', 
     'New York, NY'
@@ -222,16 +217,47 @@ VALUES
 ('550e8400-e29b-41d4-a716-446655440000', 'High School', 'higher_secondary', '2013-08-01', '2015-05-01', 92.5, 'percentage', 100, 'Science');
 
 -- Insert Resume Entities
-INSERT INTO resume_entity (re_id, user_id, re_type, title, description, skills_id, from_date, to_date, status)
+INSERT INTO resume_entity (re_id, user_id, re_type, title, subtitle, description, from_date, to_date, status)
 VALUES 
-(1, '550e8400-e29b-41d4-a716-446655440000', 'work_exp', 'Software Engineer at TechCorp', 'Developed web applications using React and Node.js.', '{1,3,4}', '2021-06-01', '2023-08-01', 'active'),
-(2, '550e8400-e29b-41d4-a716-446655440000', 'project', 'Portfolio Website', 'Built a personal portfolio website to showcase my projects.', '{1,3}', '2020-01-01', '2020-03-01', 'active'),
-(3, '550e8400-e29b-41d4-a716-446655440000', 'certification', 'AWS Certified Developer', 'Achieved AWS Certified Developer - Associate certification.', NULL, '2022-05-01', NULL, 'active'),
-(4, '550e8400-e29b-41d4-a716-446655440000', 'achievements', 'Hackathon Winner', 'Won 1st place in the annual city hackathon for developing an AI tool.', '{5}', '2019-10-01', '2019-10-03', 'active');
+(1, '550e8400-e29b-41d4-a716-446655440000', 'work_exp', 'Software Engineer', 'TechCorp', 'Developed web applications using React and Node.js.', '2021-06-01', '2023-08-01', 'active'),
+(2, '550e8400-e29b-41d4-a716-446655440000', 'project', 'Portfolio Website', 'Personal Project', 'Built a personal portfolio website to showcase my projects.', '2020-01-01', '2020-03-01', 'active'),
+(3, '550e8400-e29b-41d4-a716-446655440000', 'certification', 'AWS Certified Developer', 'Associate', 'Achieved AWS Certified Developer - Associate certification.', '2022-05-01', NULL, 'active'),
+(4, '550e8400-e29b-41d4-a716-446655440000', 'achievements', 'Hackathon Winner', '1st Place', 'Won 1st place in the annual city hackathon for developing an AI tool.', '2019-10-01', '2019-10-03', 'active');
 
 SELECT setval(
     pg_get_serial_sequence('resume_entity', 're_id'), 
     (SELECT MAX(re_id) FROM resume_entity)
+);
+
+-- Insert Skills
+-- Profile-level skills (re_id is NULL)
+INSERT INTO skills (skill_name, user_id, re_id) VALUES 
+('JavaScript', '550e8400-e29b-41d4-a716-446655440000', NULL),
+('PostgreSQL', '550e8400-e29b-41d4-a716-446655440000', NULL),
+('Python',     '550e8400-e29b-41d4-a716-446655440000', NULL),
+('React',      '550e8400-e29b-41d4-a716-446655440000', NULL),
+('Node.js',    '550e8400-e29b-41d4-a716-446655440000', NULL);
+
+-- RE-level skills (tied to a specific resume entity)
+INSERT INTO skills (skill_name, user_id, re_id) VALUES 
+-- Skills for RE 1 (Work Exp)
+('React',      '550e8400-e29b-41d4-a716-446655440000', 1),
+('Node.js',    '550e8400-e29b-41d4-a716-446655440000', 1),
+('PostgreSQL', '550e8400-e29b-41d4-a716-446655440000', 1),
+
+-- Skills for RE 2 (Project)
+('React',      '550e8400-e29b-41d4-a716-446655440000', 2),
+('JavaScript', '550e8400-e29b-41d4-a716-446655440000', 2),
+
+-- Skills for RE 3 (Certification)
+('AWS',        '550e8400-e29b-41d4-a716-446655440000', 3),
+
+-- Skills for RE 4 (Achievement)
+('Python',     '550e8400-e29b-41d4-a716-446655440000', 4);
+
+SELECT setval(
+    pg_get_serial_sequence('skills', 'skill_id'), 
+    (SELECT MAX(skill_id) FROM skills)
 );
 
 -- Insert User Profile Links (re_id is NULL)

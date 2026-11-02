@@ -61,19 +61,76 @@
   opacity: 0.9;
 }
 
-.header-view-live {
-  padding: 6px 14px;
-  background: var(--teal, #2ec4a6);
-  color: #0b1f1a !important;
-  border-radius: 7px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  transition: all 140ms ease;
+.user-menu {
+  position: relative;
 }
 
-.header-view-live:hover {
-  background: #27ad92;
-  opacity: 1 !important;
+.user-menu-button {
+  padding: 7px 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.user-menu-button:hover {
+  background: var(--surface);
+}
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 150px;
+  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(25, 25, 25, 0.12);
+}
+
+.user-dropdown a {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.user-dropdown a:hover {
+  background: var(--surface-dim);
+}
+
+.user-dropdown-link {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.user-dropdown-link:hover {
+  background: var(--surface-dim);
+}
+
+.logout-button {
+  color: var(--coral) !important;
 }
 
 .hamburger-button {
@@ -153,6 +210,25 @@
 
 .mobile-link:hover {
   background: var(--surface-dim);
+}
+
+.mobile-link.logout-button {
+  border: 0;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mobile-link.logout-button:hover {
+  background: var(--surface-dim);
+}
+
+.mobile-user-name {
+  border-bottom: 1px solid var(--border-soft);
+  border-radius: 0;
+  font-weight: 700;
 }
 
 .mobile-create {

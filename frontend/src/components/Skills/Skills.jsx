@@ -1,15 +1,72 @@
 import styles from "./Skills.module.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SkillBadge from "../shared/SkillBadge";
 import SkillPickerDialog from "../shared/SkillPickerDialog";
-import sampleUserSkills from "../../data/sampleSkills";
+import {
+  fetchProfileSkills,
+  createSkill,
+  deleteSkill,
+} from "../../api/skillsApi";
 
 function Skills() {
-  const [skills, setSkills] = useState(sampleUserSkills);
+  const [skills, setSkills] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  function handleSaveSkills(updatedSkills) {
-    setSkills(updatedSkills);
+  useEffect(() => {
+    fetchProfileSkills()
+      .then((data) => {
+        setSkills(data);
+      })
+      .then(() => {
+        setError(null);
+      })
+      .catch(() => {
+        setError("Failed to load skills. Please try again.");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
+
+  async function handleSaveSkills(newSkills) {
+    const originalSkills = skills;
+
+    // Skills with integer IDs already exist in the DB; UUID strings are newly typed
+    const toAdd = newSkills.filter((ns) => typeof ns.skill_id !== "number");
+    const toRemove = originalSkills.filter(
+      (orig) =>
+        typeof orig.skill_id === "number" &&
+        !newSkills.some((ns) => ns.skill_id === orig.skill_id),
+    );
+
+    try {
+      // Delete removed skills
+      for (const skill of toRemove) {
+        await deleteSkill(skill.skill_id);
+      }
+
+      // Create newly typed skills (no re_id → profile-level)
+      for (const skill of toAdd) {
+        await createSkill({
+          skill_name: skill.skill_name || skill.name,
+        });
+      }
+
+      const refreshedSkills = await fetchProfileSkills();
+      setSkills(refreshedSkills);
+      setError(null);
+    } catch {
+      try {
+        const refreshedSkills = await fetchProfileSkills();
+        setSkills(refreshedSkills);
+      } catch {
+        // Keep the original error when the recovery request also fails.
+      }
+      setError("Failed to save skills. Please try again.");
+    }
+
     setIsDialogOpen(false);
   }
 
@@ -18,7 +75,11 @@ function Skills() {
       <section className={styles.skillsSection}>
         <div className={styles.card}>
           <div className={styles.skillsGrid}>
-            {skills.length > 0 ? (
+            {isLoading ? (
+              <p className={styles.emptyState}>Loading skills…</p>
+            ) : error ? (
+              <p className={styles.emptyState}>{error}</p>
+            ) : skills.length > 0 ? (
               skills.map((skill) => {
                 const id = skill.skill_id || skill.id;
                 const name = skill.skill_name || skill.name;

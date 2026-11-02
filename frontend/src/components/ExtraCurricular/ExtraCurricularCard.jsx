@@ -20,20 +20,20 @@ function formatDateRange(startDate, endDate, isCurrent) {
 function ExtraCurricularCard({ activity, onEdit }) {
   const skills = activity.skills || [];
   const links = activity.links || [];
-  const images = activity.images || [];
+  const images = activity.assets || activity.images || [];
 
   return (
     <article className={styles.card}>
       <div className={styles.cardHeader}>
         <div className={styles.titleArea}>
-          <h3 className={styles.title}>{activity.role || activity.title}</h3>
-          {activity.company && (
-            <span className={styles.club}>{activity.company}</span>
+          <h3 className={styles.title}>{activity.title || activity.role}</h3>
+          {(activity.subtitle || activity.company) && (
+            <span className={styles.club}>{activity.subtitle || activity.company}</span>
           )}
           <span className={styles.dateLabel}>
             {formatDateRange(
-              activity.startDate,
-              activity.endDate,
+              activity.from_date || activity.startDate,
+              activity.to_date || activity.endDate,
               activity.isCurrent,
             )}
           </span>
@@ -72,12 +72,12 @@ function ExtraCurricularCard({ activity, onEdit }) {
         <div className={styles.imagesGrid}>
           {images.map((img) => (
             <div
-              key={img.id || img.url}
+              key={img.asset_id || img.id || img.link || img.url}
               className={styles.imageWrapper}
               title={img.description ? `${img.title} — ${img.description}` : img.title}
             >
               <img
-                src={img.url}
+                src={img.link || img.url}
                 alt={img.title || "Activity photo"}
                 className={styles.imageThumb}
               />
@@ -112,7 +112,7 @@ function ExtraCurricularCard({ activity, onEdit }) {
             <div className={styles.linksRow}>
               {links.map((link) => (
                 <a
-                  key={link.id || link.url}
+                  key={link.link_id || link.id || link.url}
                   href={link.url || link.link}
                   target="_blank"
                   rel="noreferrer"

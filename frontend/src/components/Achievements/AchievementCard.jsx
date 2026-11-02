@@ -11,20 +11,20 @@ function formatDate(dateVal) {
 function AchievementCard({ achievement, onEdit }) {
   const skills = achievement.skills || [];
   const links = achievement.links || [];
-  const images = achievement.images || [];
+  const images = achievement.assets || achievement.images || [];
 
   return (
     <article className={styles.card}>
       <div className={styles.cardHeader}>
         <div className={styles.titleArea}>
           <span className={styles.dateBadge}>
-            {formatDate(achievement.startDate)}
+            {formatDate(achievement.from_date || achievement.startDate)}
           </span>
           <h3 className={styles.title}>
-            {achievement.role || achievement.title}
+            {achievement.title || achievement.role}
           </h3>
-          {achievement.company && (
-            <span className={styles.awarder}>{achievement.company}</span>
+          {(achievement.subtitle || achievement.company) && (
+            <span className={styles.awarder}>{achievement.subtitle || achievement.company}</span>
           )}
         </div>
 
@@ -55,12 +55,12 @@ function AchievementCard({ achievement, onEdit }) {
         <div className={styles.imagesGrid}>
           {images.map((img) => (
             <div
-              key={img.id || img.url}
+              key={img.asset_id || img.id || img.link || img.url}
               className={styles.imageWrapper}
               title={img.description ? `${img.title} — ${img.description}` : img.title}
             >
               <img
-                src={img.url}
+                src={img.link || img.url}
                 alt={img.title || "Achievement photo"}
                 className={styles.imageThumb}
               />
@@ -101,7 +101,7 @@ function AchievementCard({ achievement, onEdit }) {
             <div className={styles.linksRow}>
               {links.map((link) => (
                 <a
-                  key={link.id || link.url}
+                  key={link.link_id || link.id || link.url}
                   href={link.url || link.link}
                   target="_blank"
                   rel="noreferrer"

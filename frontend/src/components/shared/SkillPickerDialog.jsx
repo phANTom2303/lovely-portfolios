@@ -1,14 +1,21 @@
 import styles from "./SkillPickerDialog.module.css";
 import { useState, useRef, useEffect } from "react";
 import SkillBadge from "./SkillBadge";
-import { allSkills } from "../../data/sampleSkills";
+import { fetchProfileSkills } from "../../api/skillsApi";
 
 function SkillPickerDialog({ currentSkills = [], onSave, onClose }) {
   const [activeSkills, setActiveSkills] = useState(currentSkills);
   const [removedSkills, setRemovedSkills] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [allSkills, setAllSkills] = useState([]);
   const searchWrapperRef = useRef(null);
+
+  useEffect(() => {
+    fetchProfileSkills()
+      .then((data) => setAllSkills(data))
+      .catch(() => {}); // silently fail — suggestions are optional
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event) {
