@@ -10,8 +10,10 @@ filters only if the SQL actually asks for them. So a query that forgets a filter
 """
 import asyncio
 import datetime as dt
+import socket
 import uuid
 
+import asyncpg
 import pytest
 
 import db
@@ -297,28 +299,13 @@ def test_database_errors_are_not_swallowed():
         _run(conn)
 
 
-# ---------------------------------------------------------------- schema + mock fallback
+# ---------------------------------------------------------------- schema
 
 def test_no_query_mentions_the_removed_skills_id_column():
     conn = FakeConn(users=[_user()], entities=[_entity(1)])
     _run(conn)
     assert conn.sql_seen, "expected queries to have been sent"
     assert not any("skills_id" in sql for sql in conn.sql_seen)
-
-
-def test_mock_fallback_when_database_is_unreachable_has_the_new_shape():
-    async def no_connection():
-        return None
-
-    original = db.get_db_connection
-    db.get_db_connection = no_connection
-    try:
-        profile, entities = asyncio.run(db.fetch_user_re_data(USER))
-    finally:
-        db.get_db_connection = original
-
-    assert profile["name"] == "Demo User"
-    assert entities and all("subtitle" in e for e in entities)
 
 
 # ---------------------------------------------------------------- links, assets, socials
@@ -460,17 +447,51 @@ def test_links_and_assets_keep_database_order():
     assert [a["asset_id"] for a in entities[0]["assets"]] == [4, 9]
 
 
-def test_mock_fallback_has_socials_as_a_list_and_links_and_assets_on_entities():
-    async def no_connection():
-        return None
+# ---------------------------------------------------------------- no fake data when the database is unreachable
+# A failed connection must raise a clear error. It must never turn into a made-up portfolio.
 
-    original = db.get_db_connection
-    db.get_db_connection = no_connection
-    try:
-        profile, entities = asyncio.run(db.fetch_user_re_data(USER))
-    finally:
-        db.get_db_connection = original
+def _connect_raising(exc):
+    async def connect(*args, **kwargs):
+        raise exc
+    return connect
 
-    assert isinstance(profile["socials"], list)
-    assert all(set(s) == {"id", "title", "link", "description"} for s in profile["socials"])
-    assert all("links" in e and "assets" in e for e in entities)
+
+CONNECTION_FAILURES = [
+    ConnectionRefusedError(111, "Connect call failed"),            # Postgres stopped / wrong port
+    asyncpg.InvalidPasswordError("password authentication failed"),  # wrong password
+    asyncpg.InvalidCatalogNameError('database "nope" does not exist'),  # wrong database name
+    socket.gaierror(-2, "Name or service not known"),               # wrong host
+    TimeoutError("timed out"),                                      # network / firewall
+]
+
+
+@pytest.mark.parametrize("failure", CONNECTION_FAILURES, ids=lambda e: type(e).__name__)
+def test_connection_failures_raise_database_unavailable(monkeypatch, failure):
+    monkeypatch.setattr(db.asyncpg, "connect", _connect_raising(failure))
+    with pytest.raises(db.DatabaseUnavailable) as info:
+        asyncio.run(db.get_db_connection())
+    assert info.value.__cause__ is failure, "the real cause must stay attached for the logs"
+
+
+@pytest.mark.parametrize("failure", CONNECTION_FAILURES, ids=lambda e: type(e).__name__)
+def test_fetch_user_data_raises_instead_of_returning_fake_data(monkeypatch, failure):
+    monkeypatch.setattr(db.asyncpg, "connect", _connect_raising(failure))
+    with pytest.raises(db.DatabaseUnavailable):
+        asyncio.run(db.fetch_user_re_data(USER))
+
+
+def test_save_portfolio_raises_instead_of_pretending_to_save(monkeypatch):
+    monkeypatch.setattr(db.asyncpg, "connect", _connect_raising(ConnectionRefusedError()))
+    with pytest.raises(db.DatabaseUnavailable):
+        asyncio.run(db.save_portfolio(USER, "Developer", "jd", {"sections": []}))
+
+
+def test_a_programming_error_is_not_disguised_as_database_unavailable(monkeypatch):
+    monkeypatch.setattr(db.asyncpg, "connect", _connect_raising(TypeError("bug in our code")))
+    with pytest.raises(TypeError):
+        asyncio.run(db.get_db_connection())
+
+
+def test_no_mock_data_is_left_in_the_module():
+    assert not hasattr(db, "MOCK_USER_PROFILE")
+    assert not hasattr(db, "MOCK_USER_ENTITIES")

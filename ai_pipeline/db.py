@@ -1,3 +1,4 @@
+import asyncio
 import json
 import uuid
 from typing import Any, Dict, List, Optional, Tuple
@@ -5,64 +6,17 @@ import asyncpg
 
 from config import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER, DATABASE_URL
 
-# Fallback mock data when DB is not running locally
-MOCK_USER_PROFILE = {
-    "name": "Demo User",
-    "professionalTitle": "Full Stack & Backend Developer",
-    "about": "Computer Science engineer passionate about building high-throughput distributed APIs.",
-    "currentLocation": "Bhubaneswar, India",
-    "socials": [
-        {"id": 1, "title": "GitHub", "link": "https://github.com/phANTom2303", "description": ""},
-        {"id": 2, "title": "LinkedIn", "link": "https://linkedin.com", "description": ""},
-    ],
-}
-
-MOCK_USER_ENTITIES = [
-    {
-        "reId": 1,
-        "reType": "project",
-        "title": "Share Market Tracker",
-        "subtitle": "Personal Project",
-        "description": "Built a real time stock price tracker with live data feeds using WebSockets and Node.js.",
-        "originalSkills": ["JS", "Node", "Postgres"],
-        "fromDate": "2024-01-01",
-        "toDate": "2024-05-01",
-        "links": [],
-        "assets": [],
-    },
-    {
-        "reId": 2,
-        "reType": "project",
-        "title": "REST API for College ERP",
-        "subtitle": "Academic Project",
-        "description": "Designed and built a modular REST API for college management system with automated student grade calculation.",
-        "originalSkills": ["Python", "FastAPI", "PostgreSQL"],
-        "fromDate": "2024-06-01",
-        "toDate": "2024-08-01",
-        "links": [],
-        "assets": [],
-    },
-    {
-        "reId": 3,
-        "reType": "work_exp",
-        "title": "Backend Intern at Startup",
-        "subtitle": "Startup",
-        "description": "Worked on Node.js microservices and REST APIs with Redis caching layer.",
-        "originalSkills": ["Node.js", "REST APIs", "Redis"],
-        "fromDate": "2023-06-01",
-        "toDate": "2023-08-01",
-        "links": [],
-        "assets": [],
-    },
-]
-
-
 class InvalidUserId(ValueError):
     """user_id is not a valid UUID — the caller's mistake."""
 
 
 class UserNotFound(LookupError):
     """No user with this id exists."""
+
+
+class DatabaseUnavailable(Exception):
+    """Could not connect to PostgreSQL: it is down, or the host, port, database or password is wrong.
+    The real cause is kept as __cause__ for the logs; callers must not show it to users."""
 
 
 class NoResumeEntities(LookupError):
@@ -100,9 +54,9 @@ def _asset_item(row) -> Dict[str, Any]:
 
 
 async def get_db_connection():
-    """Establish async connection to PostgreSQL."""
+    """Open an async connection to PostgreSQL, or raise DatabaseUnavailable. Never returns fake data."""
     try:
-        conn = await asyncpg.connect(
+        return await asyncpg.connect(
             host=DB_HOST,
             port=DB_PORT,
             user=DB_USER,
@@ -110,22 +64,19 @@ async def get_db_connection():
             database=DB_NAME,
             timeout=5.0,
         )
-        return conn
-    except Exception as e:
-        print(f"[db] Warning: Could not connect to PostgreSQL ({e}). Using mock/fallback data.")
-        return None
+    except (OSError, asyncio.TimeoutError, asyncpg.PostgresError, asyncpg.InterfaceError) as e:
+        # OSError: refused / unknown host / TLS; PostgresError: wrong password or database name.
+        raise DatabaseUnavailable(f"Could not connect to PostgreSQL: {e}") from e
 
 
 async def fetch_user_re_data(user_id: str) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
     """
-    Fetches user profile and active resume entities (with resolved skill names) from PostgreSQL.
-    Falls back gracefully if the database is unreachable.
+    Fetches the user's profile and active resume entities (with skills, links and assets) from PostgreSQL.
+    Raises DatabaseUnavailable if the database cannot be reached.
     """
     uid = _parse_user_id(user_id)
 
     conn = await get_db_connection()
-    if conn is None:
-        return MOCK_USER_PROFILE, MOCK_USER_ENTITIES
 
     try:
         # 1. Fetch user profile
@@ -247,10 +198,6 @@ async def save_portfolio(
     uid = _parse_user_id(user_id)
 
     conn = await get_db_connection()
-    if conn is None:
-        portfolio_id = str(uuid.uuid4())
-        print(f"[db] DB offline. Simulated portfolio save with ID: {portfolio_id}")
-        return portfolio_id
 
     try:
         # Directly insert portfolio into backend-managed portfolios table

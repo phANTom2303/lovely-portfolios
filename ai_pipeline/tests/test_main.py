@@ -119,3 +119,35 @@ def test_unexpected_error_is_500_without_leaking_details(client, monkeypatch):
 
     assert response.status_code == 500
     assert "users" not in response.json()["detail"]
+
+
+# --- database unreachable (503) -------------------------------------------
+
+def test_database_unavailable_is_503_without_leaking_details(client, monkeypatch):
+    import db
+    monkeypatch.setattr(
+        main, "generate_for_user",
+        make_fail(db.DatabaseUnavailable('password authentication failed for user "lovely_user"')),
+    )
+
+    response = post(client)
+
+    assert response.status_code == 503
+    detail = response.json()["detail"]
+    assert "database" in detail.lower()
+    assert "lovely_user" not in detail and "password" not in detail
+
+
+def test_unreachable_database_through_the_real_db_layer_is_503_not_fake_data(client, monkeypatch):
+    # nothing is faked except the TCP connect itself: the whole real path runs
+    import db
+
+    async def refused(*args, **kwargs):
+        raise ConnectionRefusedError(111, "Connect call failed")
+
+    monkeypatch.setattr(db.asyncpg, "connect", refused)
+
+    response = post(client)
+
+    assert response.status_code == 503
+    assert "portfolio_json" not in response.json()
