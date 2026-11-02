@@ -175,19 +175,18 @@ export default function PortfolioExtras({ extras }) {
             {/* Left Column: Role & Organization */}
             <div className={styles.leftCol}>
               {(() => {
+                const s = currentItem.from_date || currentItem.startDate;
+                const e = currentItem.to_date !== undefined ? currentItem.to_date : currentItem.endDate;
                 const isCurrent =
-                  currentItem.endDate === null ||
-                  currentItem.endDate === undefined ||
-                  currentItem.endDate === "" ||
-                  (typeof currentItem.endDate === "string" &&
-                    currentItem.endDate.toLowerCase() === "present") ||
+                  e === null ||
+                  e === undefined ||
+                  e === "" ||
+                  (typeof e === "string" && e.toLowerCase() === "present") ||
                   Boolean(currentItem.isCurrent);
 
-                const displayPeriod = currentItem.startDate
-                  ? `${currentItem.startDate} – ${
-                      isCurrent ? "Present" : currentItem.endDate
-                    }`
-                  : currentItem.period || "";
+                const sYear = s ? String(s).slice(0, 4) : "";
+                const eYear = isCurrent ? "Present" : (e ? String(e).slice(0, 4) : "");
+                const displayPeriod = sYear ? `${sYear} – ${eYear}` : currentItem.period || "";
 
                 return (
                   <div className={styles.badgeRow}>
@@ -216,8 +215,37 @@ export default function PortfolioExtras({ extras }) {
                 {currentItem.org || currentItem.subtitle}
               </div>
 
-              {hasMedia && (
-                <p className={styles.summaryWithMedia}>{currentItem.summary}</p>
+              {hasMedia && (currentItem.description || currentItem.summary) && (
+                <p className={styles.summaryWithMedia}>{currentItem.description || currentItem.summary}</p>
+              )}
+
+              {Array.isArray(currentItem.links) && currentItem.links.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", margin: "0.75rem 0" }}>
+                  {currentItem.links.map((link, lIdx) => (
+                    <a
+                      key={link.title || link.label || lIdx}
+                      href={link.link || link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "0.3rem",
+                        padding: "4px 10px",
+                        borderRadius: "6px",
+                        fontSize: "0.8rem",
+                        fontWeight: "600",
+                        background: "rgba(255,255,255,0.06)",
+                        color: "inherit",
+                        textDecoration: "none",
+                        border: "1px solid rgba(255,255,255,0.12)",
+                      }}
+                    >
+                      <span>{link.title || link.label}</span>
+                      <span>↗</span>
+                    </a>
+                  ))}
+                </div>
               )}
 
               {itemSkills && itemSkills.length > 0 && (
@@ -242,7 +270,7 @@ export default function PortfolioExtras({ extras }) {
               </div>
             ) : (
               <div className={styles.rightCol}>
-                <p className={styles.summaryText}>{currentItem.summary}</p>
+                <p className={styles.summaryText}>{currentItem.description || currentItem.summary}</p>
 
                 {itemSkills && itemSkills.length > 0 && (
                   <div className={styles.tagsRow}>

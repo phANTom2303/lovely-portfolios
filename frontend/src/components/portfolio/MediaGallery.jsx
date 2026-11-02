@@ -32,18 +32,20 @@ function normalizeMediaItems(rawAssets, rawImages, singleImage) {
       };
     }
 
-    const url = item.url || item.src || "";
+    const url = item.link || item.url || item.src || "";
     const isVideo =
+      item.asset_type === "youtube" ||
+      item.asset_type === "video" ||
       item.type === "video" ||
       isVideoUrl(url) ||
       Boolean(item.videoUrl);
 
     return {
-      id: item.id || `media-${idx}`,
+      id: item.asset_id || item.id || `media-${idx}`,
       url: item.videoUrl || url,
       type: isVideo ? "video" : "image",
       title: item.title || null,
-      caption: item.caption || item.description || null,
+      caption: item.description || item.caption || null,
     };
   });
 }

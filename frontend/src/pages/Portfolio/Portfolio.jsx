@@ -125,7 +125,7 @@ const SECTION_CONFIG = {
       <PortfolioCTA
         key="contact"
         contact={resolved.contact}
-        location={resolved.about?.location}
+        location={resolved.about?.current_location || resolved.about?.location}
       />
     ),
   },

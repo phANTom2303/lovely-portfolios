@@ -179,20 +179,58 @@ export default function PortfolioAchievements({ achievements }) {
 
               <h3 className={styles.title}>{currentItem.title}</h3>
 
-              <div className={styles.metaRow}>
-                <span className={styles.org}>
-                  {currentItem.org || currentItem.subtitle}
-                </span>
-                {currentItem.year && (
-                  <>
-                    <span className={styles.metaDot}>·</span>
-                    <span className={styles.year}>{currentItem.year}</span>
-                  </>
-                )}
-              </div>
+              {(() => {
+                const displayYear = currentItem.year || (currentItem.from_date ? String(currentItem.from_date).slice(0, 4) : "");
+                const textDesc = currentItem.description || currentItem.summary;
 
-              {hasMedia && (
-                <p className={styles.summaryWithMedia}>{currentItem.summary}</p>
+                return (
+                  <>
+                    <div className={styles.metaRow}>
+                      <span className={styles.org}>
+                        {currentItem.org || currentItem.subtitle}
+                      </span>
+                      {displayYear && (
+                        <>
+                          <span className={styles.metaDot}>·</span>
+                          <span className={styles.year}>{displayYear}</span>
+                        </>
+                      )}
+                    </div>
+
+                    {hasMedia && textDesc && (
+                      <p className={styles.summaryWithMedia}>{textDesc}</p>
+                    )}
+                  </>
+                );
+              })()}
+
+              {Array.isArray(currentItem.links) && currentItem.links.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", margin: "0.75rem 0" }}>
+                  {currentItem.links.map((link, lIdx) => (
+                    <a
+                      key={link.title || link.label || lIdx}
+                      href={link.link || link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "0.3rem",
+                        padding: "4px 10px",
+                        borderRadius: "6px",
+                        fontSize: "0.8rem",
+                        fontWeight: "600",
+                        background: "rgba(255,255,255,0.06)",
+                        color: "inherit",
+                        textDecoration: "none",
+                        border: "1px solid rgba(255,255,255,0.12)",
+                      }}
+                    >
+                      <span>{link.title || link.label}</span>
+                      <span>↗</span>
+                    </a>
+                  ))}
+                </div>
               )}
 
               {itemSkills && itemSkills.length > 0 && (
@@ -220,7 +258,7 @@ export default function PortfolioAchievements({ achievements }) {
                 <div className={styles.quoteMark} aria-hidden="true">
                   “
                 </div>
-                <p className={styles.summary}>{currentItem.summary}</p>
+                <p className={styles.summary}>{currentItem.description || currentItem.summary}</p>
 
                 {itemSkills && itemSkills.length > 0 && (
                   <div className={styles.tagsRow}>

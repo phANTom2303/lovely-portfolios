@@ -128,10 +128,13 @@ export default function PortfolioHero({ about, hero }) {
   }, [data.name]);
 
   const userPhoto =
+    data.profile_photo_link ||
     data["profile-photo"] ||
     data.profilePhoto ||
     data.avatar ||
     "/Images/image.png";
+
+  const displayLocation = data.current_location || data.location;
 
   return (
     <section className={styles.hero} id="about">
@@ -176,8 +179,8 @@ export default function PortfolioHero({ about, hero }) {
                 <span className={styles.expIcon}>⚡</span> {data.experience}
               </span>
             )}
-            {data.location && (
-              <span className={styles.locationTag}>📍 {data.location}</span>
+            {displayLocation && (
+              <span className={styles.locationTag}>📍 {displayLocation}</span>
             )}
           </div>
 
@@ -241,7 +244,7 @@ export default function PortfolioHero({ about, hero }) {
               {data.socials.map((s) => (
                 <a
                   key={s.title}
-                  href={s.url}
+                  href={s.link || s.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={styles.socialLink}

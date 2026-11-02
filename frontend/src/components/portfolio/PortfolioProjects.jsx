@@ -147,8 +147,8 @@ function CompanionCard({ proj, idx }) {
                 link.isPrimary !== undefined ? link.isPrimary : linkIdx === 0;
               return (
                 <motion.a
-                  key={link.label || linkIdx}
-                  href={link.url}
+                  key={link.title || link.label || linkIdx}
+                  href={link.link || link.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={
@@ -159,7 +159,7 @@ function CompanionCard({ proj, idx }) {
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.97 }}
                 >
-                  <span>{link.label}</span>
+                  <span>{link.title || link.label}</span>
                   <span className={styles.btnArrow} aria-hidden="true">
                     ↗
                   </span>
@@ -221,8 +221,8 @@ function FlagshipCard({ flagship, flagshipHasMedia }) {
                 link.isPrimary !== undefined ? link.isPrimary : linkIdx === 0;
               return (
                 <motion.a
-                  key={link.label || linkIdx}
-                  href={link.url}
+                  key={link.title || link.label || linkIdx}
+                  href={link.link || link.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={
@@ -231,7 +231,7 @@ function FlagshipCard({ flagship, flagshipHasMedia }) {
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.97 }}
                 >
-                  <span>{link.label}</span>
+                  <span>{link.title || link.label}</span>
                   <span className={styles.btnArrow} aria-hidden="true">
                     ↗
                   </span>

@@ -99,20 +99,24 @@ export default function PortfolioEducation({ education }) {
               whileHover={{ y: -5, transition: { duration: 0.2 } }}
             >
               <div className={styles.cardHeader}>
-                <div className={styles.badgeRow}>
-                  {(item.startDate || item.period) && (
-                    <span className={styles.periodBadge}>
-                      {item.startDate
-                        ? item.endDate
-                          ? `${item.startDate} – ${item.endDate}`
-                          : `${item.startDate} – Present`
-                        : item.period}
-                    </span>
-                  )}
-                  {item.grade && (
-                    <span className={styles.gradeBadge}>{item.grade}</span>
-                  )}
-                </div>
+                {(() => {
+                  const s = item.from_date || item.startDate;
+                  const e = item.to_date || item.endDate;
+                  const sYear = s ? String(s).slice(0, 4) : "";
+                  const eYear = e ? String(e).slice(0, 4) : "Present";
+                  const dateText = sYear ? `${sYear} – ${eYear}` : item.period || "";
+
+                  return (
+                    <div className={styles.badgeRow}>
+                      {dateText && (
+                        <span className={styles.periodBadge}>{dateText}</span>
+                      )}
+                      {item.grade && (
+                        <span className={styles.gradeBadge}>{item.grade}</span>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 <h3 className={styles.degreeTitle}>
                   {item.degree}
@@ -120,7 +124,9 @@ export default function PortfolioEducation({ education }) {
                     <span className={styles.streamText}> — {item.stream}</span>
                   )}
                 </h3>
-                <div className={styles.institution}>{item.institution}</div>
+                <div className={styles.institution}>
+                  {item.institute_name || item.institution}
+                </div>
               </div>
             </motion.article>
           ))}

@@ -73,17 +73,33 @@ function ExperienceItem({ exp, i }) {
   const hasMedia = Array.isArray(expAssets) && expAssets.length > 0;
   const hasLinks = Array.isArray(exp.links) && exp.links.length > 0;
 
+  const startDate = exp.from_date || exp.startDate;
+  const endDate = exp.to_date !== undefined ? exp.to_date : exp.endDate;
+
   // Determine current status: endDate is null, undefined, empty, or "present"
   const isCurrent =
-    exp.endDate === null ||
-    exp.endDate === undefined ||
-    exp.endDate === "" ||
-    (typeof exp.endDate === "string" &&
-      exp.endDate.toLowerCase() === "present") ||
+    endDate === null ||
+    endDate === undefined ||
+    endDate === "" ||
+    (typeof endDate === "string" &&
+      endDate.toLowerCase() === "present") ||
     Boolean(exp.isCurrent);
 
-  const displayPeriod = exp.startDate
-    ? `${exp.startDate} – ${isCurrent ? "Present" : exp.endDate}`
+  const formatDisplay = (d) => {
+    if (!d) return "";
+    if (typeof d === "string" && d.length >= 7 && d.includes("-")) {
+      const parts = d.split("-");
+      if (parts.length >= 2) {
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const mIdx = parseInt(parts[1], 10) - 1;
+        if (mIdx >= 0 && mIdx < 12) return `${months[mIdx]} ${parts[0]}`;
+      }
+    }
+    return d;
+  };
+
+  const displayPeriod = startDate
+    ? `${formatDisplay(startDate)} – ${isCurrent ? "Present" : formatDisplay(endDate)}`
     : exp.period || "";
 
   return (
@@ -139,6 +155,13 @@ function ExperienceItem({ exp, i }) {
           }`}
         >
           <div className={styles.mainContent}>
+            {/* Description */}
+            {exp.description && (
+              <p style={{ margin: "0 0 1rem 0", lineHeight: "1.65", color: "var(--text-muted, #64748b)", fontSize: "0.95rem" }}>
+                {exp.description}
+              </p>
+            )}
+
             {/* Highlighted Achievements */}
             {Array.isArray(exp.highlights) && exp.highlights.length > 0 && (
               <ul className={styles.highlights}>
@@ -167,17 +190,17 @@ function ExperienceItem({ exp, i }) {
             {/* Live Reference Links */}
             {hasLinks && (
               <div className={styles.linksRow}>
-                {exp.links.map((link) => (
+                {exp.links.map((link, lIdx) => (
                   <motion.a
-                    key={link.label}
-                    href={link.url}
+                    key={link.title || link.label || lIdx}
+                    href={link.link || link.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.refLink}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.96 }}
                   >
-                    <span>{link.label}</span>
+                    <span>{link.title || link.label}</span>
                     <span className={styles.linkArrow} aria-hidden="true">
                       ↗
                     </span>

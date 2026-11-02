@@ -4,9 +4,10 @@ import {
   getPortfolioByIdOrSlug,
   updatePortfolio,
 } from "../../services/portfolioStorage";
-import AddItemDialog from "./AddItemDialog";
-import ResumeEntityDialog from "../../components/resumeEntity/ResumeEntityDialog";
-import EducationDialog from "../../components/Education/EducationDialog";
+import { useAuth } from "../../context/authContext";
+import PortfolioItemEditDialog from "./PortfolioItemEditDialog";
+import AddSocialLinkDialog from "./AddSocialLinkDialog";
+import AddSkillCategoryDialog from "./AddSkillCategoryDialog";
 import SkillBadge from "../../components/shared/SkillBadge";
 import styles from "./PortfolioEdit.module.css";
 
@@ -24,27 +25,7 @@ const ALL_SECTION_META = {
 
 const ALL_SECTION_KEYS = Object.keys(ALL_SECTION_META);
 
-const SECTION_TO_ENTITY_TYPE = {
-  experience: "work_exp",
-  projects: "project",
-  achievements: "achievements",
-  certifications: "certification",
-  extraCurricular: "extra_curricular",
-};
 
-function toMonthInput(val) {
-  if (!val) return "";
-  if (typeof val !== "string") return "";
-  if (/^\d{4}-\d{2}$/.test(val)) return val;
-  if (/^\d{4}$/.test(val)) return `${val}-01`;
-  const d = new Date(val);
-  if (!isNaN(d.getTime())) {
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    return `${year}-${month}`;
-  }
-  return "";
-}
 
 function formatDisplayDate(val) {
   if (!val) return "";
@@ -56,158 +37,6 @@ function formatDisplayDate(val) {
     return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
   }
   return val;
-}
-
-function prepareEntityForDialog(sectionKey, item) {
-  if (!item) return null;
-  const entityType = SECTION_TO_ENTITY_TYPE[sectionKey] || "others";
-  const role = item.role || item.title || item.name || "";
-  const company = item.company || item.subtitle || item.category || item.org || "";
-  const startDate = toMonthInput(item.startDate || item.year || item.from_date || "");
-  const endDate = toMonthInput(item.endDate || item.validUntil || item.to_date || "");
-  const isCurrent = item.isCurrent ?? (item.endDate === null || item.endDate === "Present");
-
-  let description = item.description || "";
-  if (!description && Array.isArray(item.highlights)) {
-    description = item.highlights.join("\n");
-  }
-  if (!description && item.summary) {
-    description = item.summary;
-  }
-
-  const skills = (item.skills || []).map((s, idx) => {
-    if (typeof s === "object" && s !== null) {
-      return {
-        id: s.skill_id || s.id || `skill-${idx}`,
-        name: s.skill_name || s.name || "",
-        skill_name: s.skill_name || s.name || "",
-      };
-    }
-    return {
-      id: `skill-${idx}`,
-      name: String(s),
-      skill_name: String(s),
-    };
-  });
-
-  const links = (item.links || []).map((l, idx) => ({
-    id: l.id || `link-${idx}`,
-    title: l.title || l.label || "Link",
-    url: l.url || l.link || "",
-    description: l.description || "",
-  }));
-
-  const images = (item.images || item.assets || []).map((img, idx) => ({
-    id: img.id || `img-${idx}`,
-    url: img.url || "",
-    title: img.title || "",
-    description: img.description || img.caption || "",
-  }));
-
-  return {
-    id: item.id || crypto.randomUUID(),
-    re_type: entityType,
-    role,
-    company,
-    startDate,
-    endDate,
-    isCurrent,
-    description,
-    skills,
-    links,
-    images,
-  };
-}
-
-function mapFormDataToPortfolioItem(sectionKey, formData) {
-  const skillsStrings = (formData.skills || []).map((s) =>
-    typeof s === "object" ? s.skill_name || s.name : s
-  );
-
-  const assetsArray = (formData.images || []).map((img) => ({
-    type: "image",
-    url: img.url,
-    title: img.title || "",
-    caption: img.description || "",
-  }));
-
-  const linksArray = (formData.links || []).map((l) => ({
-    id: l.id,
-    label: l.title || "Link",
-    title: l.title || "Link",
-    url: l.url || l.link || "",
-    description: l.description || "",
-  }));
-
-  const highlightsArray = formData.description
-    ? formData.description
-        .split("\n")
-        .map((s) => s.replace(/^[•\-*]\s*/, "").trim())
-        .filter(Boolean)
-    : [];
-
-  return {
-    id: formData.id || crypto.randomUUID(),
-    re_type: formData.re_type,
-    // Titles & Subtitles with full dual-attribute fallbacks
-    title: formData.role,
-    role: formData.role,
-    name: formData.role,
-    subtitle: formData.company,
-    company: formData.company,
-    org: formData.company,
-    category: formData.company,
-    // Description variants
-    description: formData.description,
-    summary: formData.description,
-    highlights: highlightsArray,
-    tagline: formData.description ? formData.description.split("\n")[0].slice(0, 80) : "",
-    // Dates
-    startDate: formData.startDate,
-    endDate: formData.isCurrent ? "Present" : formData.endDate,
-    isCurrent: formData.isCurrent,
-    year: formData.startDate ? formData.startDate.slice(0, 4) : new Date().getFullYear().toString(),
-    validUntil: formData.endDate || "Lifetime",
-    link: linksArray.length > 0 ? linksArray[0].url : "",
-    // Skills, Links, Images & Assets
-    skills: skillsStrings,
-    links: linksArray,
-    assets: assetsArray,
-    images: formData.images || [],
-  };
-}
-
-function prepareEducationForDialog(item) {
-  if (!item) return null;
-  return {
-    id: item.id || crypto.randomUUID(),
-    degree: item.degree || item.title || "",
-    level: item.level || "Undergraduate",
-    institute: item.institute || item.institution || "",
-    branch: item.branch || item.stream || item.subtitle || "",
-    grade: item.grade || "",
-    gradingSystem: item.gradingSystem || "CGPA",
-    startDate: toMonthInput(item.startDate || ""),
-    endDate: toMonthInput(item.endDate || ""),
-  };
-}
-
-function mapEducationFormDataToItem(formData, originalId) {
-  return {
-    id: originalId || crypto.randomUUID(),
-    degree: formData.degree,
-    title: formData.degree,
-    level: formData.level,
-    institute: formData.institute,
-    institution: formData.institute,
-    branch: formData.branch,
-    stream: formData.branch,
-    subtitle: formData.branch,
-    grade: formData.grade,
-    gradingSystem: formData.gradingSystem,
-    startDate: formData.startDate,
-    endDate: formData.endDate,
-  };
 }
 
 export default function PortfolioEdit() {
@@ -245,8 +74,10 @@ export default function PortfolioEdit() {
 
 function PortfolioEditorInner({ originalPortfolio }) {
   // Local draft states initialized from portfolio prop
-  const [draftTitle, setDraftTitle] = useState(() => originalPortfolio.title || "");
-  const [draftSlug, setDraftSlug] = useState(() => originalPortfolio.slug || "");
+  const { user } = useAuth();
+  const [isAddSocialOpen, setIsAddSocialOpen] = useState(false);
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  const draftSlug = originalPortfolio.slug || "";
   const [draftTheme, setDraftTheme] = useState(() => originalPortfolio.theme || "light");
   const [draftDoc, setDraftDoc] = useState(() =>
     originalPortfolio.document
@@ -256,15 +87,8 @@ function PortfolioEditorInner({ originalPortfolio }) {
   const [isDirty, setIsDirty] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
-  // Modal dialog state for adding items
-  const [addModalConfig, setAddModalConfig] = useState({
-    isOpen: false,
-    sectionKey: null,
-  });
-
-  // Active edit/create dialog state
-  // { type: "resume_entity" | "education", entityType, sectionKey, itemIndex, entity, isNew }
-  const [activeModal, setActiveModal] = useState(null);
+  // Active edit dialog state: { sectionKey, itemIndex, item }
+  const [activeEditModal, setActiveEditModal] = useState(null);
 
   // Accordion state
   const [expandedCards, setExpandedCards] = useState(() => ({
@@ -359,114 +183,46 @@ function PortfolioEditorInner({ originalPortfolio }) {
     });
   };
 
-  // Add Item through focused dialog
-  const handleOpenAddModal = (sectionKey) => {
-    setAddModalConfig({ isOpen: true, sectionKey });
-  };
 
-  const handleAddItemFromModal = (newItem) => {
-    const secKey = addModalConfig.sectionKey;
-    if (!secKey) return;
-    updateDoc((doc) => {
-      if (!doc[secKey]) doc[secKey] = {};
-      if (!Array.isArray(doc[secKey].items)) doc[secKey].items = [];
-      doc[secKey].items.push(newItem);
-    });
-  };
 
   // Open modal in edit mode for existing item
   const handleOpenEditItem = (sectionKey, itemIndex) => {
     const item = draftDoc[sectionKey]?.items?.[itemIndex];
     if (!item) return;
-
-    if (sectionKey === "education") {
-      setActiveModal({
-        type: "education",
-        sectionKey: "education",
-        itemIndex,
-        entity: prepareEducationForDialog(item),
-        isNew: false,
-      });
-    } else {
-      const entityType = SECTION_TO_ENTITY_TYPE[sectionKey] || "work_exp";
-      setActiveModal({
-        type: "resume_entity",
-        entityType,
-        sectionKey,
-        itemIndex,
-        entity: prepareEntityForDialog(sectionKey, item),
-        isNew: false,
-      });
-    }
+    setActiveEditModal({
+      sectionKey,
+      itemIndex,
+      item,
+    });
   };
 
-  // Open modal in create mode for custom entry
-  const handleOpenCreateCustom = (sectionKey) => {
-    if (sectionKey === "education") {
-      setActiveModal({
-        type: "education",
-        sectionKey: "education",
-        itemIndex: null,
-        entity: null,
-        isNew: true,
-      });
-    } else {
-      const entityType = SECTION_TO_ENTITY_TYPE[sectionKey] || "work_exp";
-      setActiveModal({
-        type: "resume_entity",
-        entityType,
-        sectionKey,
-        itemIndex: null,
-        entity: null,
-        isNew: true,
-      });
-    }
-  };
-
-  const handleSaveModal = (formData) => {
-    if (!activeModal) return;
-    const { type, sectionKey, itemIndex, isNew } = activeModal;
-
-    let updatedItem;
-    if (type === "education") {
-      const existingId = !isNew && itemIndex !== null ? draftDoc.education?.items?.[itemIndex]?.id : null;
-      updatedItem = mapEducationFormDataToItem(formData, existingId);
-    } else {
-      updatedItem = mapFormDataToPortfolioItem(sectionKey, formData);
-    }
-
+  const handleSaveItemModal = (updatedItem) => {
+    if (!activeEditModal) return;
+    const { sectionKey, itemIndex } = activeEditModal;
     updateDoc((doc) => {
       if (!doc[sectionKey]) doc[sectionKey] = {};
       if (!Array.isArray(doc[sectionKey].items)) doc[sectionKey].items = [];
-
-      if (isNew || itemIndex === null) {
-        doc[sectionKey].items.push(updatedItem);
-      } else {
-        doc[sectionKey].items[itemIndex] = updatedItem;
-      }
+      doc[sectionKey].items[itemIndex] = updatedItem;
     });
-
-    setActiveModal(null);
+    setActiveEditModal(null);
   };
 
-  const handleDeleteFromModal = () => {
-    if (!activeModal) return;
-    const { sectionKey, itemIndex, isNew } = activeModal;
-    if (!isNew && itemIndex !== null) {
-      deleteItem(sectionKey, itemIndex);
-    }
-    setActiveModal(null);
+  const handleDeleteItemModal = () => {
+    if (!activeEditModal) return;
+    const { sectionKey, itemIndex } = activeEditModal;
+    deleteItem(sectionKey, itemIndex);
+    setActiveEditModal(null);
   };
 
   const handleCloseModal = () => {
-    setActiveModal(null);
+    setActiveEditModal(null);
   };
 
   // ── SAVE ACTION ──
   const handleSave = () => {
     if (!originalPortfolio) return;
     const updated = updatePortfolio(originalPortfolio.id, {
-      title: draftTitle,
+      title: originalPortfolio.title,
       slug: draftSlug,
       theme: draftTheme,
       document: draftDoc,
@@ -485,9 +241,9 @@ function PortfolioEditorInner({ originalPortfolio }) {
   // Render non-typeable structured card preview
   const renderNonTypeableItemCard = (sectionKey, item, idx, totalItems) => {
     const mainTitle = item.role || item.title || item.name || item.degree || "Untitled Entry";
-    const subtitle = item.company || item.subtitle || item.category || item.org || item.stream || item.branch || item.institution;
-    const dateStart = item.startDate || item.year;
-    const dateEnd = item.endDate;
+    const subtitle = item.company || item.subtitle || item.category || item.org || item.stream || item.branch || item.institute_name || item.institution;
+    const dateStart = item.from_date || item.startDate || item.year;
+    const dateEnd = item.to_date !== undefined ? item.to_date : item.endDate;
     const assetsList = item.images || item.assets || [];
     const skillsList = item.skills || [];
     const linksList = item.links || [];
@@ -584,7 +340,9 @@ function PortfolioEditorInner({ originalPortfolio }) {
         <div className={styles.itemContentBody}>
           {sectionKey === "education" && (
             <div className={styles.itemMetaRow}>
-              {item.institution && <span><strong>Institution:</strong> {item.institution}</span>}
+              {(item.institute_name || item.institution) && (
+                <span><strong>Institution:</strong> {item.institute_name || item.institution}</span>
+              )}
               {item.grade && <span><strong>Grade:</strong> {item.grade}</span>}
               {item.level && <span><strong>Level:</strong> {item.level}</span>}
             </div>
@@ -610,7 +368,7 @@ function PortfolioEditorInner({ originalPortfolio }) {
               {linksList.map((link, lIdx) => (
                 <a
                   key={link.id || lIdx}
-                  href={link.url || link.link}
+                  href={link.link || link.url}
                   target="_blank"
                   rel="noreferrer"
                   className={styles.linkPill}
@@ -627,10 +385,10 @@ function PortfolioEditorInner({ originalPortfolio }) {
           {Array.isArray(assetsList) && assetsList.length > 0 && (
             <div className={styles.assetsThumbRow}>
               {assetsList.map((ast, aIdx) => (
-                <div key={ast.id || aIdx} className={styles.assetThumbItem} title={ast.title || ast.caption || "Image"}>
-                  <img src={ast.url} alt={ast.title || "thumbnail"} className={styles.assetImg} />
-                  {(ast.title || ast.caption) && (
-                    <span className={styles.assetCaptionText}>{ast.title || ast.caption}</span>
+                <div key={ast.id || aIdx} className={styles.assetThumbItem} title={ast.title || ast.description || ast.caption || "Image"}>
+                  <img src={ast.link || ast.url} alt={ast.title || ast.description || "thumbnail"} className={styles.assetImg} />
+                  {(ast.title || ast.description || ast.caption) && (
+                    <span className={styles.assetCaptionText}>{ast.title || ast.description || ast.caption}</span>
                   )}
                 </div>
               ))}
@@ -721,20 +479,60 @@ function PortfolioEditorInner({ originalPortfolio }) {
               </div>
             </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Profile Photo URL</label>
-              <input
-                type="text"
-                className={styles.input}
-                value={draftDoc.about?.["profile-photo"] || ""}
-                onChange={(e) =>
-                  updateDoc((doc) => {
-                    if (!doc.about) doc.about = {};
-                    doc.about["profile-photo"] = e.target.value;
-                  })
-                }
-              />
-            </div>
+            {/* Profile Photo with image preview and profile section sync */}
+            {(() => {
+              const currentPhoto =
+                draftDoc.about?.profile_photo_link ||
+                draftDoc.about?.["profile-photo"] ||
+                "/Images/image.png";
+              const userProfilePhoto = user?.profile_photo_link;
+              const hasNewProfileImage =
+                Boolean(userProfilePhoto) &&
+                userProfilePhoto !== draftDoc.about?.profile_photo_link &&
+                userProfilePhoto !== draftDoc.about?.["profile-photo"];
+
+              return (
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Profile Photo</label>
+                  <div className={styles.photoSectionRow}>
+                    <div className={styles.photoPreviewWrap}>
+                      <img
+                        src={currentPhoto}
+                        alt="Profile preview"
+                        className={styles.photoImg}
+                        onError={(e) => {
+                          e.currentTarget.src = "/Images/image.png";
+                        }}
+                      />
+                    </div>
+                    <div className={styles.photoActionCol}>
+                      {hasNewProfileImage ? (
+                        <div className={styles.profileSyncBanner}>
+                          <span>New profile image detected in your account profile.</span>
+                          <button
+                            type="button"
+                            className={styles.useProfileImgBtn}
+                            onClick={() =>
+                              updateDoc((doc) => {
+                                if (!doc.about) doc.about = {};
+                                doc.about.profile_photo_link = userProfilePhoto;
+                                doc.about["profile-photo"] = userProfilePhoto;
+                              })
+                            }
+                          >
+                            Update to Profile Photo
+                          </button>
+                        </div>
+                      ) : (
+                        <p className={styles.photoSyncedHint}>
+                          Displaying portfolio photo. It updates when your profile photo changes.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             <div className={styles.formGroup}>
               <label className={styles.label}>Bio / Summary</label>
@@ -797,16 +595,7 @@ function PortfolioEditorInner({ originalPortfolio }) {
               <button
                 type="button"
                 className={styles.addItemBtn}
-                onClick={() =>
-                  updateDoc((doc) => {
-                    if (!doc.about) doc.about = {};
-                    if (!Array.isArray(doc.about.socials)) doc.about.socials = [];
-                    doc.about.socials.push({
-                      title: "GitHub",
-                      url: "https://github.com",
-                    });
-                  })
-                }
+                onClick={() => setIsAddSocialOpen(true)}
               >
                 + Add Social Link
               </button>
@@ -874,16 +663,7 @@ function PortfolioEditorInner({ originalPortfolio }) {
               <button
                 type="button"
                 className={styles.addItemBtn}
-                onClick={() =>
-                  updateDoc((doc) => {
-                    if (!doc.skills) doc.skills = {};
-                    if (!Array.isArray(doc.skills.categories)) doc.skills.categories = [];
-                    doc.skills.categories.push({
-                      name: "Tools & Technologies",
-                      skills: ["Git", "Docker"],
-                    });
-                  })
-                }
+                onClick={() => setIsAddCategoryOpen(true)}
               >
                 + Add Skill Category
               </button>
@@ -902,13 +682,7 @@ function PortfolioEditorInner({ originalPortfolio }) {
               {items.map((item, idx) =>
                 renderNonTypeableItemCard("experience", item, idx, items.length)
               )}
-              <button
-                type="button"
-                className={styles.addItemBtn}
-                onClick={() => handleOpenAddModal("experience")}
-              >
-                + Add Work Experience
-              </button>
+
             </div>
           </div>
         );
@@ -925,13 +699,7 @@ function PortfolioEditorInner({ originalPortfolio }) {
               {items.map((proj, idx) =>
                 renderNonTypeableItemCard("projects", proj, idx, items.length)
               )}
-              <button
-                type="button"
-                className={styles.addItemBtn}
-                onClick={() => handleOpenAddModal("projects")}
-              >
-                + Add Project
-              </button>
+
             </div>
           </div>
         );
@@ -945,13 +713,7 @@ function PortfolioEditorInner({ originalPortfolio }) {
               {items.map((edu, idx) =>
                 renderNonTypeableItemCard("education", edu, idx, items.length)
               )}
-              <button
-                type="button"
-                className={styles.addItemBtn}
-                onClick={() => handleOpenAddModal("education")}
-              >
-                + Add Education
-              </button>
+
             </div>
           </div>
         );
@@ -965,13 +727,7 @@ function PortfolioEditorInner({ originalPortfolio }) {
               {items.map((ach, idx) =>
                 renderNonTypeableItemCard("achievements", ach, idx, items.length)
               )}
-              <button
-                type="button"
-                className={styles.addItemBtn}
-                onClick={() => handleOpenAddModal("achievements")}
-              >
-                + Add Achievement
-              </button>
+
             </div>
           </div>
         );
@@ -985,13 +741,7 @@ function PortfolioEditorInner({ originalPortfolio }) {
               {items.map((cert, idx) =>
                 renderNonTypeableItemCard("certifications", cert, idx, items.length)
               )}
-              <button
-                type="button"
-                className={styles.addItemBtn}
-                onClick={() => handleOpenAddModal("certifications")}
-              >
-                + Add Certification
-              </button>
+
             </div>
           </div>
         );
@@ -1005,13 +755,7 @@ function PortfolioEditorInner({ originalPortfolio }) {
               {items.map((ext, idx) =>
                 renderNonTypeableItemCard("extraCurricular", ext, idx, items.length)
               )}
-              <button
-                type="button"
-                className={styles.addItemBtn}
-                onClick={() => handleOpenAddModal("extraCurricular")}
-              >
-                + Add Activity
-              </button>
+
             </div>
           </div>
         );
@@ -1045,43 +789,16 @@ function PortfolioEditorInner({ originalPortfolio }) {
 
   return (
     <div className={styles.pageLayout}>
-      {/* ── TOP CONTROL BAR ── */}
+      {/* ── TOP CONTROL BAR (CLEAN HEADER) ── */}
       <header className={styles.topBar}>
         <div className={styles.topBarInner}>
           <div className={styles.topBarLeft}>
-            <Link to="/" className={styles.backBtn} title="Return to Portfolios">
+            <Link to="/home" className={styles.backBtn} title="Return to Home">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 12H5M12 19l-7-7 7-7" />
               </svg>
-              <span>Portfolios</span>
+              <span>Home</span>
             </Link>
-            <div className={styles.titleArea}>
-              <input
-                type="text"
-                value={draftTitle}
-                onChange={(e) => {
-                  setDraftTitle(e.target.value);
-                  setIsDirty(true);
-                }}
-                className={styles.portfolioTitleInput}
-                title="Click to rename portfolio"
-              />
-              <div className={styles.slugMeta}>
-                <span className={styles.slugPrefix}>/portfolio/</span>
-                <input
-                  type="text"
-                  value={draftSlug}
-                  onChange={(e) => {
-                    setDraftSlug(
-                      e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, "-")
-                    );
-                    setIsDirty(true);
-                  }}
-                  className={styles.slugInput}
-                  title="Edit unique URL slug"
-                />
-              </div>
-            </div>
           </div>
 
           <div className={styles.topBarRight}>
@@ -1098,13 +815,13 @@ function PortfolioEditorInner({ originalPortfolio }) {
               <option value="dark">Dark Theme</option>
             </select>
 
-            {/* Google Forms Style Preview Link Button */}
+            {/* Preview Button */}
             <a
               href={`/portfolio/${draftSlug}`}
               target="_blank"
               rel="noopener noreferrer"
               className={styles.previewBtn}
-              title="Open portfolio in a new tab"
+              title="Preview portfolio in a new tab"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -1115,6 +832,22 @@ function PortfolioEditorInner({ originalPortfolio }) {
                 <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" />
               </svg>
             </a>
+
+            {/* Open live page option: ONLY if portfolio is currently active */}
+            {originalPortfolio.isActive && (
+              <a
+                href={`/portfolio/${draftSlug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.livePageBtn}
+                title="Open live active portfolio"
+              >
+                <span>Live Page</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" />
+                </svg>
+              </a>
+            )}
 
             <button
               type="button"
@@ -1153,22 +886,16 @@ function PortfolioEditorInner({ originalPortfolio }) {
 
       {/* ── GOOGLE FORMS MAIN CANVAS ── */}
       <main className={styles.mainCanvas}>
-        {/* Title Box Card */}
+        {/* Google Forms Style Title Card at Form Start */}
         <div className={styles.formHeaderCard}>
-          <h1 className={styles.formHeaderTitle}>{draftTitle || "Untitled Portfolio"}</h1>
-          <p className={styles.formHeaderDesc}>
-            Manage and sequence all sections of your portfolio. Reorder sections using the arrows in each card header.
-          </p>
-          <div className={styles.previewTip}>
-            <span>Click <strong>Preview</strong> in the top bar to inspect your live page in another tab.</span>
-            <a
-              href={`/portfolio/${draftSlug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.previewTipLink}
-            >
-              Open Live Page
-            </a>
+          <div className={styles.formHeaderAccent} />
+          <div className={styles.formHeaderInner}>
+            <h1 className={styles.formHeaderTitle}>
+              {originalPortfolio.title || "Untitled Portfolio"}
+            </h1>
+            <p className={styles.formHeaderDesc}>
+              Manage and sequence all sections of your portfolio. Reorder sections using the arrows in each card header.
+            </p>
           </div>
         </div>
 
@@ -1320,38 +1047,44 @@ function PortfolioEditorInner({ originalPortfolio }) {
         )}
       </main>
 
-      {/* ── FOCUSED ADD ITEM MODAL DIALOG ── */}
-      <AddItemDialog
-        isOpen={addModalConfig.isOpen}
-        sectionKey={addModalConfig.sectionKey}
-        existingItems={addModalConfig.sectionKey ? draftDoc[addModalConfig.sectionKey]?.items || [] : []}
-        onClose={() => setAddModalConfig({ isOpen: false, sectionKey: null })}
-        onAdd={handleAddItemFromModal}
-        onCreateCustom={handleOpenCreateCustom}
-      />
-
-      {/* ── RESUME ENTITY EDIT/CREATE DIALOG ── */}
-      {activeModal && activeModal.type === "resume_entity" && (
-        <ResumeEntityDialog
-          entityType={activeModal.entityType}
-          entity={activeModal.entity}
-          onSave={handleSaveModal}
-          onDelete={handleDeleteFromModal}
+      {/* ── PORTFOLIO ITEM EDIT DIALOG (NON-API / CLIENT-SIDE) ── */}
+      {activeEditModal && (
+        <PortfolioItemEditDialog
+          key={`${activeEditModal.sectionKey}-${activeEditModal.itemIndex}`}
+          isOpen={Boolean(activeEditModal)}
+          sectionKey={activeEditModal.sectionKey}
+          item={activeEditModal.item}
+          onSave={handleSaveItemModal}
+          onDelete={handleDeleteItemModal}
           onClose={handleCloseModal}
         />
       )}
 
-      {/* ── EDUCATION EDIT/CREATE DIALOG ── */}
-      {activeModal && activeModal.type === "education" && (
-        <div className={styles.dialogOverlay}>
-          <EducationDialog
-            education={activeModal.entity}
-            onSave={handleSaveModal}
-            onDelete={handleDeleteFromModal}
-            onClose={handleCloseModal}
-          />
-        </div>
-      )}
+      {/* ── ADD SOCIAL LINK DIALOG ── */}
+      <AddSocialLinkDialog
+        isOpen={isAddSocialOpen}
+        onClose={() => setIsAddSocialOpen(false)}
+        onAdd={(newSocial) => {
+          updateDoc((doc) => {
+            if (!doc.about) doc.about = {};
+            if (!Array.isArray(doc.about.socials)) doc.about.socials = [];
+            doc.about.socials.push(newSocial);
+          });
+        }}
+      />
+
+      {/* ── ADD SKILL CATEGORY DIALOG ── */}
+      <AddSkillCategoryDialog
+        isOpen={isAddCategoryOpen}
+        onClose={() => setIsAddCategoryOpen(false)}
+        onAdd={(newCategory) => {
+          updateDoc((doc) => {
+            if (!doc.skills) doc.skills = {};
+            if (!Array.isArray(doc.skills.categories)) doc.skills.categories = [];
+            doc.skills.categories.push(newCategory);
+          });
+        }}
+      />
     </div>
   );
 }

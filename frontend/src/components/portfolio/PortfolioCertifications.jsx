@@ -22,52 +22,69 @@ function CertificateCard({ cert, idx }) {
       <div className={styles.cornerBottomLeft} aria-hidden="true" />
       <div className={styles.cornerBottomRight} aria-hidden="true" />
 
-      <div className={styles.certContent}>
-        {/* Certificate Heading */}
-        <div className={styles.certHeader}>
-          <span className={styles.certTypeBadge}>Certificate of Proficiency</span>
-          <span className={styles.yearTag}>{cert.year}</span>
-        </div>
+      {(() => {
+        const displayYear = cert.year || (cert.from_date ? String(cert.from_date).slice(0, 4) : "");
+        const displayValid = cert.validUntil || (cert.to_date ? String(cert.to_date).slice(0, 4) : (cert.to_date === null ? "Lifetime" : ""));
+        const primaryLink = (Array.isArray(cert.links) && cert.links[0]) || null;
+        const certHref = cert.link || cert.verifyUrl || primaryLink?.link || primaryLink?.url;
+        const certLabel = cert.linkTitle || primaryLink?.title || "View Certificate";
 
-        {/* Certificate Title */}
-        <h3 className={styles.certTitle}>{cert.title}</h3>
+        return (
+          <div className={styles.certContent}>
+            {/* Certificate Heading */}
+            <div className={styles.certHeader}>
+              <span className={styles.certTypeBadge}>Certificate of Proficiency</span>
+              {displayYear && <span className={styles.yearTag}>{displayYear}</span>}
+            </div>
 
-        {/* Issuing Authority */}
-        <div className={styles.authorityRow}>
-          <span className={styles.authorityLabel}>Issued by</span>
-          <span className={styles.authorityName}>
-            {cert.org || cert.subtitle}
-          </span>
-        </div>
+            {/* Certificate Title */}
+            <h3 className={styles.certTitle}>{cert.title}</h3>
 
-        {/* Footer: Validity & Direct Link */}
-        <div className={styles.certFooter}>
-          {cert.validUntil && (
-            <span className={styles.validityBadge}>
-              Valid: {cert.validUntil}
-            </span>
-          )}
-
-          {(cert.link || cert.verifyUrl) && (
-            <motion.a
-              href={cert.link || cert.verifyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.certLink}
-              title="View Certificate"
-              whileHover={{ scale: 1.02, x: 2 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <span className={styles.certLinkLabel}>
-                {cert.linkTitle || "View Certificate"}
+            {/* Issuing Authority */}
+            <div className={styles.authorityRow}>
+              <span className={styles.authorityLabel}>Issued by</span>
+              <span className={styles.authorityName}>
+                {cert.org || cert.subtitle}
               </span>
-              <span className={styles.certLinkArrow} aria-hidden="true">
-                ↗
-              </span>
-            </motion.a>
-          )}
-        </div>
-      </div>
+            </div>
+
+            {/* Description */}
+            {cert.description && (
+              <p style={{ margin: "0.5rem 0 0.85rem 0", fontSize: "0.88rem", lineHeight: "1.5", color: "var(--text-muted, #64748b)" }}>
+                {cert.description}
+              </p>
+            )}
+
+            {/* Footer: Validity & Direct Link */}
+            <div className={styles.certFooter}>
+              {displayValid && (
+                <span className={styles.validityBadge}>
+                  Valid: {displayValid}
+                </span>
+              )}
+
+              {certHref && (
+                <motion.a
+                  href={certHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.certLink}
+                  title={certLabel}
+                  whileHover={{ scale: 1.02, x: 2 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <span className={styles.certLinkLabel}>
+                    {certLabel}
+                  </span>
+                  <span className={styles.certLinkArrow} aria-hidden="true">
+                    ↗
+                  </span>
+                </motion.a>
+              )}
+            </div>
+          </div>
+        );
+      })()}
     </motion.article>
   );
 }
