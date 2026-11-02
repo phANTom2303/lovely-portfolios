@@ -1,6 +1,7 @@
 import portfolioDocument from "../pages/Portfolio/portfolioDocument.js";
 
-const STORAGE_KEY = "lovely_portfolios_v1";
+const STORAGE_KEY = "lovely_portfolios_v8";
+
 
 const SEED_PORTFOLIOS = [
   {
@@ -37,8 +38,8 @@ const SEED_PORTFOLIOS = [
     },
     document: {
       ...portfolioDocument,
-      hero: {
-        ...portfolioDocument.hero,
+      about: {
+        ...(portfolioDocument.about || portfolioDocument.hero),
         title: "Creative Technologist & Open Source Builder",
         about:
           "Crafting fluid digital interactions, creative code experiments, and open-source libraries for the modern web.",
@@ -103,23 +104,31 @@ export function getActivePortfolio() {
   return active || list[0] || null;
 }
 
-export function setActivePortfolio(id) {
+export function setActivePortfolio(id, forceState) {
   const list = getPortfolios();
   let found = false;
   const updated = list.map((p) => {
-    const isThisActive = p.id === id;
-    if (isThisActive) found = true;
-    return {
-      ...p,
-      isActive: isThisActive,
-      updatedAt: isThisActive ? new Date().toISOString() : p.updatedAt,
-    };
+    if (p.id === id) {
+      found = true;
+      const nextActive =
+        typeof forceState === "boolean" ? forceState : !p.isActive;
+      return {
+        ...p,
+        isActive: nextActive,
+        updatedAt: new Date().toISOString(),
+      };
+    }
+    return p;
   });
 
   if (found) {
     saveToStorage(updated);
   }
   return updated;
+}
+
+export function toggleActivePortfolio(id) {
+  return setActivePortfolio(id);
 }
 
 export function createPortfolio({

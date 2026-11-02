@@ -96,6 +96,10 @@
     border-color 0.25s ease;
   position: relative;
   overflow: hidden;
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  backface-visibility: hidden;
 }
 
 .flagshipCardNoMedia {
@@ -187,7 +191,13 @@
   gap: 28px;
 }
 
+.flagshipTiltWrapper {
+  width: 100%;
+  border-radius: 24px;
+}
+
 .companionCard {
+  position: relative;
   background: #ffffff;
   border: 1.5px solid #e2dcce;
   border-radius: 20px;
@@ -202,6 +212,30 @@
     box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
     border-color 0.2s ease;
 }
+
+.spotlightOverlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    380px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(46, 196, 166, 0.12),
+    transparent 80%
+  );
+  opacity: var(--spotlight-opacity, 0);
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  z-index: 5;
+}
+
+:global([data-theme="dark"]) .spotlightOverlay {
+  background: radial-gradient(
+    380px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(56, 189, 248, 0.14),
+    transparent 80%
+  );
+}
+
 
 .companionCard:hover {
   transform: translateY(-5px);

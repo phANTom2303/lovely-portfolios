@@ -35,8 +35,8 @@
 /* ── Section Headline ── */
 .headerRow {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 20px;
   border-bottom: 2px dashed var(--portfolio-border-dashed);
   padding-bottom: 24px;
@@ -278,4 +278,95 @@
 
 :global([data-theme="dark"]) .washiTape {
   background: rgba(255, 255, 255, 0.18);
+}
+
+/* ── Category Filter Pills ── */
+.filterPillContainer {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--portfolio-card-bg, #ffffff);
+  border: 1.5px solid var(--portfolio-border, #e2dcce);
+  padding: 4px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  max-width: 100%;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.filterPillContainer::-webkit-scrollbar {
+  display: none;
+}
+
+.filterPill {
+  position: relative;
+  background: transparent;
+  border: none;
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--portfolio-text-muted, #64748b);
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.filterPill:hover {
+  color: var(--portfolio-text-heading, #11141a);
+}
+
+.filterPillActive {
+  color: var(--dark, #191919) !important;
+}
+
+.filterPillBubble {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--teal, #2ec4a6);
+  z-index: 1;
+  box-shadow: 0 2px 8px rgba(46, 196, 166, 0.35);
+}
+
+.filterPillLabel {
+  position: relative;
+  z-index: 2;
+}
+
+:global([data-theme="dark"]) .filterPillContainer {
+  background: var(--portfolio-card-bg, #161b22);
+  border-color: var(--portfolio-border, #30363d);
+}
+
+:global([data-theme="dark"]) .filterPill {
+  color: var(--portfolio-text-muted, #8b949e);
+}
+
+:global([data-theme="dark"]) .filterPill:hover {
+  color: #ffffff;
+}
+
+:global([data-theme="dark"]) .filterPillActive {
+  color: var(--dark, #0d1117) !important;
+}
+
+@media (max-width: 768px) {
+  .headerRow {
+    gap: 16px;
+  }
+  .filterPillContainer {
+    max-width: 100%;
+    padding: 3px;
+  }
+  .filterPill {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
 }

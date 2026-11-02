@@ -282,6 +282,36 @@
   background: rgba(46, 196, 166, 0.08);
 }
 
+.activeToggleButton {
+  background: rgba(46, 196, 166, 0.14);
+  border: 1px solid rgba(46, 196, 166, 0.45);
+  color: #0d8a73;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.42rem 0.8rem;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.activeToggleButton:hover {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #dc2626;
+}
+
+[data-theme="dark"] .activeToggleButton {
+  background: rgba(56, 189, 248, 0.14);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+}
+
+[data-theme="dark"] .activeToggleButton:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #f87171;
+}
+
 .currentActiveLabel {
   font-size: 0.8rem;
   font-weight: 700;

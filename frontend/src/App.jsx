@@ -5,6 +5,7 @@ import SignIn from "./pages/Auth/SignIn";
 import SignUp from "./pages/Auth/SignUp";
 import Profile from "./pages/profile/Profile";
 import Portfolio from "./pages/Portfolio/Portfolio";
+import PortfolioEdit from "./pages/PortfolioEdit/PortfolioEdit";
 
 function App() {
   return (
@@ -17,6 +18,8 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/portfolio/:identifier" element={<Portfolio />} />
+        <Route path="/portfolio/:identifier/edit" element={<PortfolioEdit />} />
+        <Route path="/edit/:identifier" element={<PortfolioEdit />} />
         <Route path="/p/:identifier" element={<Portfolio />} />
       </Routes>
     </BrowserRouter>

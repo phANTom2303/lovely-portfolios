@@ -78,19 +78,62 @@
   position: relative;
 }
 
-/* Timeline Vertical Track */
-.timeline::before {
-  content: "";
+.timelineSpine {
   position: absolute;
   left: 17px;
   top: 14px;
   bottom: 14px;
   width: 2px;
+  background: var(--portfolio-border, #e2dcce);
+  z-index: 1;
+}
+
+.timelineLaser {
+  width: 100%;
+  height: 100%;
   background: linear-gradient(
-    to bottom,
-    #84cc16 0%,
-    #d1d5db 40%,
-    rgba(209, 213, 219, 0.3) 100%
+    180deg,
+    var(--teal, #2ec4a6) 0%,
+    #38bdf8 70%,
+    var(--mustard, #f4c95d) 100%
+  );
+  transform-origin: 50% 0%;
+  box-shadow: 0 0 12px rgba(46, 196, 166, 0.65);
+}
+
+.activeHalo {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: rgba(132, 204, 22, 0.25);
+  animation: haloPulse 2.4s infinite;
+}
+
+@keyframes haloPulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.4); opacity: 0.2; }
+}
+
+.spotlightOverlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    380px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(46, 196, 166, 0.08),
+    transparent 80%
+  );
+  opacity: var(--spotlight-opacity, 0);
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  z-index: 4;
+}
+
+:global([data-theme="dark"]) .spotlightOverlay {
+  background: radial-gradient(
+    380px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(56, 189, 248, 0.1),
+    transparent 80%
   );
 }
 
@@ -101,6 +144,7 @@
   align-items: start;
   position: relative;
 }
+
 
 /* ── Timeline Nodes ── */
 .timelineNode {

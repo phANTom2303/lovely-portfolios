@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import MediaGallery from "./MediaGallery";
+import { getOrderedItems } from "../../utils/orderUtils";
 import styles from "./PortfolioAchievements.module.css";
+
 
 function AchievementsBackground() {
   return (
@@ -52,8 +55,7 @@ function AchievementsBackground() {
 }
 
 export default function PortfolioAchievements({ achievements }) {
-  const items =
-    achievements && Array.isArray(achievements.items) ? achievements.items : [];
+  const items = getOrderedItems(achievements?.items);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef(null);
@@ -82,9 +84,11 @@ export default function PortfolioAchievements({ achievements }) {
   if (total === 0) return null;
 
   const currentItem = items[currentIndex];
+  const itemSkills = currentItem.skills || currentItem.tags;
+  const itemAssets =
+    currentItem.assets || currentItem.media || currentItem.images;
   const hasMedia =
-    (Array.isArray(currentItem.media) && currentItem.media.length > 0) ||
-    (Array.isArray(currentItem.images) && currentItem.images.length > 0) ||
+    (Array.isArray(itemAssets) && itemAssets.length > 0) ||
     Boolean(currentItem.image);
 
   return (
@@ -94,13 +98,7 @@ export default function PortfolioAchievements({ achievements }) {
         {/* Section Header with Carousel Controls */}
         <div className={styles.headerRow} data-reveal>
           <div className={styles.headlineGroup}>
-            <div className={styles.boardTag}>
-              <span>★</span>
-              <span>Proof of Work</span>
-            </div>
-            <h2 className={styles.headline}>
-              {achievements.headline || "Honors & Proof of Work"}
-            </h2>
+            <h2 className={styles.headline}>Key Achievements & Honors</h2>
           </div>
 
           {/* Navigation Controls */}
@@ -117,24 +115,28 @@ export default function PortfolioAchievements({ achievements }) {
               </div>
 
               <div className={styles.arrowGroup}>
-                <button
+                <motion.button
                   type="button"
                   onClick={prevSlide}
                   className={styles.arrowBtn}
                   aria-label="Previous achievement"
                   title="Previous achievement"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.94 }}
                 >
                   ←
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   type="button"
                   onClick={nextSlide}
                   className={styles.arrowBtn}
                   aria-label="Next achievement"
                   title="Next achievement"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.94 }}
                 >
                   →
-                </button>
+                </motion.button>
               </div>
             </div>
           )}
@@ -145,31 +147,42 @@ export default function PortfolioAchievements({ achievements }) {
           className={styles.carouselContainer}
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
-          data-reveal
         >
-          <div
-            key={currentItem.id || currentIndex}
-            className={`${styles.slideCard} ${
-              hasMedia ? styles.slideCardWithMedia : ""
-            }`}
-          >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={
+                currentItem.id ||
+                (currentItem.title
+                  ? `${currentItem.title}-${currentIndex}`
+                  : currentIndex)
+              }
+              className={`${styles.slideCard} ${
+                hasMedia ? styles.slideCardWithMedia : ""
+              }`}
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {/* Holographic Metallic Shimmer */}
+              <div className={styles.holographicShimmer} aria-hidden="true" />
+
             {/* Left Column: Prestigious Identity & Narrative */}
             <div className={styles.leftCol}>
-              <div className={styles.badgeRow}>
-                {currentItem.rank && (
-                  <span className={styles.rankBadge}>{currentItem.rank}</span>
-                )}
-                {currentItem.category && (
+              {currentItem.category && (
+                <div className={styles.badgeRow}>
                   <span className={styles.categoryBadge}>
                     {currentItem.category}
                   </span>
-                )}
-              </div>
+                </div>
+              )}
 
               <h3 className={styles.title}>{currentItem.title}</h3>
 
               <div className={styles.metaRow}>
-                <span className={styles.org}>{currentItem.org}</span>
+                <span className={styles.org}>
+                  {currentItem.org || currentItem.subtitle}
+                </span>
                 {currentItem.year && (
                   <>
                     <span className={styles.metaDot}>·</span>
@@ -182,11 +195,11 @@ export default function PortfolioAchievements({ achievements }) {
                 <p className={styles.summaryWithMedia}>{currentItem.summary}</p>
               )}
 
-              {currentItem.tags && currentItem.tags.length > 0 && (
+              {itemSkills && itemSkills.length > 0 && (
                 <div className={styles.tagsRow}>
-                  {currentItem.tags.map((tag) => (
-                    <span key={tag} className={styles.tag}>
-                      {tag}
+                  {itemSkills.map((skill) => (
+                    <span key={skill} className={styles.tag}>
+                      {skill}
                     </span>
                   ))}
                 </div>
@@ -197,7 +210,7 @@ export default function PortfolioAchievements({ achievements }) {
             {hasMedia ? (
               <div className={styles.mediaCol}>
                 <MediaGallery
-                  media={currentItem.media || currentItem.images || currentItem.image}
+                  assets={itemAssets}
                   altTitle={`${currentItem.title} proof of work`}
                   aspectRatio="16/10"
                 />
@@ -209,18 +222,20 @@ export default function PortfolioAchievements({ achievements }) {
                 </div>
                 <p className={styles.summary}>{currentItem.summary}</p>
 
-                {currentItem.tags && currentItem.tags.length > 0 && (
+                {itemSkills && itemSkills.length > 0 && (
                   <div className={styles.tagsRow}>
-                    {currentItem.tags.map((tag) => (
-                      <span key={tag} className={styles.tag}>
-                        {tag}
+                    {itemSkills.map((skill) => (
+                      <span key={skill} className={styles.tag}>
+                        {skill}
                       </span>
                     ))}
                   </div>
                 )}
               </div>
             )}
-          </div>
+          </motion.div>
+        </AnimatePresence>
+
 
           {/* Pagination Track Dots */}
           {total > 1 && (

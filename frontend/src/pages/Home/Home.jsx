@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useCallback } from "react";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import PortfolioCard from "../../components/dashboard/PortfolioCard";
@@ -14,21 +13,16 @@ import {
 import styles from "./Home.module.css";
 
 export default function Home() {
-  const [portfolios, setPortfolios] = useState([]);
+  const [portfolios, setPortfolios] = useState(() => getPortfolios());
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState("all"); // 'all' | 'active' | 'alternate'
+  const [filterType, setFilterType] = useState("all"); // 'all' | 'active' | 'inactive'
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [notification, setNotification] = useState(null);
-  const [activeCopied, setActiveCopied] = useState(false);
 
-  useEffect(() => {
-    loadPortfolios();
-  }, []);
-
-  const loadPortfolios = () => {
+  const loadPortfolios = useCallback(() => {
     const list = getPortfolios();
     setPortfolios(list);
-  };
+  }, []);
 
   const showToast = (message) => {
     setNotification(message);
@@ -37,11 +31,13 @@ export default function Home() {
     }, 3500);
   };
 
-  const handleSetActive = (id) => {
+  const handleToggleActive = (id) => {
     const updated = setActivePortfolio(id);
     setPortfolios(updated);
-    const activeItem = updated.find((p) => p.id === id);
-    showToast(`"${activeItem?.title}" is now your active live portfolio.`);
+    const item = updated.find((p) => p.id === id);
+    showToast(
+      `"${item?.title}" is now ${item?.isActive ? "active" : "inactive"}.`
+    );
   };
 
   const handleCreate = (data) => {
@@ -68,30 +64,17 @@ export default function Home() {
     }
   };
 
-  const activePortfolio = portfolios.find((p) => p.isActive) || portfolios[0];
-
-  const handleCopyActiveLink = async () => {
-    if (!activePortfolio) return;
-    const url = `${window.location.origin}/portfolio/${activePortfolio.slug}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      setActiveCopied(true);
-      setTimeout(() => setActiveCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy link:", err);
-    }
-  };
+  const activeCount = portfolios.filter((p) => p.isActive).length;
+  const inactiveCount = portfolios.filter((p) => !p.isActive).length;
 
   const filteredPortfolios = portfolios.filter((p) => {
     const matchesSearch =
       p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (p.description &&
-        p.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      p.slug.toLowerCase().includes(searchQuery.toLowerCase());
 
     if (!matchesSearch) return false;
     if (filterType === "active") return p.isActive;
-    if (filterType === "alternate") return !p.isActive;
+    if (filterType === "inactive") return !p.isActive;
     return true;
   });
 
@@ -106,62 +89,26 @@ export default function Home() {
       )}
 
       <main className={styles.mainContainer}>
-        {/* Spotlight Hero Section: Active Portfolio */}
-        {activePortfolio && (
-          <section className={styles.spotlightSection} aria-label="Active Portfolio Spotlight">
-            <div className={styles.spotlightContent}>
-              <div className={styles.spotlightHeader}>
-                <span className={styles.spotlightBadge}>
-                  <span className={styles.spotlightDot} /> Active Live Portfolio
-                </span>
-                <span className={styles.spotlightSlug}>
-                  {window.location.host}/portfolio/{activePortfolio.slug}
-                </span>
-              </div>
-
-              <h1 className={styles.spotlightTitle}>{activePortfolio.title}</h1>
-              {activePortfolio.description && (
-                <p className={styles.spotlightDesc}>
-                  {activePortfolio.description}
-                </p>
-              )}
-
-              <div className={styles.spotlightControls}>
-                <Link
-                  to={`/portfolio/${activePortfolio.slug}`}
-                  className={styles.viewLiveBtn}
-                >
-                  View Live Portfolio ↗
-                </Link>
-
-                <button
-                  type="button"
-                  className={`${styles.copyLiveBtn} ${
-                    activeCopied ? styles.copyLiveSuccess : ""
-                  }`}
-                  onClick={handleCopyActiveLink}
-                >
-                  {activeCopied ? "Copied to Clipboard! ✓" : "Copy Live Link"}
-                </button>
-
-                <Link to="/profile" className={styles.editContentBtn}>
-                  Edit Profile & Content
-                </Link>
-              </div>
-            </div>
-          </section>
-        )}
-
         {/* Portfolios Management Hub */}
         <section className={styles.hubSection} aria-label="Manage All Portfolios">
+          <div className={styles.hubHeaderBanner}>
+            <div>
+              <h1 className={styles.hubMainTitle}>Your Portfolios</h1>
+              <p className={styles.hubSubtitle}>
+                Manage your personalized portfolio links, toggle active status, and preview your builds.
+              </p>
+            </div>
+            <button
+              type="button"
+              className={styles.createBtn}
+              onClick={() => setIsCreateOpen(true)}
+            >
+              + Create Portfolio
+            </button>
+          </div>
+
           <div className={styles.hubToolbar}>
             <div className={styles.toolbarLeft}>
-              <h2 className={styles.hubTitle}>
-                All Portfolios{" "}
-                <span className={styles.portfolioCount}>
-                  {portfolios.length}
-                </span>
-              </h2>
               <div className={styles.filterPills}>
                 <button
                   type="button"
@@ -179,16 +126,16 @@ export default function Home() {
                   }`}
                   onClick={() => setFilterType("active")}
                 >
-                  Active (1)
+                  Active ({activeCount})
                 </button>
                 <button
                   type="button"
                   className={`${styles.filterPill} ${
-                    filterType === "alternate" ? styles.filterPillActive : ""
+                    filterType === "inactive" ? styles.filterPillActive : ""
                   }`}
-                  onClick={() => setFilterType("alternate")}
+                  onClick={() => setFilterType("inactive")}
                 >
-                  Alternates ({Math.max(0, portfolios.length - 1)})
+                  Inactive ({inactiveCount})
                 </button>
               </div>
             </div>
@@ -213,14 +160,6 @@ export default function Home() {
                   </button>
                 )}
               </div>
-
-              <button
-                type="button"
-                className={styles.createBtn}
-                onClick={() => setIsCreateOpen(true)}
-              >
-                + Create Portfolio
-              </button>
             </div>
           </div>
 
@@ -231,7 +170,7 @@ export default function Home() {
                 <PortfolioCard
                   key={item.id}
                   portfolio={item}
-                  onSetActive={handleSetActive}
+                  onSetActive={handleToggleActive}
                   onDuplicate={handleDuplicate}
                   onDelete={handleDelete}
                 />

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import styles from "./CreatePortfolioModal.module.css";
 
 function slugify(text) {
@@ -21,24 +21,24 @@ export default function CreatePortfolioModal({
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [isSlugManual, setIsSlugManual] = useState(false);
-  const [description, setDescription] = useState("");
   const [theme, setTheme] = useState("light");
   const [templateId, setTemplateId] = useState("");
   const [error, setError] = useState("");
 
   const activePortfolio = portfolios.find((p) => p.isActive);
 
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
       setTitle("");
       setSlug("");
       setIsSlugManual(false);
-      setDescription("");
       setTheme("light");
       setTemplateId(activePortfolio?.id || "");
       setError("");
     }
-  }, [isOpen, activePortfolio]);
+  }
 
   if (!isOpen) return null;
 
@@ -72,7 +72,6 @@ export default function CreatePortfolioModal({
       onCreate({
         title: title.trim(),
         slug: finalSlug,
-        description: description.trim(),
         theme,
         templateId: templateId || null,
       });
@@ -141,20 +140,6 @@ export default function CreatePortfolioModal({
               Live public link:{" "}
               <code>{`${window.location.origin}/portfolio/${slug || "your-slug"}`}</code>
             </span>
-          </div>
-
-          <div className={styles.field}>
-            <label htmlFor="portfolio-desc" className={styles.label}>
-              Description (Optional)
-            </label>
-            <textarea
-              id="portfolio-desc"
-              rows={2}
-              className={styles.textarea}
-              placeholder="Brief note about the focus or target audience for this portfolio..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
           </div>
 
           <div className={styles.rowFields}>

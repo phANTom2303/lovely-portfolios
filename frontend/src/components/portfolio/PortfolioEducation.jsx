@@ -1,3 +1,5 @@
+import { motion } from "framer-motion";
+import { getOrderedItems } from "../../utils/orderUtils";
 import styles from "./PortfolioEducation.module.css";
 
 function EducationBackground() {
@@ -11,8 +13,14 @@ function EducationBackground() {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      {/* 1. Drafting Compass Divider Tool Geometry (Top Left) */}
-      <g transform="translate(100, 90)" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.075" fill="none">
+      {/* 1. Drafting Compass Divider Tool Geometry */}
+      <g
+        transform="translate(100, 90)"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeOpacity="0.075"
+        fill="none"
+      >
         <circle cx="50" cy="15" r="8" />
         <line x1="50" y1="23" x2="20" y2="105" />
         <line x1="50" y1="23" x2="80" y2="105" />
@@ -21,31 +29,36 @@ function EducationBackground() {
         <circle cx="80" cy="105" r="2" fill="currentColor" fillOpacity="0.1" />
       </g>
 
-      {/* 2. Open Book / Research Folio Isometric Curve (Top Right) */}
-      <g transform="translate(1030, 90)" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.07" fill="none">
+      {/* 2. Open Book / Research Folio Isometric Curve */}
+      <g
+        transform="translate(1030, 90)"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeOpacity="0.07"
+        fill="none"
+      >
         <path d="M 10,20 Q 50,5 90,20 L 90,75 Q 50,60 10,75 Z" />
         <path d="M 90,20 Q 130,5 170,20 L 170,75 Q 130,60 90,75 Z" />
         <line x1="90" y1="20" x2="90" y2="75" />
-        <line x1="25" y1="35" x2="75" y2="35" strokeDasharray="2 2" />
-        <line x1="25" y1="50" x2="75" y2="50" strokeDasharray="2 2" />
-        <line x1="105" y1="35" x2="155" y2="35" strokeDasharray="2 2" />
-        <line x1="105" y1="50" x2="155" y2="50" strokeDasharray="2 2" />
       </g>
 
-      {/* 3. Atomic Orbital Electron Rings (Bottom Left) */}
-      <g transform="translate(90, 520)" stroke="currentColor" strokeWidth="1" strokeOpacity="0.075" fill="none">
+      {/* 3. Atomic Orbital Electron Rings */}
+      <g
+        transform="translate(90, 520)"
+        stroke="currentColor"
+        strokeWidth="1"
+        strokeOpacity="0.075"
+        fill="none"
+      >
         <circle cx="50" cy="50" r="8" fill="currentColor" fillOpacity="0.1" />
         <ellipse cx="50" cy="50" rx="45" ry="16" transform="rotate(30 50 50)" />
-        <ellipse cx="50" cy="50" rx="45" ry="16" transform="rotate(-30 50 50)" />
-        <ellipse cx="50" cy="50" rx="45" ry="16" transform="rotate(90 50 50)" strokeDasharray="3 3" />
-        <circle cx="75" cy="35" r="3" fill="currentColor" fillOpacity="0.12" />
-      </g>
-
-      {/* 4. Angle Protractor Arc (Bottom Right) */}
-      <g transform="translate(1060, 530)" stroke="currentColor" strokeWidth="1" strokeOpacity="0.07" fill="none">
-        <path d="M 0,80 A 80 80 0 0 1 80,0 L 0,0 Z" />
-        <path d="M 0,55 A 55 55 0 0 1 55,0" strokeDasharray="2 3" />
-        <line x1="0" y1="0" x2="68" y2="42" />
+        <ellipse
+          cx="50"
+          cy="50"
+          rx="45"
+          ry="16"
+          transform="rotate(-30 50 50)"
+        />
       </g>
     </svg>
   );
@@ -65,53 +78,51 @@ export default function PortfolioEducation({ education }) {
       <EducationBackground />
       <div className={styles.inner}>
         {/* Section Header */}
-        <div className={styles.headerGroup} data-reveal>
-          <div className={styles.boardTag}>
-            <span>★</span>
-            <span>Academic Grounds</span>
-          </div>
-          <h2 className={styles.headline}>
-            {education.headline || "Academic Foundations"}
-          </h2>
+        <div className={styles.headerGroup}>
+          <h2 className={styles.headline}>Academic Background</h2>
         </div>
 
         {/* Education Grid */}
         <div className={styles.eduGrid}>
-          {education.items.map((item, idx) => (
-            <article
-              key={item.id || idx}
+          {getOrderedItems(education.items).map((item, idx) => (
+            <motion.article
+              key={item.id || (item.degree ? `${item.degree}-${idx}` : idx)}
               className={styles.eduCard}
-              data-reveal
-              data-reveal-delay={idx}
-              style={{ transitionDelay: `${idx * 0.12}s` }}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{
+                duration: 0.5,
+                delay: idx * 0.12,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              whileHover={{ y: -5, transition: { duration: 0.2 } }}
             >
               <div className={styles.cardHeader}>
                 <div className={styles.badgeRow}>
-                  {item.period && (
-                    <span className={styles.periodBadge}>{item.period}</span>
+                  {(item.startDate || item.period) && (
+                    <span className={styles.periodBadge}>
+                      {item.startDate
+                        ? item.endDate
+                          ? `${item.startDate} – ${item.endDate}`
+                          : `${item.startDate} – Present`
+                        : item.period}
+                    </span>
                   )}
                   {item.grade && (
                     <span className={styles.gradeBadge}>{item.grade}</span>
                   )}
                 </div>
 
-                <h3 className={styles.degreeTitle}>{item.degree}</h3>
+                <h3 className={styles.degreeTitle}>
+                  {item.degree}
+                  {item.stream && (
+                    <span className={styles.streamText}> — {item.stream}</span>
+                  )}
+                </h3>
                 <div className={styles.institution}>{item.institution}</div>
               </div>
-
-              {item.coursework && item.coursework.length > 0 && (
-                <div className={styles.courseworkSection}>
-                  <span className={styles.courseworkLabel}>Core Focus:</span>
-                  <div className={styles.courseworkPills}>
-                    {item.coursework.map((course) => (
-                      <span key={course} className={styles.coursePill}>
-                        {course}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </article>
+            </motion.article>
           ))}
         </div>
       </div>

@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import MediaGallery from "./MediaGallery";
+import { getOrderedItems } from "../../utils/orderUtils";
 import styles from "./PortfolioExtras.module.css";
+
 
 function ExtrasBackground() {
   return (
@@ -59,7 +62,7 @@ function ExtrasBackground() {
 }
 
 export default function PortfolioExtras({ extras }) {
-  const items = extras && Array.isArray(extras.items) ? extras.items : [];
+  const items = getOrderedItems(extras?.items);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef(null);
@@ -88,9 +91,11 @@ export default function PortfolioExtras({ extras }) {
   if (total === 0) return null;
 
   const currentItem = items[currentIndex];
+  const itemSkills = currentItem.skills || currentItem.tags;
+  const itemAssets =
+    currentItem.assets || currentItem.media || currentItem.images;
   const hasMedia =
-    (Array.isArray(currentItem.media) && currentItem.media.length > 0) ||
-    (Array.isArray(currentItem.images) && currentItem.images.length > 0) ||
+    (Array.isArray(itemAssets) && itemAssets.length > 0) ||
     Boolean(currentItem.image);
 
   return (
@@ -100,13 +105,7 @@ export default function PortfolioExtras({ extras }) {
         {/* Section Header with Carousel Controls */}
         <div className={styles.headerRow} data-reveal>
           <div className={styles.headlineGroup}>
-            <div className={styles.boardTag}>
-              <span>★</span>
-              <span>Community & Leadership</span>
-            </div>
-            <h2 className={styles.headline}>
-              {extras.headline || "Beyond the Terminal"}
-            </h2>
+            <h2 className={styles.headline}>Extracurricular Activities & Leadership</h2>
           </div>
 
           {total > 1 && (
@@ -122,24 +121,28 @@ export default function PortfolioExtras({ extras }) {
               </div>
 
               <div className={styles.arrowGroup}>
-                <button
+                <motion.button
                   type="button"
                   onClick={prevSlide}
                   className={styles.arrowBtn}
                   aria-label="Previous activity"
                   title="Previous activity"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.94 }}
                 >
                   ←
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   type="button"
                   onClick={nextSlide}
                   className={styles.arrowBtn}
                   aria-label="Next activity"
                   title="Next activity"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.94 }}
                 >
                   →
-                </button>
+                </motion.button>
               </div>
             </div>
           )}
@@ -150,40 +153,76 @@ export default function PortfolioExtras({ extras }) {
           className={styles.carouselContainer}
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
-          data-reveal
         >
-          <div
-            key={currentItem.id || currentIndex}
-            className={`${styles.slideCard} ${
-              hasMedia ? styles.slideCardWithMedia : ""
-            }`}
-          >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={
+                currentItem.id ||
+                (currentItem.role
+                  ? `${currentItem.role}-${currentIndex}`
+                  : currentIndex)
+              }
+              className={`${styles.slideCard} ${
+                hasMedia ? styles.slideCardWithMedia : ""
+              }`}
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className={styles.holographicShimmer} aria-hidden="true" />
+
             {/* Left Column: Role & Organization */}
             <div className={styles.leftCol}>
-              <div className={styles.badgeRow}>
-                {currentItem.isCurrent && (
-                  <span className={styles.activeBadge}>
-                    <span className={styles.activeBeacon} aria-hidden="true" />
-                    ACTIVE ROLE
-                  </span>
-                )}
-                {currentItem.period && (
-                  <span className={styles.periodBadge}>
-                    {currentItem.period}
-                  </span>
-                )}
-              </div>
+              {(() => {
+                const isCurrent =
+                  currentItem.endDate === null ||
+                  currentItem.endDate === undefined ||
+                  currentItem.endDate === "" ||
+                  (typeof currentItem.endDate === "string" &&
+                    currentItem.endDate.toLowerCase() === "present") ||
+                  Boolean(currentItem.isCurrent);
 
-              <h3 className={styles.roleTitle}>{currentItem.role}</h3>
-              <div className={styles.orgName}>{currentItem.org}</div>
+                const displayPeriod = currentItem.startDate
+                  ? `${currentItem.startDate} – ${
+                      isCurrent ? "Present" : currentItem.endDate
+                    }`
+                  : currentItem.period || "";
+
+                return (
+                  <div className={styles.badgeRow}>
+                    {isCurrent && (
+                      <span className={styles.activeBadge}>
+                        <span
+                          className={styles.activeBeacon}
+                          aria-hidden="true"
+                        />
+                        ACTIVE ROLE
+                      </span>
+                    )}
+                    {displayPeriod && (
+                      <span className={styles.periodBadge}>
+                        {displayPeriod}
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
+
+              <h3 className={styles.roleTitle}>
+                {currentItem.role || currentItem.title}
+              </h3>
+              <div className={styles.orgName}>
+                {currentItem.org || currentItem.subtitle}
+              </div>
 
               {hasMedia && (
                 <p className={styles.summaryWithMedia}>{currentItem.summary}</p>
               )}
 
-              {currentItem.tags && currentItem.tags.length > 0 && (
+              {itemSkills && itemSkills.length > 0 && (
                 <div className={styles.tagsRow}>
-                  {currentItem.tags.map((tag) => (
+                  {itemSkills.map((tag) => (
                     <span key={tag} className={styles.tagPill}>
                       {tag}
                     </span>
@@ -196,7 +235,7 @@ export default function PortfolioExtras({ extras }) {
             {hasMedia ? (
               <div className={styles.mediaCol}>
                 <MediaGallery
-                  media={currentItem.media || currentItem.images || currentItem.image}
+                  assets={itemAssets}
                   altTitle={`${currentItem.role} at ${currentItem.org}`}
                   aspectRatio="16/10"
                 />
@@ -205,9 +244,9 @@ export default function PortfolioExtras({ extras }) {
               <div className={styles.rightCol}>
                 <p className={styles.summaryText}>{currentItem.summary}</p>
 
-                {currentItem.tags && currentItem.tags.length > 0 && (
+                {itemSkills && itemSkills.length > 0 && (
                   <div className={styles.tagsRow}>
-                    {currentItem.tags.map((tag) => (
+                    {itemSkills.map((tag) => (
                       <span key={tag} className={styles.tagPill}>
                         {tag}
                       </span>
@@ -216,7 +255,9 @@ export default function PortfolioExtras({ extras }) {
                 )}
               </div>
             )}
-          </div>
+          </motion.div>
+        </AnimatePresence>
+
 
           {/* Pagination Indicators */}
           {total > 1 && (

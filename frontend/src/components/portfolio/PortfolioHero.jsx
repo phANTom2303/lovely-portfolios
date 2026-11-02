@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import TiltCard from "./TiltCard";
 import styles from "./PortfolioHero.module.css";
 
 function HeroBackground() {
@@ -13,15 +15,40 @@ function HeroBackground() {
       aria-hidden="true"
     >
       {/* 1. Large Orbital Trajectory Ellipse (Center Right) */}
-      <g transform="translate(850, 400)" stroke="currentColor" strokeWidth="1" strokeOpacity="0.065" fill="none">
-        <ellipse cx="0" cy="0" rx="360" ry="180" transform="rotate(-25)" strokeDasharray="4 4" />
+      <g
+        transform="translate(850, 400)"
+        stroke="currentColor"
+        strokeWidth="1"
+        strokeOpacity="0.065"
+        fill="none"
+      >
+        <ellipse
+          cx="0"
+          cy="0"
+          rx="360"
+          ry="180"
+          transform="rotate(-25)"
+          strokeDasharray="4 4"
+        />
         <ellipse cx="0" cy="0" rx="280" ry="140" transform="rotate(-25)" />
         <circle cx="210" cy="-70" r="4" fill="currentColor" fillOpacity="0.1" />
-        <circle cx="-180" cy="65" r="3" fill="currentColor" fillOpacity="0.08" />
+        <circle
+          cx="-180"
+          cy="65"
+          r="3"
+          fill="currentColor"
+          fillOpacity="0.08"
+        />
       </g>
 
       {/* 2. Precision Optical Focus / Coordinate Aperture (Top Left) */}
-      <g transform="translate(140, 140)" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.075" fill="none">
+      <g
+        transform="translate(140, 140)"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeOpacity="0.075"
+        fill="none"
+      >
         <circle cx="0" cy="0" r="60" />
         <circle cx="0" cy="0" r="42" strokeDasharray="3 3" />
         <circle cx="0" cy="0" r="4" fill="currentColor" fillOpacity="0.12" />
@@ -30,13 +57,29 @@ function HeroBackground() {
       </g>
 
       {/* 3. Signal Wave / Harmonic Curves (Bottom Left) */}
-      <g transform="translate(90, 680)" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.07" fill="none" strokeLinecap="round">
+      <g
+        transform="translate(90, 680)"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeOpacity="0.07"
+        fill="none"
+        strokeLinecap="round"
+      >
         <path d="M 0,20 Q 30,0 60,20 T 120,20 T 180,20 T 240,20" />
-        <path d="M 0,35 Q 30,15 60,35 T 120,35 T 180,35 T 240,35" strokeDasharray="3 3" />
+        <path
+          d="M 0,35 Q 30,15 60,35 T 120,35 T 180,35 T 240,35"
+          strokeDasharray="3 3"
+        />
       </g>
 
       {/* 4. Radial Degree Marks Arc (Top Right) */}
-      <g transform="translate(1080, 120)" stroke="currentColor" strokeWidth="1" strokeOpacity="0.07" fill="none">
+      <g
+        transform="translate(1080, 120)"
+        stroke="currentColor"
+        strokeWidth="1"
+        strokeOpacity="0.07"
+        fill="none"
+      >
         <path d="M -80,0 A 80 80 0 0 1 0,80" />
         <path d="M -60,0 A 60 60 0 0 1 0,60" strokeDasharray="2 3" />
         <line x1="-80" y1="0" x2="-90" y2="0" />
@@ -54,19 +97,21 @@ function HeroBackground() {
   );
 }
 
-export default function PortfolioHero({ hero }) {
-  const hasAvatar = Boolean(hero.avatar);
+export default function PortfolioHero({ about, hero }) {
+  const data = about || hero || {};
   const [typedName, setTypedName] = useState("");
   const [isTypingDone, setIsTypingDone] = useState(false);
 
   useEffect(() => {
-    const fullText = hero.name || "";
+    const fullText = data.name || "";
     let idx = 0;
-    setTypedName("");
-    setIsTypingDone(false);
+    let interval;
 
     const startTimeout = setTimeout(() => {
-      const interval = setInterval(() => {
+      setTypedName("");
+      setIsTypingDone(false);
+
+      interval = setInterval(() => {
         idx++;
         setTypedName(fullText.slice(0, idx));
         if (idx >= fullText.length) {
@@ -74,29 +119,40 @@ export default function PortfolioHero({ hero }) {
           setIsTypingDone(true);
         }
       }, 70);
-
-      return () => clearInterval(interval);
     }, 200);
 
-    return () => clearTimeout(startTimeout);
-  }, [hero.name]);
+    return () => {
+      clearTimeout(startTimeout);
+      if (interval) clearInterval(interval);
+    };
+  }, [data.name]);
+
+  const userPhoto =
+    data["profile-photo"] ||
+    data.profilePhoto ||
+    data.avatar ||
+    "/Images/image.png";
 
   return (
-    <section className={styles.hero} id="hero">
+    <section className={styles.hero} id="about">
       <HeroBackground />
       <div className={styles.gridPattern} aria-hidden="true" />
 
-      <div
-        className={`${styles.inner} ${
-          !hasAvatar ? styles.innerNoAvatar : ""
-        }`}
-      >
+      <div className={styles.inner}>
         {/* Left Column: Core Identity */}
-        <div className={styles.leftCol}>
-          {hero.available && (
+        <motion.div
+          className={styles.leftCol}
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {data.available && (
             <div className={styles.statusPill}>
-              <span className={styles.statusDot} aria-hidden="true" />
-              Available for work
+              <span className={styles.radarWrapper} aria-hidden="true">
+                <span className={styles.radarPing} />
+                <span className={styles.statusDot} />
+              </span>
+              <span>Available for work</span>
             </div>
           )}
 
@@ -112,16 +168,33 @@ export default function PortfolioHero({ hero }) {
             </span>
           </h1>
 
+          {/* Title Row with Static Role & Experience Badge */}
           <div className={styles.titleRow}>
-            <span className={styles.titleBadge}>{hero.title}</span>
-            <span className={styles.locationTag}>📍 {hero.location}</span>
+            <span className={styles.titleBadge}>{data.title}</span>
+            {data.experience && (
+              <span className={styles.expBadge}>
+                <span className={styles.expIcon}>⚡</span> {data.experience}
+              </span>
+            )}
+            {data.location && (
+              <span className={styles.locationTag}>📍 {data.location}</span>
+            )}
           </div>
 
-          <p className={styles.about}>{hero.about}</p>
+          <p className={styles.about}>{data.about}</p>
 
           <div className={styles.actionsRow}>
-            <a href="#builds" className={styles.btnPrimary}>
-              <span>View Builds</span>
+            <motion.button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById("projects");
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className={styles.btnPrimary}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <span>View Projects</span>
               <span className={styles.actionIcon} aria-hidden="true">
                 <svg
                   width="15"
@@ -136,9 +209,14 @@ export default function PortfolioHero({ hero }) {
                   <path d="M12 5v14M19 12l-7 7-7-7" />
                 </svg>
               </span>
-            </a>
+            </motion.button>
 
-            <a href={`mailto:${hero.email}`} className={styles.btnSecondary}>
+            <motion.a
+              href={`mailto:${data.email}`}
+              className={styles.btnSecondary}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+            >
               <span>Get in touch</span>
               <span className={styles.actionIcon} aria-hidden="true">
                 <svg
@@ -155,12 +233,12 @@ export default function PortfolioHero({ hero }) {
                   <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                 </svg>
               </span>
-            </a>
+            </motion.a>
           </div>
 
-          {hero.socials && hero.socials.length > 0 && (
+          {data.socials && data.socials.length > 0 && (
             <div className={styles.socialsList}>
-              {hero.socials.map((s) => (
+              {data.socials.map((s) => (
                 <a
                   key={s.title}
                   href={s.url}
@@ -173,34 +251,36 @@ export default function PortfolioHero({ hero }) {
               ))}
             </div>
           )}
-        </div>
+        </motion.div>
 
-        {/* Right Column: Only rendered if user image is present (no silhouette when missing) */}
-        {hasAvatar && (
-          <div className={styles.rightCol}>
-            <div className={styles.showcaseCard}>
-              <div className={styles.cardTitleBar}>
-                <div className={styles.windowDots} aria-hidden="true">
-                  <span className={styles.dotRed} />
-                  <span className={styles.dotYellow} />
-                  <span className={styles.dotGreen} />
+        {/* Right Column: User Photo in 3D Card */}
+        <div className={styles.rightCol}>
+          <div className={styles.stageWrapper}>
+            <TiltCard
+              maxRotation={6}
+              glare={true}
+              className={styles.tiltCardContainer}
+            >
+              <div className={styles.showcaseCard}>
+                <div className={styles.cardTitleBar}>
+                  <div className={styles.windowDots} aria-hidden="true">
+                    <span className={styles.dotRed} />
+                    <span className={styles.dotYellow} />
+                    <span className={styles.dotGreen} />
+                  </div>
                 </div>
-                <div className={styles.statusIndicator}>
-                  <span className={styles.liveBeacon} aria-hidden="true" />
-                  ONLINE
+
+                <div className={styles.avatarContainer}>
+                  <img
+                    src={userPhoto}
+                    alt={data.name}
+                    className={styles.avatarImage}
+                  />
                 </div>
               </div>
-
-              <div className={styles.avatarContainer}>
-                <img
-                  src={hero.avatar}
-                  alt={hero.name}
-                  className={styles.avatarImage}
-                />
-              </div>
-            </div>
+            </TiltCard>
           </div>
-        )}
+        </div>
       </div>
     </section>
   );

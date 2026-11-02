@@ -215,7 +215,32 @@
 .hubSection {
   display: flex;
   flex-direction: column;
+  gap: 1.75rem;
+}
+
+.hubHeaderBanner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 1.5rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.5rem;
+}
+
+.hubMainTitle {
+  font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+  font-weight: 800;
+  color: var(--text, #191919);
+  margin: 0 0 0.4rem 0;
+  letter-spacing: -0.03em;
+}
+
+.hubSubtitle {
+  font-size: 0.95rem;
+  color: var(--text-muted, #6b6b67);
+  margin: 0;
+  max-width: 620px;
+  line-height: 1.5;
 }
 
 .hubToolbar {

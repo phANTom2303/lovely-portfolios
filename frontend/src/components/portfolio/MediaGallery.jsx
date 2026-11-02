@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import styles from "./MediaGallery.module.css";
 
 /**
@@ -7,17 +7,17 @@ import styles from "./MediaGallery.module.css";
  * - Object: { url, type, poster, caption, description, title }
  * - Array of strings / objects
  */
-function normalizeMediaItems(rawMedia, rawImages, singleImage) {
+function normalizeMediaItems(rawAssets, rawImages, singleImage) {
   let list = [];
 
-  if (Array.isArray(rawMedia) && rawMedia.length > 0) {
-    list = rawMedia;
+  if (Array.isArray(rawAssets) && rawAssets.length > 0) {
+    list = rawAssets;
   } else if (Array.isArray(rawImages) && rawImages.length > 0) {
     list = rawImages;
   } else if (typeof singleImage === "string" && singleImage.trim() !== "") {
     list = [{ url: singleImage }];
-  } else if (typeof rawMedia === "string" && rawMedia.trim() !== "") {
-    list = [{ url: rawMedia }];
+  } else if (typeof rawAssets === "string" && rawAssets.trim() !== "") {
+    list = [{ url: rawAssets }];
   }
 
   return list.map((item, idx) => {
@@ -42,7 +42,6 @@ function normalizeMediaItems(rawMedia, rawImages, singleImage) {
       id: item.id || `media-${idx}`,
       url: item.videoUrl || url,
       type: isVideo ? "video" : "image",
-      poster: item.poster || item.thumbnail || null,
       title: item.title || null,
       caption: item.caption || item.description || null,
     };
@@ -68,6 +67,7 @@ function isEmbedUrl(url) {
 }
 
 export default function MediaGallery({
+  assets,
   media,
   images,
   image,
@@ -76,21 +76,16 @@ export default function MediaGallery({
   className = "",
   emptyFallback = null,
 }) {
-  const items = normalizeMediaItems(media, images, image);
+  const items = normalizeMediaItems(assets || media, images, image);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef(null);
-
-  // Reset index if items change
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [items.length]);
 
   if (items.length === 0) {
     return emptyFallback || null;
   }
 
-  const current = items[activeIndex] || items[0];
+  const safeIndex = activeIndex < items.length ? activeIndex : 0;
+  const current = items[safeIndex] || items[0];
   const hasMultiple = items.length > 1;
 
   const handlePrev = (e) => {
@@ -126,13 +121,10 @@ export default function MediaGallery({
               ref={videoRef}
               key={current.url}
               src={current.url}
-              poster={current.poster}
               controls
               playsInline
               preload="metadata"
               className={styles.mediaVideo}
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
             >
               Your browser does not support the video tag.
             </video>

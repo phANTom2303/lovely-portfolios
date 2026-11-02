@@ -104,6 +104,29 @@
     0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
+.holographicShimmer {
+  position: absolute;
+  inset: -120%;
+  background: linear-gradient(
+    115deg,
+    transparent 25%,
+    rgba(255, 255, 255, 0.45) 45%,
+    rgba(46, 196, 166, 0.4) 50%,
+    rgba(251, 191, 36, 0.4) 55%,
+    transparent 75%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 10;
+  mix-blend-mode: overlay;
+}
+
+.certCard:hover .holographicShimmer {
+  transform: translateX(100%);
+}
+
+
 /* Double Inner Border Frame */
 .certFrame {
   position: absolute;
@@ -254,27 +277,48 @@
   font-weight: 600;
 }
 
+.certLink,
 .verifyLink {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-family: var(--font-body, sans-serif);
-  font-size: 0.76rem;
-  font-weight: 800;
+  font-size: 0.78rem;
+  font-weight: 700;
   color: #11141a;
   text-decoration: none;
-  padding: 5px 12px;
-  border-radius: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
   background: #f1ede4;
   border: 1px solid #ded7c9;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 100%;
 }
 
+.certLinkLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.certLinkArrow,
+.verifyArrow {
+  font-size: 0.85rem;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.certLink:hover,
 .verifyLink:hover {
   background: #11141a;
   color: #ffffff;
   border-color: #11141a;
   transform: translateY(-1px);
+}
+
+.certLink:hover .certLinkArrow,
+.verifyLink:hover .verifyArrow {
+  transform: translate(2px, -2px);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -346,12 +390,14 @@
   border-top-color: var(--portfolio-border);
 }
 
+:global([data-theme="dark"]) .certLink,
 :global([data-theme="dark"]) .verifyLink {
   background: var(--portfolio-pill-bg);
   border-color: var(--portfolio-border);
-  color: var(--portfolio-text);
+  color: var(--portfolio-text-heading);
 }
 
+:global([data-theme="dark"]) .certLink:hover,
 :global([data-theme="dark"]) .verifyLink:hover {
   background: var(--portfolio-accent-gold-border);
   color: #0f172a;
@@ -391,6 +437,7 @@
     align-items: flex-start;
     gap: 12px;
   }
+  .certLink,
   .verifyLink {
     width: 100%;
     justify-content: center;

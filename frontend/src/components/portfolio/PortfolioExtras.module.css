@@ -154,8 +154,32 @@
     0 12px 36px rgba(0, 0, 0, 0.04),
     0 2px 8px rgba(0, 0, 0, 0.02);
   transition: all 0.3s ease;
-  animation: slideFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  position: relative;
+  overflow: hidden;
 }
+
+.holographicShimmer {
+  position: absolute;
+  inset: -120%;
+  background: linear-gradient(
+    115deg,
+    transparent 25%,
+    rgba(255, 255, 255, 0.45) 45%,
+    rgba(46, 196, 166, 0.35) 50%,
+    rgba(251, 191, 36, 0.35) 55%,
+    transparent 75%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 10;
+  mix-blend-mode: overlay;
+}
+
+.slideCard:hover .holographicShimmer {
+  transform: translateX(100%);
+}
+
 
 @keyframes slideFadeIn {
   from {

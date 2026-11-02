@@ -40,10 +40,10 @@ export default function PortfolioCard({
         <div className={styles.badgeGroup}>
           {portfolio.isActive ? (
             <span className={styles.activeBadge}>
-              <span className={styles.pulseDot} /> Active Live Portfolio
+              <span className={styles.pulseDot} /> Active
             </span>
           ) : (
-            <span className={styles.inactiveBadge}>Alternate Portfolio</span>
+            <span className={styles.inactiveBadge}>Inactive</span>
           )}
           <span className={styles.themeBadge} title={`Theme: ${portfolio.theme}`}>
             {portfolio.theme === "dark" ? "🌙 Dark" : "☀️ Light"}
@@ -55,9 +55,6 @@ export default function PortfolioCard({
 
       <div className={styles.cardBody}>
         <h3 className={styles.title}>{portfolio.title}</h3>
-        {portfolio.description && (
-          <p className={styles.description}>{portfolio.description}</p>
-        )}
 
         {/* Unique Link Bar */}
         <div className={styles.linkBar}>
@@ -76,23 +73,6 @@ export default function PortfolioCard({
             {copied ? "Copied! ✓" : "Copy Link"}
           </button>
         </div>
-
-        {/* Quick Stats */}
-        {portfolio.stats && (
-          <div className={styles.statsRow}>
-            <span className={styles.statItem}>
-              <strong>{portfolio.stats.projectsCount}</strong> Projects
-            </span>
-            <span className={styles.statDot}>•</span>
-            <span className={styles.statItem}>
-              <strong>{portfolio.stats.skillsCount}</strong> Skills
-            </span>
-            <span className={styles.statDot}>•</span>
-            <span className={styles.statItem}>
-              <strong>{portfolio.stats.experienceCount}</strong> Roles
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Card Actions */}
@@ -106,25 +86,27 @@ export default function PortfolioCard({
             View Portfolio ↗
           </Link>
 
-          {!portfolio.isActive ? (
-            <button
-              type="button"
-              className={styles.setActiveButton}
-              onClick={() => onSetActive(portfolio.id)}
-              title="Set this portfolio as your active primary portfolio"
-            >
-              Set as Active
-            </button>
-          ) : (
-            <span className={styles.currentActiveLabel}>
-              ✓ Default Active
-            </span>
-          )}
+          <button
+            type="button"
+            className={
+              portfolio.isActive
+                ? styles.activeToggleButton
+                : styles.setActiveButton
+            }
+            onClick={() => onSetActive(portfolio.id)}
+            title={
+              portfolio.isActive
+                ? "Click to set as inactive"
+                : "Click to set as active"
+            }
+          >
+            {portfolio.isActive ? "Active ✓" : "Set as Active"}
+          </button>
         </div>
 
         <div className={styles.secondaryActions}>
           <Link
-            to="/profile"
+            to={`/portfolio/${portfolio.slug || portfolio.id}/edit`}
             className={styles.iconAction}
             title="Edit portfolio content"
           >

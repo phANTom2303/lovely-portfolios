@@ -149,6 +149,12 @@
   line-height: 1.25;
 }
 
+.streamText {
+  color: #64748b;
+  font-weight: 600;
+  font-size: 1.15rem;
+}
+
 .institution {
   font-family: var(--font-body, sans-serif);
   font-size: 0.98rem;
