@@ -78,7 +78,7 @@ def test_normalize_skills_adds_field_and_keeps_the_rest():
         "originalSkills": ["JS", "Node", "Postgres"],
         "fromDate": "2024-01-01", "toDate": "2024-05-01",
     }]
-    result = normalize_skills(entities, {})
+    result = normalize_skills(entities)
 
     assert result[0]["normalizedSkills"] == ["javascript", "nodejs", "postgresql"]
     for key in ("reId", "reType", "title", "description", "originalSkills", "fromDate", "toDate"):

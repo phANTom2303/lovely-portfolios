@@ -21,8 +21,8 @@ def calls(monkeypatch):
         log.append(("normalize_jd", jd))
         return {**jd, "normalized": True}
 
-    def norm_skills(entities, jd):
-        log.append(("normalize_skills", entities, jd))
+    def norm_skills(entities):
+        log.append(("normalize_skills", entities))
         return [{**e, "normalizedSkills": ["javascript"]} for e in entities]
 
     def score(entities, jd):
@@ -46,8 +46,8 @@ def test_steps_run_in_order_and_feed_each_other(calls):
 
     assert result == {"sections": []}
     assert [c[0] for c in calls] == ["extract", "normalize_jd", "normalize_skills", "score", "rewrite"]
-    # the *normalized* JD reaches every later step, and the profile reaches the rewriter
-    assert calls[2][2]["normalized"] and calls[3][2]["normalized"] and calls[4][2]["normalized"]
+    # the *normalized* JD reaches the scorer and the rewriter, and the profile reaches the rewriter
+    assert calls[3][2]["normalized"] and calls[4][2]["normalized"]
     assert calls[4][3] == PROFILE
     assert calls[4][1][0]["normalizedSkills"] == ["javascript"]
 

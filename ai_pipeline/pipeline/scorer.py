@@ -105,8 +105,7 @@ def score_and_rank(normalized_entities: list, jd_extraction: dict) -> list:
             # Bound score strictly to [0.0, 1.0]
             score_val = max(0.0, min(1.0, score_val))
             scores_by_id[re_id] = {
-                "score": score_val,
-                "reasoning": item.get("reasoning", "Relevant match for target role"),
+                "score": score_val
             }
 
     # Merge scores back into entities and filter by threshold
@@ -115,11 +114,10 @@ def score_and_rank(normalized_entities: list, jd_extraction: dict) -> list:
         re_id = entity.get("reId")
         score_data = scores_by_id.get(
             re_id,
-            {"score": 0.0, "reasoning": "Unmatched entity"},
+            {"score": 0.0},
         )
         scored_entity = dict(entity)
         scored_entity["score"] = score_data["score"]
-        scored_entity["reasoning"] = score_data["reasoning"]
 
         if scored_entity["score"] >= MIN_SCORE_THRESHOLD:
             qualified_entities.append(scored_entity)

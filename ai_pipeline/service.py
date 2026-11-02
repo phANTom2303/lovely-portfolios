@@ -23,7 +23,7 @@ class ProfileMismatch(Exception):
 def run_pipeline(user_profile: dict, user_entities: list, jd_text: str) -> dict:
     """Steps 1-4: extract JD -> normalize skills -> score and rank -> rewrite and assemble."""
     jd_data = normalize_jd(extract_jd(jd_text))
-    normalized = normalize_skills(user_entities, jd_data)
+    normalized = normalize_skills(user_entities)
 
     try:
         scored = score_and_rank(normalized, jd_data)

@@ -117,7 +117,6 @@ def run_demo():
         for idx, e in enumerate(scored_entities, 1):
             print(f"  [{idx}] {e['title']} ({e['reType']})")
             print(f"      * Score: {e.get('score', 0):.2f}")
-            print(f"      * Reasoning: {e.get('reasoning', 'N/A')}")
             print(f"      * Skills: {', '.join(e.get('normalizedSkills', []))}\n")
     except Exception as e:
         print(f"[ERROR] in Step 3 Scorer: {e}")

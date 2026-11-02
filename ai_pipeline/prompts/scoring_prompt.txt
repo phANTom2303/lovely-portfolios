@@ -24,7 +24,7 @@ SCORING GUIDELINES:
   * 0.50 - 0.79: Strong match. Aligns with preferred skills, related technologies, or relevant project scope.
   * 0.20 - 0.49: Moderate/Tangential match. Shares common foundational skills (e.g., general programming, databases) but different focus.
   * 0.00 - 0.19: Low or irrevelant match. Minimal or no relationship to the role.
-- Provide a brief, objective 1-sentence reasoning explaining why the entity received that score based on JD alignment.
+- Return only the score for each entity. Do not include any explanation or reasoning text.
 
 STRICT RULES:
 1. Score EVERY entity provided in the list. Do not skip any entity.
@@ -36,8 +36,7 @@ Return this exact JSON structure:
   "scored_entities": [
     {
       "reId": 1,
-      "score": 0.85,
-      "reasoning": "Direct match on microservices and REST API responsibilities"
+      "score": 0.85
     }
   ]
 }

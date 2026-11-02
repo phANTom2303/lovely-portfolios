@@ -73,7 +73,7 @@ def normalize_list(skills: list | None) -> list[str]:
     return list(seen)
 
 
-def normalize_skills(user_entities: list, jd_extraction: dict | None = None) -> list:
+def normalize_skills(user_entities: list) -> list:
     """
     Step 2: add `normalizedSkills` (canonical names) to each of the user's entities.
     Every other field passes through, since Steps 3 and 4 read them. Entities are
