@@ -54,41 +54,64 @@ def run_demo():
             "reId": 1,
             "reType": "project",
             "title": "Share Market Tracker",
+            "subtitle": "Personal Project",
             "description": "Built a real time stock price tracker with live data feeds using WebSockets and Node.js.",
             "originalSkills": ["JS", "Node", "Postgres"],
             "normalizedSkills": ["javascript", "nodejs", "postgresql"],
+            "displaySkills": ["JavaScript", "Node.js", "PostgreSQL"],
             "fromDate": "2024-01-01",
             "toDate": "2024-05-01",
+            "links": [
+                {"id": 1, "title": "Source Code", "link": "https://example.com/share-market-tracker", "description": "Project repository"},
+                {"id": 2, "title": "Live Demo", "link": "https://example.com/share-market-tracker/demo", "description": "Hosted demo"},
+            ],
+            "assets": [
+                {"asset_id": 1, "title": "Dashboard", "link": "https://example.com/images/tracker-dashboard.png", "description": "Live price dashboard", "asset_type": "image"},
+            ],
         },
         {
             "reId": 2,
             "reType": "project",
             "title": "REST API for College ERP",
+            "subtitle": "Academic Project",
             "description": "Designed and built a modular REST API for college management system with automated grade calculations.",
             "originalSkills": ["Python", "FastAPI", "PostgreSQL"],
             "normalizedSkills": ["python", "fastapi", "postgresql"],
+            "displaySkills": ["Python", "FastAPI", "PostgreSQL"],
             "fromDate": "2024-06-01",
             "toDate": "2024-08-01",
+            "links": [],
+            "assets": [],
         },
         {
             "reId": 3,
             "reType": "work_exp",
-            "title": "Backend Intern at Startup",
+            "title": "Backend Intern",
+            "subtitle": "Startup",
             "description": "Worked on Node.js microservices and REST APIs with Redis caching layer.",
             "originalSkills": ["Node.js", "REST APIs", "Redis"],
             "normalizedSkills": ["nodejs", "rest apis", "redis"],
+            "displaySkills": ["Node.js", "REST APIs", "Redis"],
             "fromDate": "2023-06-01",
             "toDate": "2023-08-01",
+            "links": [],
+            "assets": [],
         },
         {
             "reId": 4,
             "reType": "project",
             "title": "Landscape Photography Gallery",
+            "subtitle": "Personal Project",
             "description": "Static photography gallery showcasing DSLR photos from Himachal trip.",
             "originalSkills": ["HTML", "CSS", "Lightroom"],
             "normalizedSkills": ["html", "css", "lightroom"],
+            "displaySkills": ["HTML", "CSS", "Lightroom"],
             "fromDate": "2023-01-01",
             "toDate": "2023-03-01",
+            "links": [],
+            "assets": [
+                {"asset_id": 2, "title": "Himachal trip", "link": "https://www.youtube.com/watch?v=example", "description": "Trip walkthrough", "asset_type": "youtube"},
+            ],
         },
     ]
 
@@ -97,10 +120,10 @@ def run_demo():
         "professionalTitle": "Backend & Cloud Engineer",
         "about": "Computer Science engineer passionate about building high-throughput distributed APIs and backend architectures.",
         "currentLocation": "Bhubaneswar, India",
-        "socials": {
-            "github": "https://github.com/AnyaSaxena24",
-            "linkedin": "https://linkedin.com/in/anya-saxena",
-        },
+        "socials": [
+            {"id": 1, "title": "GitHub", "link": "https://github.com/AnyaSaxena24", "description": ""},
+            {"id": 2, "title": "LinkedIn", "link": "https://linkedin.com/in/anya-saxena", "description": ""},
+        ],
     }
 
     print(f"\n[+] CANDIDATE: {sample_user_profile['name']} ({sample_user_profile['professionalTitle']})")
@@ -136,9 +159,12 @@ def run_demo():
             print(f"\n  SECTION: {section.get('sectionTitle', section.get('reType', '').upper())}")
             for entity in section.get("entities", []):
                 print(f"     * Title: {entity.get('title')}")
+                print(f"     * Subtitle: {entity.get('subtitle')}")
                 print(f"     * Rewritten Description:")
                 print(f"       \"{entity.get('rewrittenDescription')}\"")
                 print(f"     * Skills Highlighted: {', '.join(entity.get('skills', []))}")
+                print(f"     * Links: {', '.join(l['title'] for l in entity.get('links', [])) or 'none'}")
+                print(f"     * Assets: {', '.join(a['title'] + ' (' + a['asset_type'] + ')' for a in entity.get('assets', [])) or 'none'}")
 
         # Save to demo output file
         output_file = Path(__file__).resolve().parent / "generated_portfolio_demo.json"
