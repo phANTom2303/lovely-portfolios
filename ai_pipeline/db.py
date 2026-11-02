@@ -11,10 +11,10 @@ MOCK_USER_PROFILE = {
     "professionalTitle": "Full Stack & Backend Developer",
     "about": "Computer Science engineer passionate about building high-throughput distributed APIs.",
     "currentLocation": "Bhubaneswar, India",
-    "socials": {
-        "github": "https://github.com/phANTom2303",
-        "linkedin": "https://linkedin.com",
-    },
+    "socials": [
+        {"id": 1, "title": "GitHub", "link": "https://github.com/phANTom2303", "description": ""},
+        {"id": 2, "title": "LinkedIn", "link": "https://linkedin.com", "description": ""},
+    ],
 }
 
 MOCK_USER_ENTITIES = [
@@ -27,6 +27,8 @@ MOCK_USER_ENTITIES = [
         "originalSkills": ["JS", "Node", "Postgres"],
         "fromDate": "2024-01-01",
         "toDate": "2024-05-01",
+        "links": [],
+        "assets": [],
     },
     {
         "reId": 2,
@@ -37,6 +39,8 @@ MOCK_USER_ENTITIES = [
         "originalSkills": ["Python", "FastAPI", "PostgreSQL"],
         "fromDate": "2024-06-01",
         "toDate": "2024-08-01",
+        "links": [],
+        "assets": [],
     },
     {
         "reId": 3,
@@ -47,6 +51,8 @@ MOCK_USER_ENTITIES = [
         "originalSkills": ["Node.js", "REST APIs", "Redis"],
         "fromDate": "2023-06-01",
         "toDate": "2023-08-01",
+        "links": [],
+        "assets": [],
     },
 ]
 
@@ -69,6 +75,28 @@ def _parse_user_id(user_id: str) -> uuid.UUID:
         return uuid.UUID(str(user_id))
     except ValueError:
         raise InvalidUserId(f"Invalid user_id (expected a UUID): {user_id!r}")
+
+
+def _link_item(row) -> Dict[str, Any]:
+    """One links row -> the item shape used in entity['links'] and profile['socials'] (schema column names)."""
+    return {
+        "id": row["id"],
+        "title": row["title"] or "",
+        "link": row["link"] or "",
+        "description": row["description"] or "",
+    }
+
+
+def _asset_item(row) -> Dict[str, Any]:
+    """One assets row -> the item shape used in entity['assets'] (schema column names).
+    cloudinary_public_id is an internal deletion key and is deliberately not exposed."""
+    return {
+        "asset_id": row["asset_id"],
+        "title": row["title"] or "",
+        "link": row["link"] or "",
+        "description": row["description"] or "",
+        "asset_type": str(row["asset_type"]) if row["asset_type"] is not None else None,
+    }
 
 
 async def get_db_connection():
@@ -117,7 +145,7 @@ async def fetch_user_re_data(user_id: str) -> Tuple[Dict[str, Any], List[Dict[st
             "professionalTitle": user_row["professional_title"] or "Software Developer",
             "about": user_row["about"] or "",
             "currentLocation": user_row["current_location"] or "India",
-            "socials": {},
+            "socials": [],
         }
 
         # 2. Fetch active resume entities
@@ -153,6 +181,39 @@ async def fetch_user_re_data(user_id: str) -> Tuple[Dict[str, Any], List[Dict[st
         for sr in skill_rows:
             skills_by_entity.setdefault(sr["re_id"], []).append(sr["skill_name"])
 
+        # 4. Fetch links and assets of this user in one query each. A row with re_id NULL is
+        #    profile-level: links become the profile's socials, assets are not used yet.
+        link_rows = await conn.fetch(
+            """
+            SELECT id, re_id, title, link, description
+            FROM links
+            WHERE user_id = $1
+            ORDER BY id
+            """,
+            uid,
+        )
+        asset_rows = await conn.fetch(
+            """
+            SELECT asset_id, re_id, title, link, description, asset_type
+            FROM assets
+            WHERE user_id = $1
+            ORDER BY asset_id
+            """,
+            uid,
+        )
+
+        links_by_entity: Dict[int, List[Dict[str, Any]]] = {}
+        for lr in link_rows:
+            if lr["re_id"] is None:
+                user_profile["socials"].append(_link_item(lr))
+            else:
+                links_by_entity.setdefault(lr["re_id"], []).append(_link_item(lr))
+
+        assets_by_entity: Dict[int, List[Dict[str, Any]]] = {}
+        for ar in asset_rows:
+            if ar["re_id"] is not None:
+                assets_by_entity.setdefault(ar["re_id"], []).append(_asset_item(ar))
+
         entities = []
         for r in entity_rows:
             entities.append(
@@ -165,6 +226,8 @@ async def fetch_user_re_data(user_id: str) -> Tuple[Dict[str, Any], List[Dict[st
                     "originalSkills": skills_by_entity.get(r["re_id"], []),
                     "fromDate": str(r["from_date"]) if r["from_date"] else None,
                     "toDate": str(r["to_date"]) if r["to_date"] else None,
+                    "links": links_by_entity.get(r["re_id"], []),
+                    "assets": assets_by_entity.get(r["re_id"], []),
                 }
             )
 
