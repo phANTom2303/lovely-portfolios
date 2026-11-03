@@ -1,5 +1,4 @@
 import "./Footer.css";
-import { Link } from "react-router-dom";
 function Footer() {
   return (
     <footer className="site-footer">
@@ -8,13 +7,6 @@ function Footer() {
           <div className="footer-logo">Lovely Portfolio</div>
 
           <p>Your work deserves a better introduction.</p>
-        </div>
-
-        <div className="footer-links">
-          <a href="/about">About Us</a>
-          <Link className="footer-create" to="/signup">
-            Create Portfolio
-          </Link>
         </div>
       </div>
 

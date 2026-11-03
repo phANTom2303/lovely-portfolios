@@ -1,0 +1,357 @@
+.landing-features {
+  padding: 100px 24px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  position: relative;
+}
+
+.features-header {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto 60px auto;
+}
+
+.features-header h2 {
+  font-family: var(--font-heading);
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.features-subtitle {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+/* Two Marquee Feature Cards */
+.marquee-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-bottom: 48px;
+}
+
+.marquee-card {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.marquee-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.06);
+}
+
+.marquee-visual {
+  height: 250px;
+  background: #f1ede4;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Desktop screen mockup for modals */
+.desktop-screen-mockup {
+  width: 90%;
+  max-width: 380px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.screen-browser-top {
+  background: #f7f5f0;
+  border-bottom: 1px solid var(--border);
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.screen-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.screen-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d4cec4;
+}
+
+.screen-url {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.modal-dialog-preview {
+  padding: 14px 16px;
+  background: #ffffff;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.dialog-category {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--coral);
+  letter-spacing: 0.05em;
+}
+
+.dialog-close {
+  font-size: 0.7rem;
+  color: #aaa;
+}
+
+.dialog-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.dialog-tags {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.dialog-tags span {
+  font-size: 0.65rem;
+  background: var(--surface-dim);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--text);
+}
+
+.dialog-content-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sk-bar {
+  height: 5px;
+  background: #ece8e1;
+  border-radius: 4px;
+}
+
+.w-80 { width: 80%; }
+.w-100 { width: 100%; }
+.w-60 { width: 60%; }
+
+/* Phone screen mockup for responsiveness */
+.phone-screen-mockup {
+  width: 140px;
+  height: 200px;
+  background: #ffffff;
+  border: 4px solid #202322;
+  border-radius: 24px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 10px;
+  position: relative;
+}
+
+.phone-speaker {
+  width: 32px;
+  height: 3px;
+  background: #202322;
+  border-radius: 2px;
+  margin-bottom: 12px;
+}
+
+.phone-inner-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.phone-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--teal);
+  margin-bottom: 4px;
+}
+
+.phone-line {
+  background: #ded7cc;
+  border-radius: 3px;
+}
+
+.phone-line.title {
+  width: 70%;
+  height: 6px;
+  background: #b5ac9d;
+}
+
+.phone-line.subtitle {
+  width: 50%;
+  height: 4px;
+}
+
+.phone-chips {
+  display: flex;
+  gap: 3px;
+  margin: 4px 0;
+}
+
+.phone-chips span {
+  width: 22px;
+  height: 8px;
+  background: #e6e0d5;
+  border-radius: 2px;
+}
+
+.phone-card-block {
+  width: 100%;
+  height: 55px;
+  background: #f7f4ee;
+  border: 1px solid #ded7cc;
+  border-radius: 6px;
+  margin-top: 4px;
+}
+
+.marquee-info {
+  padding: 28px;
+}
+
+.marquee-info h3 {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+  letter-spacing: -0.02em;
+}
+
+.marquee-info p {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Secondary 4-feature grid */
+.features-subgrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.subfeature-card {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 180ms ease, border-color 180ms ease;
+}
+
+.subfeature-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--coral);
+}
+
+.subfeature-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  color: var(--coral);
+}
+
+.subfeature-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.subfeature-card h4 {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.subfeature-card p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+@media (max-width: 960px) {
+  .marquee-grid {
+    grid-template-columns: 1fr;
+  }
+  .features-subgrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .features-subgrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-features {
+    padding: 60px 16px;
+  }
+
+  .features-header {
+    margin-bottom: 36px;
+  }
+
+  .features-header h2 {
+    font-size: 2rem;
+  }
+
+  .marquee-visual {
+    height: 180px;
+    padding: 12px;
+  }
+
+  .marquee-info {
+    padding: 20px 16px;
+  }
+
+  .marquee-info h3 {
+    font-size: 1.25rem;
+  }
+
+  .subfeature-card {
+    padding: 20px 16px;
+  }
+}
