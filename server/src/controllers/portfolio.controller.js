@@ -65,7 +65,7 @@ export const getPortfolio = asyncHandler(async (req, res) => {
 // POST PORTFOLIO
 export const createPortfolio = asyncHandler(async (req, res) => {
     const user_id = req.user.id;
-    const { portfolio_name, portfolio_date } = req.body;
+    const { portfolio_name, profile_data } = req.body;
     const user_email = req.user.email;
 
     if (!user_id) {
@@ -89,14 +89,14 @@ export const createPortfolio = asyncHandler(async (req, res) => {
         });
     }
 
-    if (portfolio_date !== undefined && portfolio_date !== null && typeof portfolio_date !== "object") {
+    if (profile_data !== undefined && profile_data !== null && typeof profile_data !== "object") {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
             success: false,
-            message: "portfolio_date must be a valid JSON object",
+            message: "profile_data must be a valid JSON object",
         });
     }
 
-    const created = await portfolioService.createPortfolio(user_id, user_email, portfolio_name.trim(), portfolio_date);
+    const created = await portfolioService.createPortfolio(user_id, user_email, portfolio_name.trim(), profile_data);
     return res.status(RESPONSE_CODES.CREATED_CODE).json({
         success: true,
         data: created,
@@ -140,7 +140,7 @@ export const deletePortfolio = asyncHandler(async (req, res) => {
 // PATCH PORTFOLIO
 export const updatePortfolio = asyncHandler(async (req, res) => {
     const user_id = req.user.id;
-    const { portfolio_id, portfolio_name, portfolio_date, user_email } = req.body;
+    const { portfolio_id, portfolio_name, profile_data, user_email } = req.body;
 
     if (user_id === undefined || portfolio_id === undefined) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
@@ -151,7 +151,7 @@ export const updatePortfolio = asyncHandler(async (req, res) => {
 
     if (
         portfolio_name === undefined &&
-        portfolio_date === undefined &&
+        profile_data === undefined &&
         user_email === undefined
     ) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
@@ -186,13 +186,13 @@ export const updatePortfolio = asyncHandler(async (req, res) => {
     }
 
     if (
-        portfolio_date !== undefined &&
-        portfolio_date !== null &&
-        typeof portfolio_date !== "object"
+        profile_data !== undefined &&
+        profile_data !== null &&
+        typeof profile_data !== "object"
     ) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
             success: false,
-            message: "portfolio_date must be a valid JSON object",
+            message: "profile_data must be a valid JSON object",
         });
     }
 
@@ -208,7 +208,7 @@ export const updatePortfolio = asyncHandler(async (req, res) => {
 
     const updated = await portfolioService.updatePortfolio(user_id, portfolioIdNum, {
         portfolio_name: portfolio_name?.trim(),
-        portfolio_date,
+        profile_data,
         user_email: user_email?.trim(),
     });
 

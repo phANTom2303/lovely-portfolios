@@ -17,8 +17,8 @@ export const getPortfolioPublic = async (portfolio_id) => {
     return result;
 };
 
-export const createPortfolio = async (user_id, user_email, portfolio_name, portfolio_date) => {
-    const created = await portfolioRepo.makePortfolio(user_id, user_email, portfolio_name, portfolio_date);
+export const createPortfolio = async (user_id, user_email, portfolio_name, profile_data) => {
+    const created = await portfolioRepo.makePortfolio(user_id, user_email, portfolio_name, profile_data);
     return created;
 };
 
