@@ -15,6 +15,7 @@ import authRouter from '#routes/auth.routes.js';
 import reRouter from '#routes/re.routes.js';
 import userRouter from '#routes/user.routes.js';
 import portfolioRouter from '#routes/portfolio.routes.js';
+import seedRouter from '#routes/seed.routes.js';
 import { query } from '#config/db.js';
 import { initDatabase } from '#config/initDB.js';
 import { responseLogger } from '#middlewares/responseLogger.js';
@@ -52,6 +53,7 @@ app.use('/api/assets', assetRouter);
 app.use('/api/re', reRouter);
 app.use('/api/user', userRouter);
 app.use('/api/portfolio', portfolioRouter);
+app.use('/seed', seedRouter); // Test-only, unprotected
 
 // Global Error Handler
 app.use((err, req, res, next) => {

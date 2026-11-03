@@ -5,6 +5,8 @@ import { RESPONSE_CODES } from "#src/lib/common.js";
 const uuidRegex =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+const portfolioStatuses = ["draft", "published", "archived"];
+
 // GET PORTFOLIO (public — by portfolio_id only)
 export const getPortfolioPublic = asyncHandler(async (req, res) => {
     const { portfolio_id } = req.params;
@@ -103,6 +105,39 @@ export const createPortfolio = asyncHandler(async (req, res) => {
     });
 });
 
+// POST GENERATE PORTFOLIO (AI pipeline)
+export const generatePortfolio = asyncHandler(async (req, res) => {
+    const user_id = req.user.id;
+    const { jd_text } = req.body;
+
+    if (!user_id) {
+        return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
+            success: false,
+            message: "user_id is mandatory",
+        });
+    }
+
+    if (typeof user_id !== "string" || !uuidRegex.test(user_id)) {
+        return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
+            success: false,
+            message: "Invalid user_id",
+        });
+    }
+
+    if (jd_text === undefined || typeof jd_text !== "string" || jd_text.trim() === "") {
+        return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
+            success: false,
+            message: "jd_text is mandatory and must be a non-empty string",
+        });
+    }
+
+    const generated = await portfolioService.generatePortfolio(user_id, jd_text.trim());
+    return res.status(RESPONSE_CODES.CREATED_CODE).json({
+        success: true,
+        data: generated,
+    });
+});
+
 // DELETE PORTFOLIO
 export const deletePortfolio = asyncHandler(async (req, res) => {
     const user_id = req.user.id;
@@ -140,7 +175,7 @@ export const deletePortfolio = asyncHandler(async (req, res) => {
 // PATCH PORTFOLIO
 export const updatePortfolio = asyncHandler(async (req, res) => {
     const user_id = req.user.id;
-    const { portfolio_id, portfolio_name, profile_data, user_email } = req.body;
+    const { portfolio_id, portfolio_name, profile_data, user_email, status } = req.body;
 
     if (user_id === undefined || portfolio_id === undefined) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
@@ -152,7 +187,8 @@ export const updatePortfolio = asyncHandler(async (req, res) => {
     if (
         portfolio_name === undefined &&
         profile_data === undefined &&
-        user_email === undefined
+        user_email === undefined &&
+        status === undefined
     ) {
         return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
             success: false,
@@ -206,10 +242,18 @@ export const updatePortfolio = asyncHandler(async (req, res) => {
         });
     }
 
+    if (status !== undefined && !portfolioStatuses.includes(status)) {
+        return res.status(RESPONSE_CODES.BAD_REQUEST_CODE).json({
+            success: false,
+            message: `status must be one of: ${portfolioStatuses.join(", ")}`,
+        });
+    }
+
     const updated = await portfolioService.updatePortfolio(user_id, portfolioIdNum, {
         portfolio_name: portfolio_name?.trim(),
         profile_data,
         user_email: user_email?.trim(),
+        status,
     });
 
     return res.status(RESPONSE_CODES.SUCCESS_CODE).json({

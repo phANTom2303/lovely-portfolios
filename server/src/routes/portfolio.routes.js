@@ -14,6 +14,8 @@ router.get('/', portfolioController.getPortfolio);
 
 router.post('/', portfolioController.createPortfolio);
 
+router.post('/generate', portfolioController.generatePortfolio);
+
 router.delete('/', portfolioController.deletePortfolio);
 
 router.patch('/', portfolioController.updatePortfolio);

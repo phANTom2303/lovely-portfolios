@@ -67,6 +67,11 @@ export const makePortfolio = async (user_id, user_email, portfolio_name, profile
     return rows[0];
 };
 
+export const clearUserPortfoliosCache = async (user_id) => {
+    const redisClient = getRedisClient();
+    await redisClient.del(`user:${user_id}:portfolios`);
+};
+
 export const removePortfolio = async (user_id, portfolio_id) => {
     const sql = `
     DELETE FROM portfolio
@@ -88,6 +93,7 @@ export const update = async (user_id, portfolio_id, fields) => {
         portfolio_name: "portfolio_name",
         profile_data: "profile_data",
         user_email: "user_email",
+        status: "status",
     };
 
     const setClauses = [];

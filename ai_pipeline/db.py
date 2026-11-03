@@ -255,8 +255,8 @@ async def save_portfolio(user_id: str, job_role: str, portfolio_json: dict) -> i
 
         return await conn.fetchval(
             """
-            INSERT INTO portfolio (user_id, user_email, portfolio_name, profile_data, create_date)
-            VALUES ($1, $2, $3, $4::jsonb, CURRENT_DATE)
+            INSERT INTO portfolio (user_id, user_email, portfolio_name, profile_data, create_date, status)
+            VALUES ($1, $2, $3, $4::jsonb, CURRENT_DATE, 'draft')
             RETURNING portfolio_id
             """,
             uid,
