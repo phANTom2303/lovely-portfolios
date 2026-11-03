@@ -16,6 +16,7 @@ import styles from "./Home.module.css";
 
 export default function Home() {
   const { user } = useAuth();
+  const effectiveUser = user || { name: "Alex Sterling", email: "alex@sterling.dev" };
   const [portfolios, setPortfolios] = useState(() => getPortfolios());
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all"); // 'all' | 'active' | 'inactive'
@@ -97,7 +98,7 @@ export default function Home() {
           <div className={styles.hubHeaderBanner}>
             <div>
               <h1 className={styles.hubMainTitle}>
-                Welcome{user?.name ? `, ${user.name}` : ""}.
+                Welcome{effectiveUser?.name ? `, ${effectiveUser.name}` : ""}.
               </h1>
               <p className={styles.hubSubtitle}>
                 Your portfolio workspace is ready. Manage your personalized portfolio links, toggle active status, and customize your builds.

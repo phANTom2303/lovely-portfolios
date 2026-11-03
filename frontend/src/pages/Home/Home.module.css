@@ -66,7 +66,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--teal, #2ec4a6), #38bdf8, var(--mustard, #f4c95d));
+  background: linear-gradient(90deg, var(--coral), var(--mustard), var(--coral));
 }
 
 .spotlightContent {
@@ -87,33 +87,33 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  background: rgba(46, 196, 166, 0.12);
-  color: #0d8a73;
+  background: var(--coral-soft);
+  color: var(--coral);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.03em;
   padding: 0.3rem 0.75rem;
   border-radius: 999px;
-  border: 1px solid rgba(46, 196, 166, 0.3);
+  border: 1px solid var(--coral);
 }
 
 .spotlightDot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #0d8a73;
+  background: var(--coral);
   animation: pulseDot 2s infinite;
 }
 
 @keyframes pulseDot {
   0% {
-    box-shadow: 0 0 0 0 rgba(13, 138, 115, 0.7);
+    box-shadow: 0 0 0 0 rgba(255, 107, 90, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 8px rgba(13, 138, 115, 0);
+    box-shadow: 0 0 0 8px rgba(255, 107, 90, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(13, 138, 115, 0);
+    box-shadow: 0 0 0 0 rgba(255, 107, 90, 0);
   }
 }
 
@@ -154,8 +154,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--teal, #2ec4a6);
-  color: #0b1f1a;
+  background: var(--coral);
+  color: #ffffff;
   font-size: 0.9rem;
   font-weight: 700;
   padding: 0.65rem 1.25rem;
@@ -165,7 +165,7 @@
 }
 
 .viewLiveBtn:hover {
-  background: #27ad92;
+  background: #e85545;
   transform: translateY(-1px);
 }
 
@@ -182,14 +182,14 @@
 }
 
 .copyLiveBtn:hover {
-  border-color: var(--teal, #2ec4a6);
-  color: var(--teal, #2ec4a6);
+  border-color: var(--coral);
+  color: var(--coral);
 }
 
 .copyLiveSuccess {
-  background: rgba(46, 196, 166, 0.15);
-  border-color: var(--teal, #2ec4a6);
-  color: #0d8a73;
+  background: var(--coral-soft);
+  border-color: var(--coral);
+  color: var(--coral);
 }
 
 .editContentBtn {
@@ -337,7 +337,8 @@
 .searchInput:focus {
   outline: none;
   width: 250px;
-  border-color: var(--teal, #2ec4a6);
+  border-color: var(--coral);
+  box-shadow: 0 0 0 3px var(--coral-soft);
 }
 
 .clearSearch {
@@ -447,5 +448,53 @@
   }
   .portfolioGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 540px) {
+  .mainContainer {
+    padding: 1.25rem 0.75rem 3rem 0.75rem;
+    gap: 1.5rem;
+  }
+  .spotlightSection {
+    padding: 1.15rem 1rem;
+    border-radius: 14px;
+  }
+  .spotlightTitle {
+    font-size: clamp(1.25rem, 5.5vw, 1.6rem);
+  }
+  .spotlightDesc {
+    font-size: 0.88rem;
+    margin-bottom: 1.15rem;
+  }
+  .hubHeaderBanner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.15rem;
+  }
+  .hubHeaderBanner > div:last-child {
+    width: 100%;
+    display: flex;
+    gap: 0.65rem;
+  }
+  .hubHeaderBanner .copyLiveBtn,
+  .hubHeaderBanner .createBtn {
+    flex: 1;
+    min-height: 44px;
+    text-align: center;
+    justify-content: center;
+  }
+  .filterPills {
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .filterPill {
+    flex: 1;
+    text-align: center;
+    padding: 0.45rem 0.5rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
   }
 }

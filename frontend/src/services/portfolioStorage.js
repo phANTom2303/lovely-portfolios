@@ -78,6 +78,28 @@ export function getPortfolios() {
       saveToStorage(SEED_PORTFOLIOS);
       return SEED_PORTFOLIOS;
     }
+
+    // Ensure only 1 description exists by migrating and removing legacy tagline
+    let didMigrate = false;
+    parsed.forEach((p) => {
+      if (p.document?.projects?.items) {
+        p.document.projects.items.forEach((item) => {
+          if (item.tagline) {
+            if (!item.description) {
+              item.description = item.tagline;
+            } else if (!item.description.includes(item.tagline.trim())) {
+              item.description = `${item.tagline.trim()} ${item.description.trim()}`;
+            }
+            delete item.tagline;
+            didMigrate = true;
+          }
+        });
+      }
+    });
+    if (didMigrate) {
+      saveToStorage(parsed);
+    }
+
     return parsed;
   } catch (err) {
     console.error("Failed to read portfolios from localStorage:", err);

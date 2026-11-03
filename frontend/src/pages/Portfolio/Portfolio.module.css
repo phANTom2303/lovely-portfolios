@@ -291,6 +291,17 @@
   .dockChapter {
     padding: 6px 9px;
     font-size: 0.71rem;
+    min-height: 38px;
+  }
+
+  .dockThemeBtn {
+    min-width: 38px;
+    min-height: 38px;
+    font-size: 0.95rem;
+  }
+
+  .miniFooter {
+    padding: 20px 16px max(70px, calc(env(safe-area-inset-bottom, 0px) + 64px));
   }
 }
 

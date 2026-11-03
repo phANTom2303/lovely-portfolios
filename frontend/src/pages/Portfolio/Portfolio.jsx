@@ -45,7 +45,7 @@ const SECTION_CONFIG = {
     hasContent: (doc, resolved) => Boolean(resolved.about),
     render: (doc, resolved) => (
       <div id="about" key="about">
-        <PortfolioHero about={resolved.about} />
+        <PortfolioHero about={resolved.about} experience={doc.experience} />
       </div>
     ),
   },

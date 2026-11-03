@@ -122,10 +122,6 @@ function CompanionCard({ proj, idx }) {
 
         <h4 className={styles.companionTitle}>{proj.name || proj.title}</h4>
 
-        {proj.tagline && (
-          <p className={styles.companionTagline}>{proj.tagline}</p>
-        )}
-
         <p className={styles.companionDesc}>{proj.description}</p>
 
         {/* Tech Stack Chips */}
@@ -195,10 +191,6 @@ function FlagshipCard({ flagship, flagshipHasMedia }) {
         </div>
 
         <h3 className={styles.flagshipTitle}>{flagship.name || flagship.title}</h3>
-
-        {flagship.tagline && (
-          <p className={styles.flagshipTagline}>{flagship.tagline}</p>
-        )}
 
         <p className={styles.flagshipDesc}>{flagship.description}</p>
 

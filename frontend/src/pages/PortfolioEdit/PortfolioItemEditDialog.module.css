@@ -18,6 +18,7 @@
 
 .dialog {
   width: min(760px, calc(100vw - 2rem));
+  height: min(88vh, 850px);
   max-height: min(88vh, 850px);
   margin: auto;
   padding: 0;
@@ -29,6 +30,16 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.dialogForm {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .dialogHeader {
@@ -86,8 +97,8 @@
   padding: 0.55rem 1.25rem;
   border-radius: 8px;
   border: none;
-  background: var(--teal, #2ec4a6);
-  color: #0b1f1a;
+  background: var(--coral);
+  color: #ffffff;
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
@@ -95,7 +106,7 @@
 }
 
 .saveButton:hover {
-  background: #27ad92;
+  background: #e85545;
   transform: translateY(-1px);
 }
 
@@ -117,11 +128,23 @@
 
 .dialogBody {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+.dialogFooter {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-soft, #ece7dc);
+  background: var(--surface-raised, #faf8f5);
 }
 
 .sectionBlock {
@@ -186,8 +209,8 @@
 .textarea:focus,
 .select:focus {
   outline: none;
-  border-color: var(--teal, #2ec4a6);
-  box-shadow: 0 0 0 3px rgba(46, 196, 166, 0.15);
+  border-color: var(--coral);
+  box-shadow: 0 0 0 3px var(--coral-soft);
 }
 
 .textarea {
@@ -208,114 +231,58 @@
 }
 
 /* ── SKILLS DISPLAY MANAGEMENT ── */
-.skillsContainer {
+.skillsTitleGroup {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  align-items: center;
+  gap: 0.65rem;
 }
 
-.activeSkillsGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.subLabel {
-  font-size: 0.8rem;
+.skillsCountBadge {
+  font-size: 0.74rem;
   font-weight: 600;
-  color: var(--text-muted, #64748b);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  color: var(--coral);
+  background: var(--coral-soft);
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
 }
 
-.chipsWrap {
+.manageSkillsBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--coral);
+  background: var(--surface, #ffffff);
+  color: var(--coral);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.manageSkillsBtn:hover {
+  background: var(--coral-soft);
+  transform: translateY(-1px);
+}
+
+.itemSkillsArea {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
-  min-height: 38px;
-  padding: 0.4rem;
+  min-height: 44px;
+  padding: 0.6rem;
   background: var(--surface, #ffffff);
   border: 1px dashed var(--border, #dcd9d9);
   border-radius: 8px;
   align-items: center;
 }
 
-.emptyChips {
-  font-size: 0.8rem;
+.emptySkillsHint {
+  font-size: 0.82rem;
   color: var(--text-muted, #94a3b8);
   font-style: italic;
-  padding: 0.2rem 0.5rem;
-}
-
-.displayedChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem 0.65rem;
-  border-radius: 999px;
-  background: rgba(46, 196, 166, 0.15);
-  color: #0d8a73;
-  border: 1px solid rgba(46, 196, 166, 0.3);
-  font-size: 0.8rem;
-  font-weight: 600;
-  transition: all 0.15s ease;
-}
-
-.removeChipBtn {
-  background: transparent;
-  border: none;
-  color: #0d8a73;
-  cursor: pointer;
-  font-size: 0.85rem;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
-.removeChipBtn:hover {
-  color: #b91c1c;
-}
-
-.searchAvailableBox {
-  margin-bottom: 0.5rem;
-}
-
-.availableChipsList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  max-height: 140px;
-  overflow-y: auto;
-  padding: 0.25rem 0;
-}
-
-.availableChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.3rem 0.6rem;
-  border-radius: 999px;
-  background: var(--surface, #ffffff);
-  color: var(--text-muted, #64748b);
-  border: 1px solid var(--border, #dcd9d9);
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.availableChip:hover {
-  background: rgba(46, 196, 166, 0.1);
-  border-color: var(--teal, #2ec4a6);
-  color: #0d8a73;
-  transform: translateY(-1px);
-}
-
-.addIcon {
-  font-size: 0.85rem;
-  font-weight: 700;
+  margin: 0;
 }
 
 /* ── IMAGES DISPLAY MANAGEMENT ── */
@@ -336,8 +303,8 @@
 }
 
 .imageCardActive {
-  border-color: var(--teal, #2ec4a6);
-  box-shadow: 0 4px 12px rgba(46, 196, 166, 0.15);
+  border-color: var(--coral, #ff6b5a);
+  box-shadow: 0 4px 12px rgba(255, 107, 90, 0.15);
 }
 
 .imageCardInactive {
@@ -405,13 +372,13 @@
 }
 
 .toggleDisplayed {
-  background: rgba(46, 196, 166, 0.15);
-  color: #0d8a73;
-  border: 1px solid rgba(46, 196, 166, 0.3);
+  background: var(--coral-soft, #ffe8e5);
+  color: var(--coral, #ff6b5a);
+  border: 1px solid var(--coral, #ff6b5a);
 }
 
 .toggleDisplayed:hover {
-  background: rgba(46, 196, 166, 0.25);
+  background: #ffd9d4;
 }
 
 .toggleHidden {
@@ -451,13 +418,98 @@
 }
 
 .linkToggleBtnActive {
-  background: rgba(46, 196, 166, 0.15);
-  border-color: rgba(46, 196, 166, 0.3);
-  color: #0d8a73;
+  background: var(--coral-soft, #ffe8e5);
+  border-color: var(--coral, #ff6b5a);
+  color: var(--coral, #ff6b5a);
 }
 
 @media (max-width: 600px) {
   .gridTwo {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .overlay {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .dialog {
+    width: calc(100vw - 1rem);
+    height: 94vh;
+    max-height: 94vh;
+    border-radius: 12px;
+  }
+
+  .dialogHeader {
+    padding: 0.85rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+
+  .headerTitle {
+    font-size: 1.05rem;
+  }
+
+  .headerSubtitle {
+    font-size: 0.75rem;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .headerActions .saveButton,
+  .headerActions .cancelButton,
+  .headerActions .deleteButton {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.78rem;
+    min-height: 38px;
+  }
+
+  .dialogBody {
+    padding: 1rem 0.85rem;
+    gap: 1rem;
+  }
+
+  .sectionBlock {
+    padding: 0.85rem 0.75rem;
+  }
+
+  .linkRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.45rem;
+    background: #ffffff;
+    border: 1px solid var(--border-soft, #ece7dc);
+    border-radius: 8px;
+    padding: 0.65rem;
+  }
+
+  .linkRow input[type="text"] {
+    width: 100% !important;
+  }
+
+  .linkToggleBtn {
+    align-self: flex-start;
+  }
+
+  .imagesGrid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.65rem;
+  }
+
+  .dialogFooter {
+    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+  }
+
+  .dialogFooter .cancelButton,
+  .dialogFooter .saveButton {
+    flex: 1;
+    min-height: 42px;
+    text-align: center;
+    justify-content: center;
   }
 }

@@ -19,13 +19,13 @@
 }
 
 .activeCard {
-  border: 2px solid var(--teal, #2ec4a6);
-  box-shadow: 0 4px 16px rgba(46, 196, 166, 0.12);
+  border: 2px solid var(--coral);
+  box-shadow: 0 4px 16px rgba(255, 107, 90, 0.15);
 }
 
 .activeCard:hover {
-  border-color: var(--teal, #2ec4a6);
-  box-shadow: 0 12px 28px rgba(46, 196, 166, 0.18);
+  border-color: var(--coral);
+  box-shadow: 0 12px 28px rgba(255, 107, 90, 0.2);
 }
 
 .cardHeader {
@@ -47,45 +47,45 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: rgba(46, 196, 166, 0.12);
-  color: #0d8a73;
+  background: var(--coral-soft);
+  color: var(--coral);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   padding: 0.25rem 0.65rem;
   border-radius: 999px;
-  border: 1px solid rgba(46, 196, 166, 0.3);
+  border: 1px solid var(--coral);
 }
 
 [data-theme="dark"] .activeBadge {
-  color: #38bdf8;
-  background: rgba(56, 189, 248, 0.12);
-  border-color: rgba(56, 189, 248, 0.3);
+  color: var(--coral);
+  background: var(--coral-soft);
+  border-color: var(--coral);
 }
 
 .pulseDot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #0d8a73;
-  box-shadow: 0 0 0 0 rgba(13, 138, 115, 0.7);
+  background: var(--coral);
+  box-shadow: 0 0 0 0 rgba(255, 107, 90, 0.7);
   animation: pulse 2s infinite;
 }
 
 [data-theme="dark"] .pulseDot {
-  background: #38bdf8;
-  box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7);
+  background: var(--coral);
+  box-shadow: 0 0 0 0 rgba(255, 107, 90, 0.7);
 }
 
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(46, 196, 166, 0.7);
+    box-shadow: 0 0 0 0 rgba(255, 107, 90, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 6px rgba(46, 196, 166, 0);
+    box-shadow: 0 0 0 6px rgba(255, 107, 90, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(46, 196, 166, 0);
+    box-shadow: 0 0 0 0 rgba(255, 107, 90, 0);
   }
 }
 
@@ -199,14 +199,14 @@
 
 .copyButton:hover {
   background: var(--surface, #ffffff);
-  border-color: var(--teal, #2ec4a6);
-  color: var(--teal, #2ec4a6);
+  border-color: var(--coral);
+  color: var(--coral);
 }
 
 .copyButton.copied {
-  background: rgba(46, 196, 166, 0.15);
-  border-color: var(--teal, #2ec4a6);
-  color: #0d8a73;
+  background: var(--coral-soft);
+  border-color: var(--coral);
+  color: var(--coral);
 }
 
 /* Stats Row */
@@ -249,8 +249,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--teal, #2ec4a6);
-  color: #0b1f1a;
+  background: var(--coral);
+  color: #ffffff;
   font-size: 0.82rem;
   font-weight: 700;
   padding: 0.45rem 0.9rem;
@@ -260,7 +260,7 @@
 }
 
 .viewButton:hover {
-  background: #27ad92;
+  background: #e85545;
   transform: translateY(-1px);
 }
 
@@ -277,15 +277,15 @@
 }
 
 .setActiveButton:hover {
-  border-color: var(--teal, #2ec4a6);
-  color: var(--teal, #2ec4a6);
-  background: rgba(46, 196, 166, 0.08);
+  border-color: var(--coral);
+  color: var(--coral);
+  background: var(--coral-soft);
 }
 
 .activeToggleButton {
-  background: rgba(46, 196, 166, 0.14);
-  border: 1px solid rgba(46, 196, 166, 0.45);
-  color: #0d8a73;
+  background: var(--coral-soft);
+  border: 1px solid var(--coral);
+  color: var(--coral);
   font-size: 0.8rem;
   font-weight: 700;
   padding: 0.42rem 0.8rem;
@@ -301,9 +301,9 @@
 }
 
 [data-theme="dark"] .activeToggleButton {
-  background: rgba(56, 189, 248, 0.14);
-  border-color: rgba(56, 189, 248, 0.4);
-  color: #38bdf8;
+  background: var(--coral-soft);
+  border-color: var(--coral);
+  color: var(--coral);
 }
 
 [data-theme="dark"] .activeToggleButton:hover {
@@ -315,11 +315,11 @@
 .currentActiveLabel {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #0d8a73;
+  color: var(--coral);
 }
 
 [data-theme="dark"] .currentActiveLabel {
-  color: #38bdf8;
+  color: var(--coral);
 }
 
 .secondaryActions {
@@ -402,12 +402,54 @@
     flex: 1;
     min-height: 44px;
   }
-  .setActiveButton {
+  .setActiveButton,
+  .activeToggleButton {
     flex: 1;
     min-height: 44px;
   }
   .secondaryActions {
     justify-content: flex-end;
     padding-top: 0.5rem;
+  }
+}
+
+@media (max-width: 450px) {
+  .card {
+    padding: 1.15rem 1rem;
+    border-radius: 12px;
+  }
+  .linkBar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .copyButton {
+    width: 100%;
+    min-height: 38px;
+    text-align: center;
+    justify-content: center;
+  }
+  .primaryActions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .viewButton,
+  .setActiveButton,
+  .activeToggleButton {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+  .secondaryActions {
+    justify-content: space-between;
+    width: 100%;
+    border-top: 1px dashed var(--border, #dcd9d9);
+    padding-top: 0.65rem;
+  }
+  .iconAction {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+    min-height: 38px;
   }
 }

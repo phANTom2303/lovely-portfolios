@@ -119,8 +119,8 @@
 }
 
 .tabBtnActive {
-  color: #0d9488;
-  border-bottom-color: #0d9488;
+  color: var(--coral, #ff6b5a);
+  border-bottom-color: var(--coral, #ff6b5a);
 }
 
 /* ── Modal Scrollable Body ── */
@@ -182,7 +182,7 @@
 .libraryItemSubtitle {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #0d9488;
+  color: var(--coral, #ff6b5a);
 }
 
 .libraryItemDates {
@@ -234,9 +234,9 @@
   padding: 0.45rem 0.95rem;
   font-size: 0.82rem;
   font-weight: 600;
-  color: #0d9488;
-  background: #ffffff;
-  border: 1px solid #0d9488;
+  color: var(--coral, #ff6b5a);
+  background: var(--coral-soft, #ffe8e5);
+  border: 1px solid var(--coral, #ff6b5a);
   border-radius: 6px;
   cursor: pointer;
   white-space: nowrap;
@@ -245,7 +245,7 @@
 }
 
 .importBtn:hover {
-  background: #0d9488;
+  background: var(--coral, #ff6b5a);
   color: #ffffff;
 }
 
@@ -290,8 +290,8 @@
 
 .input:focus,
 .textarea:focus {
-  border-color: #0d9488;
-  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+  border-color: var(--coral, #ff6b5a);
+  box-shadow: 0 0 0 3px var(--coral-soft, #ffe8e5);
 }
 
 .textarea {
@@ -345,7 +345,7 @@
   font-size: 0.85rem;
   font-weight: 700;
   color: #ffffff;
-  background: #0d9488;
+  background: var(--coral, #ff6b5a);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -353,7 +353,7 @@
 }
 
 .submitModalBtn:hover {
-  background: #0f766e;
+  background: #e85545;
 }
 
 .customPromoCard {
@@ -372,8 +372,8 @@
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: #e6f6f4;
-  color: #0d9488;
+  background: var(--coral-soft, #ffe8e5);
+  color: var(--coral, #ff6b5a);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -401,16 +401,16 @@
   font-size: 0.9rem;
   font-weight: 700;
   color: #ffffff;
-  background: #0d9488;
+  background: var(--coral, #ff6b5a);
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
-  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25);
+  box-shadow: 0 4px 12px rgba(255, 107, 90, 0.25);
 }
 
 .openEditorBtn:hover {
-  background: #0f766e;
+  background: #e85545;
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.35);
+  box-shadow: 0 6px 16px rgba(255, 107, 90, 0.35);
 }

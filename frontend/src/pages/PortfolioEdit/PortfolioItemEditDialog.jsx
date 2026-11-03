@@ -5,7 +5,8 @@ import sampleAchievements from "../../data/sampleAchievements";
 import sampleCertifications from "../../data/sampleCertifications";
 import sampleEducation from "../../data/sampleEducation";
 import sampleExtraCurricular from "../../data/sampleExtraCurricular";
-import { allSkills, sampleUserSkills } from "../../data/sampleSkills";
+import SkillBadge from "../../components/shared/SkillBadge";
+import ItemSkillsPickerDialog from "./ItemSkillsPickerDialog";
 import styles from "./PortfolioItemEditDialog.module.css";
 
 const SECTION_LABELS = {
@@ -14,7 +15,7 @@ const SECTION_LABELS = {
     nameLabel: "Project Name",
     subtitleLabel: "Category / Domain",
     namePlaceholder: "e.g. Distributed Analytics Engine",
-    subtitlePlaceholder: "e.g. Real-Time Systems, AI Tooling",
+    subtitlePlaceholder: "e.g. Real-Time Systems, AI Tooling (optional)",
     descPlaceholder: "Project architecture, challenges solved, and key technical impact...",
   },
   experience: {
@@ -29,8 +30,8 @@ const SECTION_LABELS = {
     title: "Education",
     nameLabel: "Degree / Program",
     subtitleLabel: "Branch / Field of Study",
-    namePlaceholder: "e.g. B.Tech Computer Science",
-    subtitlePlaceholder: "e.g. Systems & Software Engineering",
+    namePlaceholder: "e.g. B.Tech, Master of Science",
+    subtitlePlaceholder: "e.g. Computer Science & Engineering",
     descPlaceholder: "Academic coursework, honors, leadership...",
   },
   achievements: {
@@ -38,7 +39,7 @@ const SECTION_LABELS = {
     nameLabel: "Honor / Title",
     subtitleLabel: "Awarding Body / Organization",
     namePlaceholder: "e.g. 1st Place National Hackathon",
-    subtitlePlaceholder: "e.g. Tech Foundation",
+    subtitlePlaceholder: "e.g. AWS & Devpost (optional)",
     descPlaceholder: "Scope of recognition, criteria, and outcomes...",
   },
   certifications: {
@@ -53,8 +54,8 @@ const SECTION_LABELS = {
     title: "Extra-Curricular Activity",
     nameLabel: "Role / Initiative",
     subtitleLabel: "Organization / Community",
-    namePlaceholder: "e.g. Open Source Maintainer",
-    subtitlePlaceholder: "e.g. Community Tech Network",
+    namePlaceholder: "e.g. President & Lead Organizer",
+    subtitlePlaceholder: "e.g. Google Developer Student Club",
     descPlaceholder: "Initiative details, community contributions...",
   },
 };
@@ -62,7 +63,7 @@ const SECTION_LABELS = {
 function toMonthInput(val) {
   if (!val) return "";
   if (typeof val !== "string") return "";
-  if (/^\d{4}-\d{2}$/.test(val)) return val;
+  if (/^\d{4}-\d{2}/.test(val)) return val.slice(0, 7);
   if (/^\d{4}$/.test(val)) return `${val}-01`;
   const d = new Date(val);
   if (!isNaN(d.getTime())) {
@@ -85,19 +86,19 @@ function findMatchingSampleItem(sectionKey, item) {
   };
   const list = datasets[sectionKey] || [];
   const searchName = (item.role || item.title || item.name || item.degree || "").toLowerCase().trim();
-  const searchSub = (item.company || item.subtitle || item.institute_name || item.institution || "").toLowerCase().trim();
+  const searchSub = (item.company || item.subtitle || item.institute_name || item.institution || item.org || "").toLowerCase().trim();
 
   return list.find((s) => {
     if (item.id && s.id === item.id) return true;
     const sName = (s.role || s.title || s.name || s.degree || "").toLowerCase().trim();
-    const sSub = (s.company || s.subtitle || s.institute || "").toLowerCase().trim();
+    const sSub = (s.company || s.subtitle || s.institute || s.org || "").toLowerCase().trim();
     if (searchName && sName === searchName) return true;
     if (searchSub && sSub === searchSub) return true;
     return false;
   });
 }
 
-function getInitialFormData(item) {
+function getInitialFormData(item, sectionKey) {
   if (!item) {
     return {
       name: "",
@@ -113,15 +114,28 @@ function getInitialFormData(item) {
     };
   }
 
-  const name = item.role || item.title || item.name || item.degree || "";
-  const subtitle = item.company || item.subtitle || item.category || item.org || item.stream || item.branch || "";
-  const institute_name = item.institute_name || item.institution || item.institute || "";
+  const name = item.degree || item.role || item.title || item.name || "";
+  const subtitle = item.stream || item.branch || item.company || item.subtitle || item.category || item.org || "";
+  const institute_name = item.institute_name || item.institution || item.institute || item.company || "";
   const startDate = toMonthInput(item.from_date || item.startDate || item.year || "");
   const rawEnd = item.to_date !== undefined ? item.to_date : (item.endDate || item.validUntil);
-  const isCurrent = item.isCurrent ?? (rawEnd === null || rawEnd === "Present" || rawEnd === "");
+
+  let isCurrent;
+  if (sectionKey === "achievements") {
+    isCurrent = false;
+  } else if (sectionKey === "certifications") {
+    isCurrent = item.validUntil === "Lifetime" || rawEnd === "Lifetime" || !rawEnd;
+  } else {
+    isCurrent = item.isCurrent ?? (rawEnd === null || rawEnd === "Present" || rawEnd === "");
+  }
+
   const endDate = isCurrent ? "" : toMonthInput(rawEnd || "");
 
   let description = item.description || item.summary || "";
+  // If an older item had a legacy tagline, merge it into the single description field
+  if (item.tagline && typeof item.tagline === "string" && !description.includes(item.tagline.trim())) {
+    description = description ? `${item.tagline.trim()}\n\n${description.trim()}` : item.tagline.trim();
+  }
   if (!description && Array.isArray(item.highlights)) {
     description = item.highlights.join("\n");
   }
@@ -151,19 +165,21 @@ function getInitialAssets(item, sectionKey) {
   if (!item) return [];
   const sampleMatch = findMatchingSampleItem(sectionKey, item);
 
+  // Existing assets in the item: displayed by default, matched by title
   const existingAssets = (item.assets || item.images || []).map((ast, idx) => ({
-    id: ast.id || `ast-${idx}`,
+    title: ast.title || `Attachment #${idx + 1}`,
     link: ast.link || ast.url || "",
-    title: ast.title || "",
     description: ast.description || ast.caption || "",
     asset_type: ast.asset_type || ast.type || "image",
     isDisplayed: true,
   }));
 
+  const existingTitles = new Set(existingAssets.map((a) => a.title.toLowerCase().trim()));
+
+  // Sample assets from the same entity
   const sampleAssets = (sampleMatch?.images || sampleMatch?.assets || []).map((ast, idx) => ({
-    id: ast.id || `sample-ast-${idx}`,
+    title: ast.title || `Attachment #${idx + 1}`,
     link: ast.url || ast.link || "",
-    title: ast.title || "",
     description: ast.description || ast.caption || "",
     asset_type: ast.asset_type || ast.type || "image",
     isDisplayed: false,
@@ -171,8 +187,10 @@ function getInitialAssets(item, sectionKey) {
 
   const combinedAssets = [...existingAssets];
   sampleAssets.forEach((sa) => {
-    if (sa.link && !combinedAssets.some((ca) => ca.link === sa.link)) {
+    const cleanTitle = sa.title.toLowerCase().trim();
+    if (sa.link && !existingTitles.has(cleanTitle)) {
       combinedAssets.push(sa);
+      existingTitles.add(cleanTitle);
     }
   });
 
@@ -183,24 +201,28 @@ function getInitialLinks(item, sectionKey) {
   if (!item) return [];
   const sampleMatch = findMatchingSampleItem(sectionKey, item);
 
+  // Existing links in item: displayed by default, matched by title
   const existingLinks = (item.links || []).map((l, idx) => ({
-    id: l.id || `link-${idx}`,
-    title: l.title || l.label || "Link",
+    title: l.title || l.label || `Link #${idx + 1}`,
     link: l.link || l.url || "",
     isDisplayed: true,
   }));
 
+  const existingTitles = new Set(existingLinks.map((l) => l.title.toLowerCase().trim()));
+
+  // Sample links from the same entity
   const sampleLinks = (sampleMatch?.links || []).map((l, idx) => ({
-    id: l.id || `sample-link-${idx}`,
-    title: l.title || l.label || "Link",
+    title: l.title || l.label || `Link #${idx + 1}`,
     link: l.url || l.link || "",
     isDisplayed: false,
   }));
 
   const combinedLinks = [...existingLinks];
   sampleLinks.forEach((sl) => {
-    if (sl.link && !combinedLinks.some((cl) => cl.link === sl.link)) {
+    const cleanTitle = sl.title.toLowerCase().trim();
+    if (sl.link && !existingTitles.has(cleanTitle)) {
       combinedLinks.push(sl);
+      existingTitles.add(cleanTitle);
     }
   });
 
@@ -217,98 +239,87 @@ export default function PortfolioItemEditDialog({
 }) {
   const config = SECTION_LABELS[sectionKey] || SECTION_LABELS.projects;
 
-  const [formData, setFormData] = useState(() => getInitialFormData(item));
+  const [formData, setFormData] = useState(() => getInitialFormData(item, sectionKey));
   const [displayedSkills, setDisplayedSkills] = useState(() => getInitialSkills(item));
-  const [skillSearchQuery, setSkillSearchQuery] = useState("");
+  const [isSkillPickerOpen, setIsSkillPickerOpen] = useState(false);
   const [assetsPool, setAssetsPool] = useState(() => getInitialAssets(item, sectionKey));
   const [linksPool, setLinksPool] = useState(() => getInitialLinks(item, sectionKey));
 
-  // ── SKILLS POOL COMPUTATION ──
-  // Candidate pool contains:
-  // 1. All skills from sampleSkills.js (allSkills & sampleUserSkills)
-  // 2. All skills from matching sample entity
-  const allAvailableCandidateSkills = useMemo(() => {
+  // Candidate skills belonging to this specific item only
+  const allCandidateSkills = useMemo(() => {
     const sampleMatch = findMatchingSampleItem(sectionKey, item);
     const set = new Set();
 
-    // From sample match
+    (item.skills || []).forEach((s) => {
+      const name = typeof s === "object" ? s.skill_name || s.name : s;
+      if (name) set.add(name);
+    });
+
     (sampleMatch?.skills || []).forEach((s) => {
       const name = typeof s === "object" ? s.skill_name || s.name : s;
       if (name) set.add(name);
     });
 
-    // From sampleSkills.js
-    allSkills.forEach((s) => {
-      if (s.skill_name) set.add(s.skill_name);
-    });
-    sampleUserSkills.forEach((s) => {
-      if (s.skill_name) set.add(s.skill_name);
+    displayedSkills.forEach((s) => {
+      if (s) set.add(s);
     });
 
     return Array.from(set).sort();
-  }, [sectionKey, item]);
-
-  // Available skills that are NOT currently displayed
-  const availableSkills = useMemo(() => {
-    const displayedSet = new Set(displayedSkills.map((s) => s.toLowerCase()));
-    return allAvailableCandidateSkills.filter((s) => {
-      if (displayedSet.has(s.toLowerCase())) return false;
-      if (skillSearchQuery.trim()) {
-        return s.toLowerCase().includes(skillSearchQuery.trim().toLowerCase());
-      }
-      return true;
-    });
-  }, [allAvailableCandidateSkills, displayedSkills, skillSearchQuery]);
+  }, [sectionKey, item, displayedSkills]);
 
   if (!isOpen || !item) return null;
 
-  // ── TOGGLE HANDLERS ──
+  // ── SKILL HANDLERS ──
   const handleRemoveSkill = (skillToRemove) => {
     setDisplayedSkills((prev) => prev.filter((s) => s !== skillToRemove));
   };
 
-  const handleAddSkill = (skillToAdd) => {
-    if (!displayedSkills.includes(skillToAdd)) {
-      setDisplayedSkills((prev) => [...prev, skillToAdd]);
-    }
-  };
-
-  const handleToggleAsset = (assetId) => {
+  // ── TITLE-MATCHED ASSET TOGGLING ──
+  const handleToggleAsset = (targetTitle) => {
     setAssetsPool((prev) =>
       prev.map((ast) =>
-        ast.id === assetId ? { ...ast, isDisplayed: !ast.isDisplayed } : ast
+        ast.title === targetTitle ? { ...ast, isDisplayed: !ast.isDisplayed } : ast
       )
     );
   };
 
-  const handleUpdateAssetTitle = (assetId, newTitle) => {
+  const handleUpdateAssetTitle = (oldTitle, newTitle) => {
     setAssetsPool((prev) =>
       prev.map((ast) =>
-        ast.id === assetId ? { ...ast, title: newTitle } : ast
+        ast.title === oldTitle ? { ...ast, title: newTitle } : ast
       )
     );
   };
 
-  const handleToggleLink = (linkId) => {
-    setLinksPool((prev) =>
-      prev.map((l) =>
-        l.id === linkId ? { ...l, isDisplayed: !l.isDisplayed } : l
+  const handleUpdateAssetDescription = (targetTitle, newDesc) => {
+    setAssetsPool((prev) =>
+      prev.map((ast) =>
+        ast.title === targetTitle ? { ...ast, description: newDesc, caption: newDesc } : ast
       )
     );
   };
 
-  const handleUpdateLinkTitle = (linkId, newTitle) => {
+  // ── TITLE-MATCHED LINK TOGGLING ──
+  const handleToggleLink = (targetTitle) => {
     setLinksPool((prev) =>
       prev.map((l) =>
-        l.id === linkId ? { ...l, title: newTitle } : l
+        l.title === targetTitle ? { ...l, isDisplayed: !l.isDisplayed } : l
       )
     );
   };
 
-  const handleUpdateLinkUrl = (linkId, newUrl) => {
+  const handleUpdateLinkTitle = (oldTitle, newTitle) => {
     setLinksPool((prev) =>
       prev.map((l) =>
-        l.id === linkId ? { ...l, link: newUrl } : l
+        l.title === oldTitle ? { ...l, title: newTitle } : l
+      )
+    );
+  };
+
+  const handleUpdateLinkUrl = (targetTitle, newUrl) => {
+    setLinksPool((prev) =>
+      prev.map((l) =>
+        l.title === targetTitle ? { ...l, link: newUrl } : l
       )
     );
   };
@@ -317,7 +328,6 @@ export default function PortfolioItemEditDialog({
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
-    // Only include displayed assets
     const activeAssets = assetsPool
       .filter((ast) => ast.isDisplayed)
       .map((ast) => ({
@@ -330,11 +340,9 @@ export default function PortfolioItemEditDialog({
         caption: ast.description || "",
       }));
 
-    // Only include displayed links
     const activeLinks = linksPool
       .filter((l) => l.isDisplayed)
       .map((l) => ({
-        id: l.id,
         label: l.title || "Link",
         title: l.title || "Link",
         link: l.link,
@@ -348,59 +356,129 @@ export default function PortfolioItemEditDialog({
           .filter(Boolean)
       : [];
 
-    const updatedItem = {
-      ...item,
-      // Title variants
-      role: formData.name,
-      title: formData.name,
-      name: formData.name,
-      degree: formData.name,
-      // Subtitle variants
-      company: formData.subtitle,
-      subtitle: formData.subtitle,
-      category: formData.subtitle,
-      org: formData.subtitle,
-      stream: formData.subtitle,
-      branch: formData.subtitle,
-      institute_name: formData.institute_name || formData.subtitle,
-      institution: formData.institute_name || formData.subtitle,
-      // Education specific
-      grade: formData.grade,
-      gradingSystem: formData.gradingSystem,
-      level: formData.level,
-      // Dates
-      from_date: formData.startDate || null,
-      to_date: formData.isCurrent ? "Present" : (formData.endDate || null),
-      startDate: formData.startDate,
-      endDate: formData.isCurrent ? "Present" : formData.endDate,
-      isCurrent: formData.isCurrent,
-      year: formData.startDate ? formData.startDate.slice(0, 4) : undefined,
-      validUntil: formData.isCurrent ? "Lifetime" : formData.endDate,
-      // Description
-      description: formData.description,
-      summary: formData.description,
-      highlights: highlightsArray,
-      tagline: formData.description ? formData.description.split("\n")[0].slice(0, 80) : "",
-      // Toggled Skills, Assets & Links
-      skills: displayedSkills,
-      assets: activeAssets,
-      images: activeAssets,
-      links: activeLinks,
-    };
+    let updatedItem;
 
+    if (sectionKey === "education") {
+      const fromDateVal = formData.startDate ? `${formData.startDate}-01` : null;
+      const toDateVal = formData.isCurrent ? "Present" : (formData.endDate ? `${formData.endDate}-01` : null);
+
+      updatedItem = {
+        ...item,
+        degree: formData.name,
+        title: formData.name,
+        name: formData.name,
+        institute_name: formData.institute_name,
+        institution: formData.institute_name,
+        stream: formData.subtitle,
+        branch: formData.subtitle,
+        subtitle: formData.subtitle,
+        company: formData.institute_name,
+        grade: formData.grade,
+        from_date: fromDateVal,
+        to_date: toDateVal,
+        startDate: fromDateVal,
+        endDate: toDateVal,
+        isCurrent: formData.isCurrent,
+        description: formData.description,
+        summary: formData.description,
+        skills: displayedSkills,
+        assets: activeAssets,
+        images: activeAssets,
+        links: activeLinks,
+      };
+    } else if (sectionKey === "achievements") {
+      const dateVal = formData.startDate ? `${formData.startDate}-01` : (item.from_date || null);
+
+      updatedItem = {
+        ...item,
+        title: formData.name,
+        name: formData.name,
+        role: formData.name,
+        org: formData.subtitle,
+        company: formData.subtitle,
+        subtitle: formData.subtitle,
+        from_date: dateVal,
+        to_date: null,
+        startDate: dateVal,
+        endDate: null,
+        isCurrent: false,
+        description: formData.description,
+        summary: formData.description,
+        highlights: highlightsArray,
+        skills: displayedSkills,
+        assets: activeAssets,
+        images: activeAssets,
+        links: activeLinks,
+      };
+    } else if (sectionKey === "certifications") {
+      const fromDateVal = formData.startDate ? `${formData.startDate}-01` : null;
+      const toDateVal = formData.isCurrent ? "Lifetime" : (formData.endDate ? `${formData.endDate}-01` : null);
+
+      updatedItem = {
+        ...item,
+        title: formData.name,
+        name: formData.name,
+        role: formData.name,
+        org: formData.subtitle,
+        company: formData.subtitle,
+        subtitle: formData.subtitle,
+        from_date: fromDateVal,
+        to_date: toDateVal,
+        startDate: fromDateVal,
+        endDate: toDateVal,
+        isCurrent: formData.isCurrent,
+        validUntil: formData.isCurrent ? "Lifetime" : toDateVal,
+        description: formData.description,
+        summary: formData.description,
+        skills: displayedSkills,
+        assets: activeAssets,
+        images: activeAssets,
+        links: activeLinks,
+      };
+    } else {
+      // experience, projects, extraCurricular
+      const fromDateVal = formData.startDate ? `${formData.startDate}-01` : null;
+      const toDateVal = formData.isCurrent ? "Present" : (formData.endDate ? `${formData.endDate}-01` : null);
+
+      updatedItem = {
+        ...item,
+        role: formData.name,
+        title: formData.name,
+        name: formData.name,
+        degree: formData.name,
+        company: formData.subtitle,
+        subtitle: formData.subtitle,
+        category: formData.subtitle,
+        org: formData.subtitle,
+        from_date: fromDateVal,
+        to_date: toDateVal,
+        startDate: fromDateVal,
+        endDate: toDateVal,
+        isCurrent: formData.isCurrent,
+        description: formData.description,
+        summary: formData.description,
+        highlights: highlightsArray,
+        skills: displayedSkills,
+        assets: activeAssets,
+        images: activeAssets,
+        links: activeLinks,
+      };
+    }
+
+    delete updatedItem.tagline;
     onSave(updatedItem);
   };
 
   return (
     <div className={styles.overlay} onClick={onClose} role="dialog" aria-modal="true">
       <div className={styles.dialog} onClick={(e) => e.stopPropagation()}>
-        <form onSubmit={handleFormSubmit}>
+        <form onSubmit={handleFormSubmit} className={styles.dialogForm}>
           {/* Header */}
           <div className={styles.dialogHeader}>
             <div className={styles.titleArea}>
               <h2 className={styles.headerTitle}>Edit {config.title}</h2>
               <span className={styles.headerSubtitle}>
-                Customize displayed details, toggle skills, and select media attachments.
+                Customize details, toggle displayed skills, and select media attachments.
               </span>
             </div>
             <div className={styles.headerActions}>
@@ -447,11 +525,11 @@ export default function PortfolioItemEditDialog({
 
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    {sectionKey === "education" ? "Institution Name *" : `${config.subtitleLabel} *`}
+                    {sectionKey === "education" ? "Institution Name *" : config.subtitleLabel}
                   </label>
                   <input
                     type="text"
-                    required
+                    required={sectionKey === "education"}
                     className={styles.input}
                     placeholder={
                       sectionKey === "education"
@@ -483,7 +561,7 @@ export default function PortfolioItemEditDialog({
                     <input
                       type="text"
                       className={styles.input}
-                      placeholder="e.g. Computer Science"
+                      placeholder="e.g. Computer Science & Engineering"
                       value={formData.subtitle}
                       onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
                     />
@@ -502,9 +580,9 @@ export default function PortfolioItemEditDialog({
               )}
 
               {/* Dates */}
-              <div className={styles.gridTwo}>
+              {sectionKey === "achievements" ? (
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Start Date</label>
+                  <label className={styles.label}>Date Awarded / Published</label>
                   <input
                     type="month"
                     className={styles.input}
@@ -512,34 +590,120 @@ export default function PortfolioItemEditDialog({
                     onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                   />
                 </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>End Date</label>
-                  <input
-                    type="month"
-                    className={styles.input}
-                    disabled={formData.isCurrent}
-                    value={formData.endDate}
-                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                  />
-                  <label className={styles.checkboxLabel}>
+              ) : sectionKey === "certifications" ? (
+                <div className={styles.gridTwo}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Issue Date</label>
                     <input
-                      type="checkbox"
-                      checked={formData.isCurrent}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          isCurrent: e.target.checked,
-                          endDate: e.target.checked ? "" : formData.endDate,
-                        })
-                      }
+                      type="month"
+                      className={styles.input}
+                      value={formData.startDate}
+                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                     />
-                    <span>
-                      {sectionKey === "certifications" ? "Lifetime Validity" : "Currently Active / Present"}
-                    </span>
-                  </label>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Expiration Date</label>
+                    <input
+                      type="month"
+                      className={styles.input}
+                      disabled={formData.isCurrent}
+                      value={formData.endDate}
+                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    />
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={formData.isCurrent}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            isCurrent: e.target.checked,
+                            endDate: e.target.checked ? "" : formData.endDate,
+                          })
+                        }
+                      />
+                      <span>Lifetime Validity / No Expiration</span>
+                    </label>
+                  </div>
                 </div>
-              </div>
+              ) : sectionKey === "education" ? (
+                <div className={styles.gridTwo}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Start Year / Month</label>
+                    <input
+                      type="month"
+                      className={styles.input}
+                      value={formData.startDate}
+                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>End Year / Month (or Expected)</label>
+                    <input
+                      type="month"
+                      className={styles.input}
+                      disabled={formData.isCurrent}
+                      value={formData.endDate}
+                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    />
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={formData.isCurrent}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            isCurrent: e.target.checked,
+                            endDate: e.target.checked ? "" : formData.endDate,
+                          })
+                        }
+                      />
+                      <span>Currently Enrolled / Ongoing</span>
+                    </label>
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.gridTwo}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Start Date</label>
+                    <input
+                      type="month"
+                      className={styles.input}
+                      value={formData.startDate}
+                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>End Date</label>
+                    <input
+                      type="month"
+                      className={styles.input}
+                      disabled={formData.isCurrent}
+                      value={formData.endDate}
+                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    />
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={formData.isCurrent}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            isCurrent: e.target.checked,
+                            endDate: e.target.checked ? "" : formData.endDate,
+                          })
+                        }
+                      />
+                      <span>
+                        {sectionKey === "projects" ? "Ongoing / Active Project" : "Currently Active / Present"}
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              )}
 
               {/* Description */}
               <div className={styles.formGroup}>
@@ -554,80 +718,53 @@ export default function PortfolioItemEditDialog({
               </div>
             </div>
 
-            {/* 2. Skills Display Toggling (Not applicable to education) */}
+            {/* 2. Skills Section with Dedicated Skill Picker Dialog */}
             {sectionKey !== "education" && (
               <div className={styles.sectionBlock}>
                 <div className={styles.sectionBlockTitle}>
-                  <span>Skills & Technologies</span>
-                  <span className={styles.sectionBlockHint}>
-                    Toggle which existing skills are displayed
-                  </span>
+                  <div className={styles.skillsTitleGroup}>
+                    <span>Skills & Technologies</span>
+                    <span className={styles.skillsCountBadge}>
+                      {displayedSkills.length} displayed
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.manageSkillsBtn}
+                    onClick={() => setIsSkillPickerOpen(true)}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                    </svg>
+                    <span>Edit Skills</span>
+                  </button>
                 </div>
 
-                <div className={styles.skillsContainer}>
-                  {/* Displayed Skills */}
-                  <div className={styles.activeSkillsGroup}>
-                    <span className={styles.subLabel}>
-                      Displayed on Portfolio ({displayedSkills.length})
-                    </span>
-                    <div className={styles.chipsWrap}>
-                      {displayedSkills.length > 0 ? (
-                        displayedSkills.map((skill, idx) => (
-                          <span key={idx} className={styles.displayedChip}>
-                            <span>{skill}</span>
-                            <button
-                              type="button"
-                              className={styles.removeChipBtn}
-                              onClick={() => handleRemoveSkill(skill)}
-                              title={`Hide "${skill}" from portfolio`}
-                              aria-label={`Hide ${skill}`}
-                            >
-                              ✕
-                            </button>
-                          </span>
-                        ))
-                      ) : (
-                        <span className={styles.emptyChips}>
-                          No skills currently displayed. Click below to add from existing profile information.
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Available Skills from Profile */}
-                  <div className={styles.activeSkillsGroup}>
-                    <span className={styles.subLabel}>
-                      Add from Existing Information ({availableSkills.length} available)
-                    </span>
-                    <div className={styles.searchAvailableBox}>
-                      <input
-                        type="text"
-                        className={styles.input}
-                        placeholder="Search existing skills to display..."
-                        value={skillSearchQuery}
-                        onChange={(e) => setSkillSearchQuery(e.target.value)}
+                <div className={styles.itemSkillsArea}>
+                  {displayedSkills.length > 0 ? (
+                    displayedSkills.map((skill) => (
+                      <SkillBadge
+                        key={skill}
+                        name={skill}
+                        onRemove={() => handleRemoveSkill(skill)}
                       />
-                    </div>
-                    <div className={styles.availableChipsList}>
-                      {availableSkills.map((skill, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          className={styles.availableChip}
-                          onClick={() => handleAddSkill(skill)}
-                        >
-                          <span className={styles.addIcon}>+</span>
-                          <span>{skill}</span>
-                        </button>
-                      ))}
-                      {availableSkills.length === 0 && (
-                        <span className={styles.emptyChips}>
-                          {skillSearchQuery ? "No matching skills." : "All existing skills are currently displayed."}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                    ))
+                  ) : (
+                    <p className={styles.emptySkillsHint}>
+                      No skills currently displayed for this item. Click &quot;Edit Skills&quot; to pick or restore skills.
+                    </p>
+                  )}
                 </div>
+
+                <ItemSkillsPickerDialog
+                  isOpen={isSkillPickerOpen}
+                  itemTitle={formData.name || config.title}
+                  currentSkills={displayedSkills}
+                  candidateSkills={allCandidateSkills}
+                  onSave={(newSkills) => setDisplayedSkills(newSkills)}
+                  onClose={() => setIsSkillPickerOpen(false)}
+                />
               </div>
             )}
 
@@ -636,15 +773,12 @@ export default function PortfolioItemEditDialog({
               <div className={styles.sectionBlock}>
                 <div className={styles.sectionBlockTitle}>
                   <span>Attached Media & Visuals</span>
-                  <span className={styles.sectionBlockHint}>
-                    Choose which images appear in the portfolio gallery
-                  </span>
                 </div>
 
                 <div className={styles.imagesGrid}>
                   {assetsPool.map((ast) => (
                     <div
-                      key={ast.id}
+                      key={ast.title}
                       className={`${styles.imageCard} ${
                         ast.isDisplayed ? styles.imageCardActive : styles.imageCardInactive
                       }`}
@@ -661,18 +795,25 @@ export default function PortfolioItemEditDialog({
                         <input
                           type="text"
                           className={styles.imageTitleInput}
-                          placeholder="Caption / Title"
+                          placeholder="Asset Title / Name"
                           value={ast.title}
-                          onChange={(e) => handleUpdateAssetTitle(ast.id, e.target.value)}
+                          onChange={(e) => handleUpdateAssetTitle(ast.title, e.target.value)}
+                        />
+                        <input
+                          type="text"
+                          className={styles.imageTitleInput}
+                          placeholder="Image Caption / Description"
+                          value={ast.description || ""}
+                          onChange={(e) => handleUpdateAssetDescription(ast.title, e.target.value)}
                         />
                         <button
                           type="button"
                           className={`${styles.toggleDisplayBtn} ${
                             ast.isDisplayed ? styles.toggleDisplayed : styles.toggleHidden
                           }`}
-                          onClick={() => handleToggleAsset(ast.id)}
+                          onClick={() => handleToggleAsset(ast.title)}
                         >
-                          {ast.isDisplayed ? "✓ Displayed in Portfolio" : "+ Not Displayed (Click to Show)"}
+                          {ast.isDisplayed ? "✓ Displayed in Portfolio" : "+ Hidden (Click to Show)"}
                         </button>
                       </div>
                     </div>
@@ -686,20 +827,18 @@ export default function PortfolioItemEditDialog({
               <div className={styles.sectionBlock}>
                 <div className={styles.sectionBlockTitle}>
                   <span>Action Links</span>
-                  <span className={styles.sectionBlockHint}>
-                    Live demo, code repo, and credential links
-                  </span>
                 </div>
 
                 <div className={styles.linksList}>
                   {linksPool.map((l) => (
-                    <div key={l.id} className={styles.linkRow}>
+                    <div key={l.title} className={styles.linkRow}>
                       <button
                         type="button"
                         className={`${styles.linkToggleBtn} ${
                           l.isDisplayed ? styles.linkToggleBtnActive : ""
                         }`}
-                        onClick={() => handleToggleLink(l.id)}
+                        onClick={() => handleToggleLink(l.title)}
+                        title={l.isDisplayed ? "Click to hide link" : "Click to display link"}
                       >
                         {l.isDisplayed ? "✓ Displayed" : "Hidden"}
                       </button>
@@ -709,7 +848,7 @@ export default function PortfolioItemEditDialog({
                         className={styles.input}
                         placeholder="Link Label"
                         value={l.title}
-                        onChange={(e) => handleUpdateLinkTitle(l.id, e.target.value)}
+                        onChange={(e) => handleUpdateLinkTitle(l.title, e.target.value)}
                       />
                       <input
                         type="text"
@@ -717,13 +856,23 @@ export default function PortfolioItemEditDialog({
                         className={styles.input}
                         placeholder="https://..."
                         value={l.link}
-                        onChange={(e) => handleUpdateLinkUrl(l.id, e.target.value)}
+                        onChange={(e) => handleUpdateLinkUrl(l.title, e.target.value)}
                       />
                     </div>
                   ))}
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Footer */}
+          <div className={styles.dialogFooter}>
+            <button type="button" className={styles.cancelButton} onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className={styles.saveButton}>
+              Save Changes
+            </button>
           </div>
         </form>
       </div>

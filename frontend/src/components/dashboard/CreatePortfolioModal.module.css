@@ -132,8 +132,8 @@
 .textarea:focus,
 .select:focus {
   outline: none;
-  border-color: var(--teal, #2ec4a6);
-  box-shadow: 0 0 0 3px rgba(46, 196, 166, 0.15);
+  border-color: var(--coral);
+  box-shadow: 0 0 0 3px var(--coral-soft);
   background: var(--surface, #ffffff);
 }
 
@@ -152,8 +152,8 @@
 }
 
 .slugInputWrapper:focus-within {
-  border-color: var(--teal, #2ec4a6);
-  box-shadow: 0 0 0 3px rgba(46, 196, 166, 0.15);
+  border-color: var(--coral);
+  box-shadow: 0 0 0 3px var(--coral-soft);
 }
 
 .slugPrefix {
@@ -230,9 +230,9 @@
 }
 
 .themeOptionSelected {
-  border-color: var(--teal, #2ec4a6);
-  background: rgba(46, 196, 166, 0.1);
-  color: #0b1f1a;
+  border-color: var(--coral);
+  background: var(--coral-soft);
+  color: var(--coral);
 }
 
 .modalFooter {
@@ -263,8 +263,8 @@
 }
 
 .submitBtn {
-  background: var(--teal, #2ec4a6);
-  color: #0b1f1a;
+  background: var(--coral);
+  color: #ffffff;
   border: none;
   font-size: 0.88rem;
   font-weight: 700;
@@ -275,12 +275,41 @@
 }
 
 .submitBtn:hover {
-  background: #27ad92;
+  background: #e85545;
   transform: translateY(-1px);
 }
 
 @media (max-width: 540px) {
+  .overlay {
+    padding: 0.75rem 0.5rem;
+  }
+  .modal {
+    padding: 1.25rem 1rem;
+    border-radius: 14px;
+    max-height: 92vh;
+  }
+  .modalTitle {
+    font-size: 1.15rem;
+  }
   .rowFields {
     grid-template-columns: 1fr;
+  }
+  .slugPrefix {
+    font-size: 0.76rem;
+    padding: 0.6rem 0.55rem;
+  }
+  .slugInput {
+    padding: 0.6rem 0.55rem;
+    font-size: 0.84rem;
+  }
+  .modalFooter {
+    gap: 0.5rem;
+  }
+  .cancelBtn,
+  .submitBtn {
+    flex: 1;
+    min-height: 44px;
+    text-align: center;
+    justify-content: center;
   }
 }

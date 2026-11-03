@@ -1,0 +1,337 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.dialog {
+  width: min(640px, calc(100vw - 2rem));
+  max-height: min(85vh, 700px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border, #e2dcce);
+  border-radius: 14px;
+  background: var(--surface, #ffffff);
+  color: var(--text, #191919);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dialogHeader {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid var(--border-soft, #ece7dc);
+  background: var(--surface-raised, #faf8f5);
+}
+
+.titleArea {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.dialogTitle {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text, #191919);
+}
+
+.dialogSubtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted, #64748b);
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.closeButton:hover {
+  background: var(--surface-dim, #f1ede4);
+  color: var(--text, #191919);
+}
+
+.dialogBody {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.searchSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.sectionHeading {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text, #191919);
+}
+
+.searchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted, #94a3b8);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.65rem 0.85rem 0.65rem 2.4rem;
+  border-radius: 8px;
+  border: 1px solid var(--border, #dcd9d9);
+  background: var(--surface, #ffffff);
+  color: var(--text, #191919);
+  font-size: 0.88rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--coral, #ff6b5a);
+  box-shadow: 0 0 0 3px var(--coral-soft, #ffe8e5);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  max-height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.95rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-soft, #f1f5f9);
+  color: var(--text, #191919);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.dropdownItem:hover {
+  background: var(--coral-soft, #ffe8e5);
+  color: var(--coral, #ff6b5a);
+}
+
+.noResultsItem {
+  padding: 0.75rem 1rem;
+  font-size: 0.82rem;
+  color: var(--text-muted, #94a3b8);
+  font-style: italic;
+  text-align: center;
+}
+
+.skillsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.areaHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.areaTitle, .shelfLabel {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text, #191919);
+}
+
+.areaHint {
+  font-size: 0.75rem;
+  color: var(--text-muted, #64748b);
+}
+
+.activeSkillsArea {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  min-height: 48px;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: var(--surface-raised, #faf8f5);
+  border: 1px solid var(--border-soft, #ece7dc);
+  align-items: center;
+}
+
+.emptyActive {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted, #94a3b8);
+  font-style: italic;
+  padding: 0.2rem;
+}
+
+.containerDivider {
+  border: none;
+  border-top: 1px dashed var(--border, #e2e8f0);
+  margin: 0.2rem 0;
+}
+
+.removedSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.removedSkillsArea {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  min-height: 44px;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  align-items: center;
+}
+
+.emptyShelf {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted, #94a3b8);
+  font-style: italic;
+  padding: 0.2rem;
+}
+
+.dialogFooter {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-soft, #ece7dc);
+  background: var(--surface-raised, #faf8f5);
+}
+
+.cancelButton {
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border, #dcd9d9);
+  background: var(--surface, #ffffff);
+  color: var(--text, #191919);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cancelButton:hover {
+  background: var(--surface-dim, #f1ede4);
+}
+
+.saveButton {
+  padding: 0.55rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--coral);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.saveButton:hover {
+  background: #e85545;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 520px) {
+  .overlay {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .dialog {
+    width: calc(100vw - 1rem);
+    max-height: 90vh;
+    border-radius: 12px;
+  }
+
+  .dialogHeader {
+    padding: 1rem;
+  }
+
+  .dialogTitle {
+    font-size: 1.1rem;
+  }
+
+  .dialogBody {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .dialogFooter {
+    padding: 0.85rem 1rem;
+    gap: 0.5rem;
+  }
+
+  .cancelButton,
+  .saveButton {
+    flex: 1;
+    min-height: 42px;
+    text-align: center;
+    justify-content: center;
+  }
+}

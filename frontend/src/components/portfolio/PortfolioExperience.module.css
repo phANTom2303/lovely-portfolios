@@ -651,7 +651,7 @@
   .headline {
     font-size: clamp(1.8rem, 6.5vw, 2.5rem);
   }
-  .timeline::before {
+  .timelineSpine {
     left: 11px;
   }
   .timelineNode {
@@ -694,7 +694,7 @@
     grid-template-columns: 20px 1fr;
     gap: 10px;
   }
-  .timeline::before {
+  .timelineSpine {
     left: 9px;
   }
   .timelineNode {

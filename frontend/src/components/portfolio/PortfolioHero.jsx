@@ -97,10 +97,62 @@ function HeroBackground() {
   );
 }
 
-export default function PortfolioHero({ about, hero }) {
+function calculateTotalExperienceYears(items) {
+  if (!Array.isArray(items) || items.length === 0) return null;
+  const intervals = [];
+  for (const item of items) {
+    const rawStart = item.from_date || item.startDate;
+    if (!rawStart) continue;
+    const start = new Date(rawStart).getTime();
+    if (isNaN(start)) continue;
+
+    const rawEnd = item.to_date || item.endDate;
+    let end;
+    if (!rawEnd || rawEnd === "Present" || item.isCurrent) {
+      end = Date.now();
+    } else {
+      end = new Date(rawEnd).getTime();
+      if (isNaN(end)) end = Date.now();
+    }
+    if (end > start) {
+      intervals.push([start, end]);
+    }
+  }
+
+  if (intervals.length === 0) return null;
+
+  // Merge overlapping intervals
+  intervals.sort((a, b) => a[0] - b[0]);
+  const merged = [intervals[0]];
+  for (let i = 1; i < intervals.length; i++) {
+    const prev = merged[merged.length - 1];
+    const curr = intervals[i];
+    if (curr[0] <= prev[1]) {
+      prev[1] = Math.max(prev[1], curr[1]);
+    } else {
+      merged.push(curr);
+    }
+  }
+
+  let totalMs = 0;
+  for (const [start, end] of merged) {
+    totalMs += (end - start);
+  }
+
+  const msPerYear = 1000 * 60 * 60 * 24 * 365.25;
+  const years = totalMs / msPerYear;
+  if (years < 0.5) return "< 1";
+  const rounded = Math.round(years * 10) / 10;
+  return rounded % 1 === 0 ? String(rounded) : rounded.toFixed(1);
+}
+
+export default function PortfolioHero({ about, hero, experience }) {
   const data = about || hero || {};
   const [typedName, setTypedName] = useState("");
   const [isTypingDone, setIsTypingDone] = useState(false);
+
+  const calculatedExp = calculateTotalExperienceYears(experience?.items);
+  const displayExperience = calculatedExp ?? data.experience;
 
   useEffect(() => {
     const fullText = data.name || "";
@@ -174,9 +226,12 @@ export default function PortfolioHero({ about, hero }) {
           {/* Title Row with Static Role & Experience Badge */}
           <div className={styles.titleRow}>
             <span className={styles.titleBadge}>{data.title}</span>
-            {data.experience && (
+            {displayExperience !== undefined && displayExperience !== null && displayExperience !== "" && (
               <span className={styles.expBadge}>
-                <span className={styles.expIcon}>⚡</span> {data.experience}
+                <span className={styles.expIcon}>⚡</span>{" "}
+                {typeof displayExperience === "number" || /^\d+(\.\d+)?$/.test(String(displayExperience).trim())
+                  ? `${displayExperience} yrs exp`
+                  : displayExperience}
               </span>
             )}
             {displayLocation && (

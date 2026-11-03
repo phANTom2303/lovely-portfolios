@@ -4,10 +4,11 @@ import {
   getPortfolioByIdOrSlug,
   updatePortfolio,
 } from "../../services/portfolioStorage";
-import { useAuth } from "../../context/authContext";
+// import { useAuth } from "../../context/authContext";
 import PortfolioItemEditDialog from "./PortfolioItemEditDialog";
 import AddSocialLinkDialog from "./AddSocialLinkDialog";
 import AddSkillCategoryDialog from "./AddSkillCategoryDialog";
+import AddFromDatabaseDialog from "./AddFromDatabaseDialog";
 import SkillBadge from "../../components/shared/SkillBadge";
 import styles from "./PortfolioEdit.module.css";
 
@@ -74,9 +75,10 @@ export default function PortfolioEdit() {
 
 function PortfolioEditorInner({ originalPortfolio }) {
   // Local draft states initialized from portfolio prop
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const [isAddSocialOpen, setIsAddSocialOpen] = useState(false);
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  const [draftTitle, setDraftTitle] = useState(() => originalPortfolio.title || "");
   const draftSlug = originalPortfolio.slug || "";
   const [draftTheme, setDraftTheme] = useState(() => originalPortfolio.theme || "light");
   const [draftDoc, setDraftDoc] = useState(() =>
@@ -89,6 +91,9 @@ function PortfolioEditorInner({ originalPortfolio }) {
 
   // Active edit dialog state: { sectionKey, itemIndex, item }
   const [activeEditModal, setActiveEditModal] = useState(null);
+
+  // Add from database modal state: { isOpen, sectionKey }
+  const [addFromDbModal, setAddFromDbModal] = useState({ isOpen: false, sectionKey: null });
 
   // Accordion state
   const [expandedCards, setExpandedCards] = useState(() => ({
@@ -222,7 +227,7 @@ function PortfolioEditorInner({ originalPortfolio }) {
   const handleSave = () => {
     if (!originalPortfolio) return;
     const updated = updatePortfolio(originalPortfolio.id, {
-      title: originalPortfolio.title,
+      title: draftTitle.trim() || originalPortfolio.title,
       slug: draftSlug,
       theme: draftTheme,
       document: draftDoc,
@@ -240,10 +245,44 @@ function PortfolioEditorInner({ originalPortfolio }) {
 
   // Render non-typeable structured card preview
   const renderNonTypeableItemCard = (sectionKey, item, idx, totalItems) => {
-    const mainTitle = item.role || item.title || item.name || item.degree || "Untitled Entry";
-    const subtitle = item.company || item.subtitle || item.category || item.org || item.stream || item.branch || item.institute_name || item.institution;
-    const dateStart = item.from_date || item.startDate || item.year;
-    const dateEnd = item.to_date !== undefined ? item.to_date : item.endDate;
+    let mainTitle = item.role || item.title || item.name || item.degree || "Untitled Entry";
+    let subtitle = item.company || item.subtitle || item.category || item.org;
+    let dateBadgeText = "";
+
+    if (sectionKey === "education") {
+      mainTitle = item.degree ? (item.stream ? `${item.degree} — ${item.stream}` : item.degree) : (item.title || "Education");
+      subtitle = item.institute_name || item.institution || item.company;
+      const sYear = item.from_date || item.startDate;
+      const eYear = item.to_date || item.endDate;
+      const sFormatted = sYear ? formatDisplayDate(sYear) : "";
+      const eFormatted = eYear ? formatDisplayDate(eYear) : "Present";
+      dateBadgeText = sFormatted ? `${sFormatted} — ${eFormatted}` : "";
+      if (item.grade) {
+        subtitle = subtitle ? `${subtitle} • ${item.grade}` : item.grade;
+      }
+    } else if (sectionKey === "achievements") {
+      mainTitle = item.title || item.name || "Achievement";
+      subtitle = item.org || item.subtitle || "";
+      if (item.from_date || item.startDate) {
+        dateBadgeText = formatDisplayDate(item.from_date || item.startDate);
+      }
+    } else if (sectionKey === "certifications") {
+      mainTitle = item.title || item.name || "Certification";
+      subtitle = item.org || item.subtitle || item.issuer || "";
+      const sFormatted = (item.from_date || item.startDate) ? formatDisplayDate(item.from_date || item.startDate) : "";
+      const eFormatted = item.validUntil === "Lifetime" ? "Lifetime" : ((item.to_date || item.endDate) ? formatDisplayDate(item.to_date || item.endDate) : "Lifetime");
+      dateBadgeText = sFormatted ? `${sFormatted} — ${eFormatted}` : "";
+    } else {
+      // experience, projects, extraCurricular
+      const dateStart = item.from_date || item.startDate || item.year;
+      const dateEnd = item.to_date !== undefined ? item.to_date : item.endDate;
+      if (dateStart) {
+        const sFormatted = formatDisplayDate(dateStart);
+        const eFormatted = dateEnd ? formatDisplayDate(dateEnd) : "Present";
+        dateBadgeText = `${sFormatted} — ${eFormatted}`;
+      }
+    }
+
     const assetsList = item.images || item.assets || [];
     const skillsList = item.skills || [];
     const linksList = item.links || [];
@@ -261,13 +300,9 @@ function PortfolioEditorInner({ originalPortfolio }) {
                 <span className={styles.flagshipBadge}>Flagship Project</span>
               )}
             </div>
-            {dateStart && (
+            {dateBadgeText && (
               <span className={styles.itemDateBadge}>
-                {formatDisplayDate(dateStart)}
-                {dateEnd !== undefined && (
-                  dateEnd ? ` — ${formatDisplayDate(dateEnd)}` : " — Present"
-                )}
-                {item.validUntil && ` • ${item.validUntil}`}
+                {dateBadgeText}
               </span>
             )}
           </div>
@@ -348,18 +383,14 @@ function PortfolioEditorInner({ originalPortfolio }) {
             </div>
           )}
 
-          {item.tagline && <p className={styles.itemDesc} style={{ fontStyle: "italic", color: "#475569" }}>{item.tagline}</p>}
-
           {Array.isArray(item.highlights) && item.highlights.length > 0 ? (
             <ul className={styles.highlightsList}>
               {item.highlights.map((h, hIdx) => (
                 <li key={hIdx}>{h}</li>
               ))}
             </ul>
-          ) : item.description ? (
-            <p className={styles.itemDesc}>{item.description}</p>
-          ) : item.summary ? (
-            <p className={styles.itemDesc}>{item.summary}</p>
+          ) : (item.description || item.summary || item.tagline) ? (
+            <p className={styles.itemDesc}>{item.description || item.summary || item.tagline}</p>
           ) : null}
 
           {/* Links Pills */}
@@ -412,9 +443,56 @@ function PortfolioEditorInner({ originalPortfolio }) {
   // Render individual section forms based on key
   const renderSectionBody = (sectionId) => {
     switch (sectionId) {
-      case "about":
+      case "about": {
+        const currentPhoto =
+          draftDoc.about?.profile_photo_link ||
+          draftDoc.about?.["profile-photo"] ||
+          "/Images/image.png";
+        /* Commented out for now per user request: don't allow changing profile photo
+        const userProfilePhoto = user?.profile_photo_link;
+        const hasNewProfileImage =
+          Boolean(userProfilePhoto) &&
+          userProfilePhoto !== draftDoc.about?.profile_photo_link &&
+          userProfilePhoto !== draftDoc.about?.["profile-photo"];
+        */
+
         return (
           <div className={styles.cardBody}>
+            {/* Top Photo Header: Proper Square Image at Top of Section, Centered */}
+            <div className={styles.aboutTopHeaderCentered}>
+              <div className={styles.squarePhotoWrapCentered}>
+                <img
+                  src={currentPhoto}
+                  alt="Portfolio profile"
+                  className={styles.squarePhotoImg}
+                  onError={(e) => {
+                    e.currentTarget.src = "/Images/image.png";
+                  }}
+                />
+              </div>
+              <span className={styles.aboutPhotoLabel}>Portfolio Photo</span>
+              {/* Commented out for now per user request:
+              {hasNewProfileImage && (
+                <div className={styles.profileSyncBanner}>
+                  <span>New profile photo detected in your account profile.</span>
+                  <button
+                    type="button"
+                    className={styles.useProfileImgBtn}
+                    onClick={() =>
+                      updateDoc((doc) => {
+                        if (!doc.about) doc.about = {};
+                        doc.about.profile_photo_link = userProfilePhoto;
+                        doc.about["profile-photo"] = userProfilePhoto;
+                      })
+                    }
+                  >
+                    Update to Profile Photo
+                  </button>
+                </div>
+              )}
+              */}
+            </div>
+
             <div className={styles.formGrid2}>
               <div className={styles.formGroup}>
                 <label className={styles.label}>Full Name</label>
@@ -446,93 +524,21 @@ function PortfolioEditorInner({ originalPortfolio }) {
               </div>
             </div>
 
-            <div className={styles.formGrid2}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Experience Summary</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder="e.g. 5+ Years Experience"
-                  value={draftDoc.about?.experience || ""}
-                  onChange={(e) =>
-                    updateDoc((doc) => {
-                      if (!doc.about) doc.about = {};
-                      doc.about.experience = e.target.value;
-                    })
-                  }
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Location</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder="e.g. Bengaluru, India"
-                  value={draftDoc.about?.location || ""}
-                  onChange={(e) =>
-                    updateDoc((doc) => {
-                      if (!doc.about) doc.about = {};
-                      doc.about.location = e.target.value;
-                    })
-                  }
-                />
-              </div>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Location</label>
+              <input
+                type="text"
+                className={styles.input}
+                placeholder="e.g. Bengaluru, India"
+                value={draftDoc.about?.location || ""}
+                onChange={(e) =>
+                  updateDoc((doc) => {
+                    if (!doc.about) doc.about = {};
+                    doc.about.location = e.target.value;
+                  })
+                }
+              />
             </div>
-
-            {/* Profile Photo with image preview and profile section sync */}
-            {(() => {
-              const currentPhoto =
-                draftDoc.about?.profile_photo_link ||
-                draftDoc.about?.["profile-photo"] ||
-                "/Images/image.png";
-              const userProfilePhoto = user?.profile_photo_link;
-              const hasNewProfileImage =
-                Boolean(userProfilePhoto) &&
-                userProfilePhoto !== draftDoc.about?.profile_photo_link &&
-                userProfilePhoto !== draftDoc.about?.["profile-photo"];
-
-              return (
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Profile Photo</label>
-                  <div className={styles.photoSectionRow}>
-                    <div className={styles.photoPreviewWrap}>
-                      <img
-                        src={currentPhoto}
-                        alt="Profile preview"
-                        className={styles.photoImg}
-                        onError={(e) => {
-                          e.currentTarget.src = "/Images/image.png";
-                        }}
-                      />
-                    </div>
-                    <div className={styles.photoActionCol}>
-                      {hasNewProfileImage ? (
-                        <div className={styles.profileSyncBanner}>
-                          <span>New profile image detected in your account profile.</span>
-                          <button
-                            type="button"
-                            className={styles.useProfileImgBtn}
-                            onClick={() =>
-                              updateDoc((doc) => {
-                                if (!doc.about) doc.about = {};
-                                doc.about.profile_photo_link = userProfilePhoto;
-                                doc.about["profile-photo"] = userProfilePhoto;
-                              })
-                            }
-                          >
-                            Update to Profile Photo
-                          </button>
-                        </div>
-                      ) : (
-                        <p className={styles.photoSyncedHint}>
-                          Displaying portfolio photo. It updates when your profile photo changes.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
 
             <div className={styles.formGroup}>
               <label className={styles.label}>Bio / Summary</label>
@@ -602,6 +608,7 @@ function PortfolioEditorInner({ originalPortfolio }) {
             </div>
           </div>
         );
+      }
 
       case "skills":
         return (
@@ -682,8 +689,17 @@ function PortfolioEditorInner({ originalPortfolio }) {
               {items.map((item, idx) =>
                 renderNonTypeableItemCard("experience", item, idx, items.length)
               )}
-
             </div>
+            <button
+              type="button"
+              className={styles.addFromDbBtn}
+              onClick={() => setAddFromDbModal({ isOpen: true, sectionKey: "experience" })}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>Add from Database</span>
+            </button>
           </div>
         );
       }
@@ -699,8 +715,17 @@ function PortfolioEditorInner({ originalPortfolio }) {
               {items.map((proj, idx) =>
                 renderNonTypeableItemCard("projects", proj, idx, items.length)
               )}
-
             </div>
+            <button
+              type="button"
+              className={styles.addFromDbBtn}
+              onClick={() => setAddFromDbModal({ isOpen: true, sectionKey: "projects" })}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>Add from Database</span>
+            </button>
           </div>
         );
       }
@@ -713,8 +738,17 @@ function PortfolioEditorInner({ originalPortfolio }) {
               {items.map((edu, idx) =>
                 renderNonTypeableItemCard("education", edu, idx, items.length)
               )}
-
             </div>
+            <button
+              type="button"
+              className={styles.addFromDbBtn}
+              onClick={() => setAddFromDbModal({ isOpen: true, sectionKey: "education" })}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>Add from Database</span>
+            </button>
           </div>
         );
       }
@@ -727,8 +761,17 @@ function PortfolioEditorInner({ originalPortfolio }) {
               {items.map((ach, idx) =>
                 renderNonTypeableItemCard("achievements", ach, idx, items.length)
               )}
-
             </div>
+            <button
+              type="button"
+              className={styles.addFromDbBtn}
+              onClick={() => setAddFromDbModal({ isOpen: true, sectionKey: "achievements" })}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>Add from Database</span>
+            </button>
           </div>
         );
       }
@@ -741,8 +784,17 @@ function PortfolioEditorInner({ originalPortfolio }) {
               {items.map((cert, idx) =>
                 renderNonTypeableItemCard("certifications", cert, idx, items.length)
               )}
-
             </div>
+            <button
+              type="button"
+              className={styles.addFromDbBtn}
+              onClick={() => setAddFromDbModal({ isOpen: true, sectionKey: "certifications" })}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>Add from Database</span>
+            </button>
           </div>
         );
       }
@@ -755,8 +807,17 @@ function PortfolioEditorInner({ originalPortfolio }) {
               {items.map((ext, idx) =>
                 renderNonTypeableItemCard("extraCurricular", ext, idx, items.length)
               )}
-
             </div>
+            <button
+              type="button"
+              className={styles.addFromDbBtn}
+              onClick={() => setAddFromDbModal({ isOpen: true, sectionKey: "extraCurricular" })}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>Add from Database</span>
+            </button>
           </div>
         );
       }
@@ -793,7 +854,7 @@ function PortfolioEditorInner({ originalPortfolio }) {
       <header className={styles.topBar}>
         <div className={styles.topBarInner}>
           <div className={styles.topBarLeft}>
-            <Link to="/home" className={styles.backBtn} title="Return to Home">
+            <Link to="/home" className={styles.backBtn} title="Return to Dashboard">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 12H5M12 19l-7-7 7-7" />
               </svg>
@@ -888,11 +949,18 @@ function PortfolioEditorInner({ originalPortfolio }) {
       <main className={styles.mainCanvas}>
         {/* Google Forms Style Title Card at Form Start */}
         <div className={styles.formHeaderCard}>
-          <div className={styles.formHeaderAccent} />
           <div className={styles.formHeaderInner}>
-            <h1 className={styles.formHeaderTitle}>
-              {originalPortfolio.title || "Untitled Portfolio"}
-            </h1>
+            <input
+              type="text"
+              className={styles.formHeaderTitleInput}
+              value={draftTitle}
+              placeholder="Portfolio Title"
+              onChange={(e) => {
+                setDraftTitle(e.target.value);
+                setIsDirty(true);
+              }}
+              title="Click to edit portfolio title"
+            />
             <p className={styles.formHeaderDesc}>
               Manage and sequence all sections of your portfolio. Reorder sections using the arrows in each card header.
             </p>
@@ -1084,6 +1152,29 @@ function PortfolioEditorInner({ originalPortfolio }) {
             doc.skills.categories.push(newCategory);
           });
         }}
+      />
+
+      {/* ── ADD FROM DATABASE DIALOG ── */}
+      <AddFromDatabaseDialog
+        isOpen={addFromDbModal.isOpen}
+        sectionKey={addFromDbModal.sectionKey}
+        currentItems={
+          addFromDbModal.sectionKey
+            ? draftDoc[addFromDbModal.sectionKey]?.items || []
+            : []
+        }
+        onAdd={(newItem) => {
+          updateDoc((doc) => {
+            if (!doc[addFromDbModal.sectionKey]) {
+              doc[addFromDbModal.sectionKey] = {};
+            }
+            if (!Array.isArray(doc[addFromDbModal.sectionKey].items)) {
+              doc[addFromDbModal.sectionKey].items = [];
+            }
+            doc[addFromDbModal.sectionKey].items.push(newItem);
+          });
+        }}
+        onClose={() => setAddFromDbModal({ isOpen: false, sectionKey: null })}
       />
     </div>
   );
