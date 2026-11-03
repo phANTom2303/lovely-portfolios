@@ -1,0 +1,303 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(25, 25, 25, 0.35);
+  backdrop-filter: blur(3px);
+}
+
+.dialog {
+  width: min(520px, calc(100vw - 32px));
+  max-height: calc(100vh - 60px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 20px 60px rgba(25, 25, 25, 0.16);
+  overflow: hidden;
+}
+
+.dialogForm {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 40px);
+}
+
+.dialogHeader {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.dialogHeader h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cancelButton,
+.saveButton {
+  padding: 8px 14px;
+  border-radius: 7px;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    opacity 160ms ease;
+}
+
+.cancelButton {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-label);
+}
+
+.cancelButton:hover {
+  background: var(--surface-dim);
+}
+
+.saveButton {
+  background: var(--teal);
+  border: 1px solid var(--teal);
+  color: #ffffff;
+}
+
+.saveButton:hover {
+  opacity: 0.9;
+}
+
+.saveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.formBody {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 36px 20px;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  background: var(--background);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.dropzoneActive {
+  border-color: var(--teal);
+  background: var(--teal-soft);
+}
+
+.dropzoneText {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.selectFileButton {
+  padding: 10px 22px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.selectFileButton:hover {
+  background: var(--surface-dim);
+  border-color: var(--border-dark);
+}
+
+.fileHint {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.fileInput {
+  display: none;
+}
+
+.previewContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+.previewImageWrapper {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--border);
+  box-shadow: 0 4px 12px rgba(25, 25, 25, 0.08);
+  background: var(--surface-dim);
+}
+
+.previewImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.previewInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.fileName {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.previewActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.changeButton,
+.removeButton {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.changeButton {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-label);
+}
+
+.changeButton:hover {
+  background: var(--surface-dim);
+}
+
+.removeButton {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.removeButton:hover {
+  background: var(--coral-soft);
+  border-color: var(--coral);
+  color: var(--coral);
+}
+
+@media (max-width: 600px) {
+  .dialog {
+    width: calc(100vw - 20px);
+    max-height: calc(100vh - 24px);
+    border-radius: 12px;
+  }
+
+  .dialogHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .dialogHeader h2 {
+    font-size: 1.15rem;
+    line-height: 1.3;
+  }
+
+  .headerActions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .cancelButton,
+  .saveButton {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    padding: 9px 12px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+
+  .formBody {
+    padding: 18px 16px 28px;
+  }
+
+  .dropzone {
+    padding: 24px 14px;
+  }
+}
+
+@media (max-width: 380px) {
+  .headerActions {
+    gap: 6px;
+  }
+
+  .cancelButton,
+  .saveButton {
+    padding: 8px 6px;
+    font-size: 0.78rem;
+  }
+}

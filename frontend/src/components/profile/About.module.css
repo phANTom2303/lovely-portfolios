@@ -1,0 +1,97 @@
+.card {
+  width: 100%;
+  height: 220px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(25, 25, 25, 0.04);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cardHeader {
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.cardHeader h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text-label);
+}
+
+.aboutText {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  overflow-y: auto;
+}
+
+.editButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  background: var(--surface-dim);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(25, 25, 25, 0.04);
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.editButton:hover {
+  background: var(--coral-soft);
+  border-color: var(--coral);
+  color: var(--coral);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .card {
+    min-height: 180px;
+    height: auto;
+    padding: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    min-height: 180px;
+    height: auto;
+    padding: 16px;
+  }
+
+  .cardHeader {
+    height: 46px;
+  }
+
+  .cardHeader h2 {
+    font-size: 1.25rem;
+  }
+
+  .editButton {
+    padding: 7px 11px;
+    font-size: 0.75rem;
+  }
+}

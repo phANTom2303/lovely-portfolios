@@ -1,0 +1,7 @@
+variables:
+  - name: baseUrl
+    value: http://localhost:5001
+  - name: token
+    value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVlN2M4NzgyLTYzMzAtNDc0Ni05NDc5LWFmM2FhNWUxN2E1ZSIsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsImp0aSI6IjRjOGI4ZTk4LWQ2M2QtNGM3Yi04NTU2LTU1NjA1MGViNWQ3YiIsImlhdCI6MTc5MzQ3NTcwNCwiZXhwIjoxNzk0MDgwNTA0fQ.gqjlZ8hL3sjTodUBXer3IflAH3Z6WwZP2HbUgLGPGCc
+  - secret: true
+    name: token
