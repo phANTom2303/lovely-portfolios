@@ -28,12 +28,13 @@ def post(client, body=BODY):
 
 
 def test_success_returns_portfolio(client, monkeypatch):
-    monkeypatch.setattr(main, "generate_for_user", lambda uid, jd: {"sections": []})
+    result = {"portfolio_id": 7, "portfolio_json": {"sectionOrder": []}}
+    monkeypatch.setattr(main, "generate_for_user", lambda uid, jd: result)
 
     response = post(client)
 
     assert response.status_code == 200
-    assert response.json() == {"portfolio_json": {"sections": []}}
+    assert response.json() == result
 
 
 def test_user_id_and_jd_are_passed_through(client, monkeypatch):
@@ -110,6 +111,17 @@ def test_llm_validation_error_is_502(client, monkeypatch):
 
 
 # --- our own bugs (500) ---------------------------------------------------
+
+def test_failed_save_is_500_and_not_blamed_on_the_llm(client, monkeypatch):
+    import db
+    monkeypatch.setattr(main, "generate_for_user", make_fail(db.PortfolioSaveFailed('permission denied for "portfolio"')))
+
+    response = post(client)
+
+    assert response.status_code == 500
+    assert "could not be saved" in response.json()["detail"]
+    assert "permission" not in response.json()["detail"]
+
 
 def test_unexpected_error_is_500_without_leaking_details(client, monkeypatch):
     err = Exception('permission denied for table "users"')

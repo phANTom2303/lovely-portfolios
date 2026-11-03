@@ -23,6 +23,10 @@ class NoResumeEntities(LookupError):
     """The user exists but has no active resume entities to build a portfolio from."""
 
 
+class PortfolioSaveFailed(Exception):
+    """The database refused the portfolio insert. The real cause is kept as __cause__ for the logs."""
+
+
 def _parse_user_id(user_id: str) -> uuid.UUID:
     """Validate that user_id is a UUID (users.id is UUID in the schema)."""
     try:
@@ -50,6 +54,25 @@ def _asset_item(row) -> Dict[str, Any]:
         "link": row["link"] or "",
         "description": row["description"] or "",
         "asset_type": str(row["asset_type"]) if row["asset_type"] is not None else None,
+    }
+
+
+def _to_number(value) -> Optional[float]:
+    """NUMERIC columns arrive as Decimal, which JSON cannot store."""
+    return float(value) if value is not None else None
+
+
+def _education_item(row) -> Dict[str, Any]:
+    """One education row -> plain data (schema column names), with ISO dates and float marks."""
+    return {
+        "institute_name": row["institute_name"] or "",
+        "education_type": str(row["education_type"]) if row["education_type"] is not None else None,
+        "stream": row["stream"] or "",
+        "from_date": str(row["from_date"]) if row["from_date"] else None,
+        "to_date": str(row["to_date"]) if row["to_date"] else None,
+        "marks": _to_number(row["marks"]),
+        "mark_type": str(row["mark_type"]) if row["mark_type"] is not None else None,
+        "total_mark": _to_number(row["total_mark"]),
     }
 
 
@@ -82,7 +105,7 @@ async def fetch_user_re_data(user_id: str) -> Tuple[Dict[str, Any], List[Dict[st
         # 1. Fetch user profile
         user_row = await conn.fetchrow(
             """
-            SELECT id, name, professional_title, about, current_location
+            SELECT id, name, email, profile_photo_link, professional_title, about, current_location
             FROM users
             WHERE id = $1
             """,
@@ -96,7 +119,11 @@ async def fetch_user_re_data(user_id: str) -> Tuple[Dict[str, Any], List[Dict[st
             "professionalTitle": user_row["professional_title"] or "Software Developer",
             "about": user_row["about"] or "",
             "currentLocation": user_row["current_location"] or "India",
+            "email": user_row["email"] or "",
+            "profilePhotoLink": user_row["profile_photo_link"] or "",
             "socials": [],
+            "profileSkills": [],
+            "education": [],
         }
 
         # 2. Fetch active resume entities
@@ -131,6 +158,30 @@ async def fetch_user_re_data(user_id: str) -> Tuple[Dict[str, Any], List[Dict[st
         skills_by_entity: Dict[int, List[str]] = {}
         for sr in skill_rows:
             skills_by_entity.setdefault(sr["re_id"], []).append(sr["skill_name"])
+
+        # Profile-level skills (re_id NULL) and education belong to the person, not to an entity.
+        profile_skill_rows = await conn.fetch(
+            """
+            SELECT skill_name
+            FROM skills
+            WHERE user_id = $1
+              AND re_id IS NULL
+            ORDER BY skill_id
+            """,
+            uid,
+        )
+        user_profile["profileSkills"] = [r["skill_name"] for r in profile_skill_rows]
+
+        education_rows = await conn.fetch(
+            """
+            SELECT institute_name, education_type, stream, from_date, to_date, marks, mark_type, total_mark
+            FROM education
+            WHERE user_id = $1
+            ORDER BY from_date DESC NULLS LAST
+            """,
+            uid,
+        )
+        user_profile["education"] = [_education_item(r) for r in education_rows]
 
         # 4. Fetch links and assets of this user in one query each. A row with re_id NULL is
         #    profile-level: links become the profile's socials, assets are not used yet.
@@ -188,57 +239,34 @@ async def fetch_user_re_data(user_id: str) -> Tuple[Dict[str, Any], List[Dict[st
         await conn.close()
 
 
-async def save_portfolio(
-    user_id: str, job_role: str, jd_text: str, portfolio_json: dict
-) -> str:
+async def save_portfolio(user_id: str, job_role: str, portfolio_json: dict) -> int:
     """
-    Saves generated portfolio JSON to PostgreSQL 'portfolio' table.
-    Matches the backend schema: table 'portfolio' (singular), columns (user_id, user_email, portfolio_name, portfolio_date).
-    Falls back gracefully if 'portfolios' (plural) table is used.
+    Inserts the generated portfolio into the 'portfolio' table and returns its portfolio_id.
+    Raises DatabaseUnavailable if the database cannot be reached, PortfolioSaveFailed if it refuses the insert.
     """
     uid = _parse_user_id(user_id)
 
     conn = await get_db_connection()
 
     try:
-        # Check if table is 'portfolio' (singular, backend standard) or 'portfolios' (plural)
-        is_singular = await conn.fetchval("SELECT to_regclass('public.portfolio')") is not None
+        user_email = await conn.fetchval("SELECT email FROM users WHERE id = $1", uid)
+        if user_email is None:
+            raise UserNotFound(f"User not found: {user_id}")
 
-        if is_singular:
-            user_email = await conn.fetchval("SELECT email FROM users WHERE id = $1", uid) or ""
-            portfolio_name = job_role or portfolio_json.get("jobRole") or "Generated Portfolio"
+        return await conn.fetchval(
+            """
+            INSERT INTO portfolio (user_id, user_email, portfolio_name, profile_data, create_date)
+            VALUES ($1, $2, $3, $4::jsonb, CURRENT_DATE)
+            RETURNING portfolio_id
+            """,
+            uid,
+            user_email,
+            job_role or "Generated Portfolio",
+            json.dumps(portfolio_json),
+        )
 
-            inserted_id = await conn.fetchval(
-                """
-                INSERT INTO portfolio (user_id, user_email, portfolio_name, portfolio_date, create_date)
-                VALUES ($1, $2, $3, $4::jsonb, CURRENT_DATE)
-                RETURNING portfolio_id
-                """,
-                uid,
-                user_email,
-                portfolio_name,
-                json.dumps(portfolio_json),
-            )
-        else:
-            inserted_id = await conn.fetchval(
-                """
-                INSERT INTO portfolios (user_id, job_role, jd_text, portfolio_json)
-                VALUES ($1, $2, $3, $4::jsonb)
-                RETURNING portfolio_id
-                """,
-                uid,
-                job_role,
-                jd_text,
-                json.dumps(portfolio_json),
-            )
-
-        if not inserted_id:
-            raise RuntimeError("Database did not return a generated portfolio_id.")
-        return str(inserted_id)
-
-    except Exception as e:
-        print(f"[db] Error inserting into portfolio table: {e}")
-        raise RuntimeError(f"Database error while saving portfolio: {e}")
+    except (asyncpg.PostgresError, asyncpg.InterfaceError) as e:
+        raise PortfolioSaveFailed(f"Database error while saving portfolio: {e}") from e
 
     finally:
         await conn.close()
@@ -246,13 +274,9 @@ async def save_portfolio(
 
 def fetch_user_re_data_sync(user_id: str) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
     """Synchronous wrapper for fetch_user_re_data."""
-    import asyncio
     return asyncio.run(fetch_user_re_data(user_id))
 
 
-def save_portfolio_sync(
-    user_id: str, job_role: str, jd_text: str, portfolio_json: dict
-) -> str:
+def save_portfolio_sync(user_id: str, job_role: str, portfolio_json: dict) -> int:
     """Synchronous wrapper for save_portfolio."""
-    import asyncio
-    return asyncio.run(save_portfolio(user_id, job_role, jd_text, portfolio_json))
+    return asyncio.run(save_portfolio(user_id, job_role, portfolio_json))

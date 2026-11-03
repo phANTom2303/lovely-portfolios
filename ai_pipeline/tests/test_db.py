@@ -10,8 +10,10 @@ filters only if the SQL actually asks for them. So a query that forgets a filter
 """
 import asyncio
 import datetime as dt
+import json
 import socket
 import uuid
+from decimal import Decimal
 
 import asyncpg
 import pytest
@@ -26,12 +28,13 @@ OTHER_USER = "9472faeb-f5d3-4b14-a215-245399ee3854"
 class FakeConn:
     """Minimal stand-in for an asyncpg connection, backed by in-memory 'tables'."""
 
-    def __init__(self, users=(), entities=(), skills=(), links=(), assets=()):
+    def __init__(self, users=(), entities=(), skills=(), links=(), assets=(), education=()):
         self.users = list(users)
         self.entities = list(entities)
         self.skills = list(skills)
         self.links = list(links)
         self.assets = list(assets)
+        self.education = list(education)
         self.sql_seen = []   # every SQL string the code sent
         self.closed = False
 
@@ -54,6 +57,16 @@ class FakeConn:
             if "ORDER BY from_date DESC NULLS LAST" in sql:
                 rows = sorted(rows, key=lambda e: e["from_date"] or dt.date.min, reverse=True)
             return rows
+
+        if "FROM education" in sql:
+            assert "user_id = $1" in sql, "education must be filtered by user_id"
+            rows = [e for e in self.education if e["user_id"] == args[0]]
+            if "ORDER BY from_date DESC NULLS LAST" in sql:
+                rows = sorted(rows, key=lambda e: e["from_date"] or dt.date.min, reverse=True)
+            return rows
+
+        if "FROM skills" in sql and "re_id IS NULL" in sql:
+            return [s for s in self.skills if s["user_id"] == args[0] and s["re_id"] is None]
 
         if "FROM skills" in sql:
             assert "re_id" in sql, "skills must be looked up by re_id in the new schema"
@@ -84,6 +97,8 @@ def _user(**over):
     row = {
         "id": uuid.UUID(USER),
         "name": "Guddu Bhaiya",
+        "email": "guddu@example.com",
+        "profile_photo_link": "https://example.com/guddu.jpg",
         "professional_title": "Full Stack Developer",
         "about": "Passionate developer.",
         "current_location": "New York, NY",
@@ -130,6 +145,23 @@ def _asset(asset_id, re_id, user=USER, **over):
         "user_id": uuid.UUID(user), "re_id": re_id,
         "title": f"Asset {asset_id}", "link": f"https://img.example.com/{asset_id}.png",
         "description": f"Asset description {asset_id}", "asset_type": "image",
+    }
+    row.update(over)
+    return row
+
+
+def _education(education_id, user=USER, **over):
+    row = {
+        "education_id": education_id,
+        "user_id": uuid.UUID(user),
+        "institute_name": f"Institute {education_id}",
+        "education_type": "under_graduate",
+        "stream": "Computer Science",
+        "from_date": dt.date(2020, 1, 1),
+        "to_date": dt.date(2024, 1, 1),
+        "marks": Decimal("8.90"),
+        "mark_type": "gpa",
+        "total_mark": Decimal("10"),
     }
     row.update(over)
     return row
@@ -185,6 +217,59 @@ def test_user_profile_is_built_from_the_users_row():
     assert profile["name"] == "Guddu Bhaiya"
     assert profile["professionalTitle"] == "Full Stack Developer"
     assert profile["currentLocation"] == "New York, NY"
+
+
+def test_user_profile_has_email_and_photo():
+    profile, _ = _run(FakeConn(users=[_user()], entities=[_entity(1)]))
+    assert profile["email"] == "guddu@example.com"
+    assert profile["profilePhotoLink"] == "https://example.com/guddu.jpg"
+
+
+def test_null_email_photo_become_empty_strings():
+    profile, _ = _run(FakeConn(users=[_user(email=None, profile_photo_link=None)], entities=[_entity(1)]))
+    assert profile["email"] == "" and profile["profilePhotoLink"] == ""
+
+
+def test_profile_level_skills_are_returned_on_the_profile():
+    conn = FakeConn(
+        users=[_user()],
+        entities=[_entity(1)],
+        skills=[_skill(1, "Python", None), _skill(2, "React", 1), _skill(3, "Go", None, user=OTHER_USER)],
+    )
+    profile, _ = _run(conn)
+    assert profile["profileSkills"] == ["Python"]
+
+
+def test_education_is_json_ready_newest_first_and_only_this_users():
+    conn = FakeConn(
+        users=[_user()],
+        entities=[_entity(1)],
+        education=[
+            _education(1, from_date=dt.date(2018, 1, 1), education_type="higher_secondary", mark_type="percentage",
+                       marks=Decimal("92.50"), total_mark=Decimal("100")),
+            _education(2),
+            _education(3, user=OTHER_USER),
+        ],
+    )
+    profile, _ = _run(conn)
+    assert [e["institute_name"] for e in profile["education"]] == ["Institute 2", "Institute 1"]
+    assert profile["education"][0]["from_date"] == "2020-01-01"
+    assert profile["education"][1]["marks"] == 92.5
+    json.dumps(profile["education"])  # a Decimal or date would raise here
+
+
+def test_education_with_null_columns():
+    conn = FakeConn(
+        users=[_user()],
+        entities=[_entity(1)],
+        education=[_education(1, institute_name=None, education_type=None, stream=None, from_date=None,
+                              to_date=None, marks=None, mark_type=None, total_mark=None)],
+    )
+    profile, _ = _run(conn)
+    assert profile["education"] == [{
+        "institute_name": "", "education_type": None, "stream": "", "from_date": None,
+        "to_date": None, "marks": None, "mark_type": None, "total_mark": None,
+    }]
 
 
 def test_connection_is_closed_afterwards():
@@ -483,7 +568,57 @@ def test_fetch_user_data_raises_instead_of_returning_fake_data(monkeypatch, fail
 def test_save_portfolio_raises_instead_of_pretending_to_save(monkeypatch):
     monkeypatch.setattr(db.asyncpg, "connect", _connect_raising(ConnectionRefusedError()))
     with pytest.raises(db.DatabaseUnavailable):
-        asyncio.run(db.save_portfolio(USER, "Developer", "jd", {"sections": []}))
+        asyncio.run(db.save_portfolio(USER, "Developer", {"sectionOrder": []}))
+
+
+class FakeSaveConn:
+    def __init__(self, email="guddu@example.com", insert_error=None):
+        self.email, self.insert_error = email, insert_error
+        self.insert_sql, self.insert_args, self.closed = None, None, False
+
+    async def fetchval(self, sql, *args):
+        if "SELECT email FROM users" in sql:
+            return self.email
+        if self.insert_error:
+            raise self.insert_error
+        self.insert_sql, self.insert_args = sql, args
+        return 7
+
+    async def close(self):
+        self.closed = True
+
+
+def _save(monkeypatch, conn, job_role="Developer"):
+    async def fake_connect():
+        return conn
+    monkeypatch.setattr(db, "get_db_connection", fake_connect)
+    return asyncio.run(db.save_portfolio(USER, job_role, {"about": {"name": "G"}}))
+
+
+def test_save_writes_the_document_to_profile_data_and_returns_the_id(monkeypatch):
+    conn = FakeSaveConn()
+    assert _save(monkeypatch, conn) == 7
+    assert "profile_data" in conn.insert_sql and "portfolio_date" not in conn.insert_sql
+    assert conn.insert_args == (uuid.UUID(USER), "guddu@example.com", "Developer", '{"about": {"name": "G"}}')
+    assert conn.closed
+
+
+def test_save_with_no_job_role_still_names_the_portfolio(monkeypatch):
+    conn = FakeSaveConn()
+    _save(monkeypatch, conn, job_role="")
+    assert conn.insert_args[2] == "Generated Portfolio"
+
+
+def test_save_for_unknown_user_raises_user_not_found(monkeypatch):
+    with pytest.raises(UserNotFound):
+        _save(monkeypatch, FakeSaveConn(email=None))
+
+
+def test_database_refusing_the_insert_raises_save_failed_and_closes(monkeypatch):
+    conn = FakeSaveConn(insert_error=asyncpg.InsufficientPrivilegeError("permission denied"))
+    with pytest.raises(db.PortfolioSaveFailed):
+        _save(monkeypatch, conn)
+    assert conn.closed
 
 
 def test_a_programming_error_is_not_disguised_as_database_unavailable(monkeypatch):

@@ -169,3 +169,37 @@ SKILL_DISPLAY_NAMES: dict[str, str] = {
     "figma": "Figma",
     "excel": "Excel",
 }
+
+
+# The section a skill is listed under in the portfolio. One entry per key of SKILL_SYNONYMS.
+# A skill we have no entry for goes to "Other".
+SKILL_CATEGORIES: dict[str, str] = {
+    **dict.fromkeys(
+        ["javascript", "typescript", "python", "java", "c", "c++", "c#", "go", "rust", "kotlin",
+         "swift", "sql", "html", "css"],
+        "Languages",
+    ),
+    **dict.fromkeys(
+        ["react", "angular", "vuejs", "nextjs", "tailwind css", "redux", "flutter", "nodejs",
+         "expressjs", "fastapi", "django", "flask", "spring boot"],
+        "Frameworks & Libraries",
+    ),
+    **dict.fromkeys(
+        ["postgresql", "mysql", "mongodb", "redis", "elasticsearch", "sqlite"],
+        "Databases",
+    ),
+    **dict.fromkeys(
+        ["aws", "gcp", "azure", "docker", "kubernetes", "terraform", "ci/cd", "git", "linux", "kafka",
+         "figma", "excel"],
+        "Tools & DevOps",
+    ),
+    **dict.fromkeys(
+        ["machine learning", "deep learning", "tensorflow", "pytorch", "pandas", "numpy", "scikit-learn",
+         "langchain", "langgraph", "agentic pipeline"],
+        "AI & Machine Learning",
+    ),
+    **dict.fromkeys(
+        ["rest apis", "graphql", "grpc", "microservices", "system design", "data structures and algorithms"],
+        "Concepts",
+    ),
+}
