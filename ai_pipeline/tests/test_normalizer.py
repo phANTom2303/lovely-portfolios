@@ -132,3 +132,40 @@ def test_alias_claimed_by_two_skills_is_rejected():
 def test_every_dictionary_key_is_already_clean():
     # A key that isn't lowercase/trimmed/single-spaced could never be matched.
     assert all(key == _clean(key) for key in _ALIAS_TO_CANONICAL)
+
+
+# ---------------------------------------------------------------------------
+# skill_match_keys: comparing JD phrases with entity skills
+# ---------------------------------------------------------------------------
+from pipeline.skill_normalizer import skill_match_keys
+
+
+@pytest.mark.parametrize("phrase, must_contain", [
+    ("aws (sagemaker, s3, ec2)", {"aws", "sagemaker", "s3", "ec2"}),
+    ("kubernetes (k8s)", {"kubernetes"}),
+    ("pandas/numpy", {"pandas", "numpy"}),
+    ("AWS SageMaker", {"aws"}),
+    ("python scripting", {"python"}),
+    ("microservices experience", {"microservices"}),
+])
+def test_match_keys_split_jd_phrases(phrase, must_contain):
+    assert must_contain <= skill_match_keys(phrase)
+
+
+def test_known_skill_matches_only_itself():
+    assert skill_match_keys("React.js") == {"react"}
+    assert skill_match_keys("ci/cd") == {"ci/cd"}   # a real skill, not split into "ci" and "cd"
+
+
+def test_spacing_differences_still_match():
+    assert skill_match_keys("huggingface transformers") & skill_match_keys("hugging face transformers")
+
+
+def test_generic_words_do_not_become_matches():
+    assert not skill_match_keys("deep learning") & skill_match_keys("supervised learning")
+    assert skill_match_keys("weights & biases") & {"weights", "biases"} == set()
+
+
+@pytest.mark.parametrize("value", ["", "   ", None])
+def test_match_keys_blank_input(value):
+    assert skill_match_keys(value) == set()

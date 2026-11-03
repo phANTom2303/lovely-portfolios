@@ -303,11 +303,10 @@ def test_score_and_rank_alternative_field_names(sample_jd):
         mock_groq.return_value.chat.completions.create.return_value = mock_response
         ranked = score_and_rank(entities, sample_jd)
 
+        # This test is about matching 're_id' / 'id'; order is covered by the ranking tests.
         assert len(ranked) == 2
-        assert ranked[0]["reId"] == 2
-        assert ranked[0]["score"] == 0.85
-        assert ranked[1]["reId"] == 1
-        assert ranked[1]["score"] == 0.80
+        by_id = {e["reId"]: e["score"] for e in ranked}
+        assert by_id == {1: 0.80, 2: 0.85}
 
 
 def test_score_and_rank_batching_large_profile(sample_jd):
@@ -397,3 +396,157 @@ def test_score_and_rank_achievements_and_others_caps(sample_jd):
         assert len(ranked) == 3
 
 
+
+
+# ---------------------------------------------------------------------------
+# Prompt size, rate limits and deterministic ranking
+# ---------------------------------------------------------------------------
+import json
+
+import httpx
+from groq import RateLimitError
+
+from pipeline import scorer
+
+
+def _llm_reply(scores):
+    """A fake Groq response whose content is {"scored_entities": [...]} for {reId: score}."""
+    resp = MagicMock()
+    resp.choices = [MagicMock(message=MagicMock(content=json.dumps(
+        {"scored_entities": [{"reId": i, "score": s} for i, s in scores.items()]}
+    )))]
+    return resp
+
+
+def _rate_limit_error(headers=None):
+    request = httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions")
+    response = httpx.Response(429, headers=headers or {}, request=request)
+    return RateLimitError("rate limited", response=response, body=None)
+
+
+def test_prompt_sends_only_the_fields_the_llm_needs(sample_jd):
+    entity = {
+        "reId": 7, "reType": "project", "title": "DocChat", "subtitle": "Personal",
+        "description": "RAG service over PDFs", "fromDate": "2024-01-01", "toDate": None,
+        "originalSkills": ["Python3"], "normalizedSkills": ["python"], "displaySkills": ["Python"],
+        "links": [{"id": 1, "link": "https://example.com/SECRET-LINK"}],
+        "assets": [{"asset_id": 2, "link": "https://img.example.com/SECRET-ASSET.png"}],
+    }
+    with patch("pipeline.scorer.Groq") as mock_groq:
+        create = mock_groq.return_value.chat.completions.create
+        create.return_value = _llm_reply({7: 0.9})
+        score_and_rank([entity], sample_jd)
+        prompt = create.call_args.kwargs["messages"][1]["content"]
+
+    assert "RAG service over PDFs" in prompt and '"skills":["Python"]' in prompt
+    for left_out in ("SECRET-LINK", "SECRET-ASSET", "originalSkills", "normalizedSkills", '"toDate"'):
+        assert left_out not in prompt
+
+
+def test_rate_limit_waits_for_retry_after_header(sample_entities, sample_jd):
+    with patch("pipeline.scorer.Groq") as mock_groq, patch("pipeline.scorer.time.sleep") as sleep:
+        mock_groq.return_value.chat.completions.create.side_effect = [
+            _rate_limit_error({"retry-after": "7"}),
+            _llm_reply({1: 0.5, 2: 0.9, 3: 0.6}),
+        ]
+        ranked = score_and_rank(sample_entities, sample_jd)
+
+    sleep.assert_called_once_with(7.0)
+    assert len(ranked) == 3
+
+
+def test_rate_limit_without_header_uses_fallback_and_gives_up_after_max_attempts(sample_entities, sample_jd):
+    with patch("pipeline.scorer.Groq") as mock_groq, patch("pipeline.scorer.time.sleep") as sleep:
+        mock_groq.return_value.chat.completions.create.side_effect = _rate_limit_error()
+        with pytest.raises(RateLimitError):
+            score_and_rank(sample_entities, sample_jd)
+
+    assert mock_groq.return_value.chat.completions.create.call_count == scorer.MAX_ATTEMPTS
+    assert [c.args[0] for c in sleep.call_args_list] == [scorer.RATE_LIMIT_FALLBACK_SECONDS] * (scorer.MAX_ATTEMPTS - 1)
+
+
+def test_skill_score_and_rank_score_values(sample_entities, sample_jd):
+    # JD: must python/fastapi/postgresql (1.0 each), preferred docker/redis (0.6), good aws (0.3).
+    with patch("pipeline.scorer.Groq") as mock_groq:
+        mock_groq.return_value.chat.completions.create.return_value = _llm_reply({1: 0.45, 2: 0.95, 3: 0.78})
+        ranked = {e["reId"]: e for e in score_and_rank(sample_entities, sample_jd)}
+
+    assert ranked[2]["skillScore"] == 1.0                 # 3 must-haves -> saturated
+    assert ranked[2]["rankScore"] == round(0.7 * 0.95 + 0.3 * 1.0, 4)
+    assert ranked[3]["skillScore"] == round(0.6 / 3, 4)   # only redis (preferred)
+    assert ranked[1]["skillScore"] == round(1.0 / 3, 4)   # only postgresql
+    assert ranked[2]["score"] == 0.95                     # the LLM score is kept as-is
+
+
+def test_equal_llm_scores_are_ordered_by_skill_overlap(sample_jd):
+    entities = [
+        {"reId": 1, "reType": "project", "title": "No JD skills", "normalizedSkills": ["figma"]},
+        {"reId": 2, "reType": "project", "title": "Two must-haves", "normalizedSkills": ["python", "fastapi"]},
+    ]
+    with patch("pipeline.scorer.Groq") as mock_groq:
+        mock_groq.return_value.chat.completions.create.return_value = _llm_reply({1: 0.6, 2: 0.6})
+        ranked = score_and_rank(entities, sample_jd)
+
+    assert [e["reId"] for e in ranked] == [2, 1]
+
+
+def test_full_ties_go_to_the_more_recent_entity_then_lower_reid(sample_jd):
+    # Same LLM score, no skills: order must not depend on input order.
+    entities = [
+        {"reId": 30, "reType": "project", "title": "Old", "fromDate": "2022-01-01"},
+        {"reId": 20, "reType": "project", "title": "Undated"},
+        {"reId": 11, "reType": "project", "title": "New B", "fromDate": "2023-09-01"},
+        {"reId": 10, "reType": "project", "title": "New A", "fromDate": "2023-09-01"},
+    ]
+    with patch("pipeline.scorer.Groq") as mock_groq:
+        mock_groq.return_value.chat.completions.create.return_value = _llm_reply({30: 0.45, 20: 0.45, 11: 0.45, 10: 0.45})
+        first = [e["reId"] for e in score_and_rank(entities, sample_jd)]
+        second = [e["reId"] for e in score_and_rank(list(reversed(entities)), sample_jd)]
+
+    assert first == second == [10, 11, 30]   # cap 3: the undated one is cut
+
+
+def test_skills_cannot_lift_an_entity_the_llm_rejected(sample_jd):
+    stuffed = [
+        {"reId": 1, "reType": "project", "title": "Real", "normalizedSkills": ["python"]},
+        {"reId": 2, "reType": "project", "title": "Stuffed",
+         "normalizedSkills": ["python", "fastapi", "postgresql", "docker", "redis", "aws"]},
+    ]
+    with patch("pipeline.scorer.Groq") as mock_groq:
+        mock_groq.return_value.chat.completions.create.return_value = _llm_reply({1: 0.5, 2: 0.10})
+        ranked = score_and_rank(stuffed, sample_jd)
+
+    assert [e["reId"] for e in ranked] == [1]
+
+
+def test_entity_without_skills_ranks_by_llm_score_alone(sample_jd):
+    entities = [{"reId": 1, "reType": "others", "title": "Reading"}]
+    with patch("pipeline.scorer.Groq") as mock_groq:
+        mock_groq.return_value.chat.completions.create.return_value = _llm_reply({1: 0.3})
+        (only,) = score_and_rank(entities, sample_jd)
+
+    assert only["skillScore"] is None and only["rankScore"] == 0.3
+
+
+def test_jd_phrases_match_entity_skills():
+    jd = {"mustHaveSkills": ["aws (sagemaker, s3, ec2)"], "preferredSkills": [], "goodToHaveSkills": []}
+    tiers = scorer._jd_skill_tiers(jd)
+    assert scorer._skill_score({"normalizedSkills": ["aws sagemaker"]}, tiers) == round(1.0 / 3, 4)
+    assert scorer._skill_score({"normalizedSkills": ["deep learning"]}, tiers) == 0.0
+
+
+def test_skill_in_two_jd_tiers_counts_once_at_the_higher_weight():
+    jd = {"mustHaveSkills": ["python"], "preferredSkills": ["Python3"], "goodToHaveSkills": ["py"]}
+    tiers = scorer._jd_skill_tiers(jd)
+    assert len(tiers) == 1 and tiers[0][1] == 1.0
+
+
+def test_rate_limit_longer_than_max_wait_fails_fast(sample_entities, sample_jd):
+    # Daily-limit 429s ask for minutes ("try again in 9m34s"); sleeping and retrying cannot help.
+    with patch("pipeline.scorer.Groq") as mock_groq, patch("pipeline.scorer.time.sleep") as sleep:
+        mock_groq.return_value.chat.completions.create.side_effect = _rate_limit_error({"retry-after": "574"})
+        with pytest.raises(RateLimitError):
+            score_and_rank(sample_entities, sample_jd)
+
+    assert mock_groq.return_value.chat.completions.create.call_count == 1
+    sleep.assert_not_called()

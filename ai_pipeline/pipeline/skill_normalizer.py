@@ -1,3 +1,5 @@
+import re
+
 from thefuzz import fuzz, process
 
 from pipeline.skill_synonyms import SKILL_DISPLAY_NAMES, SKILL_SYNONYMS
@@ -117,3 +119,39 @@ def normalize_jd(jd_extraction: dict) -> dict:
     for field in JD_SKILL_FIELDS:
         normalized[field] = normalize_list(jd_extraction.get(field))
     return normalized
+
+
+# Separators that join several skills inside one JD phrase: "aws (sagemaker, s3, ec2)",
+# "pandas/numpy". "&" is left out on purpose so "weights & biases" stays one skill.
+_PHRASE_SPLIT = re.compile(r"[(),/]")
+
+
+def _squash(key: str) -> str:
+    """'hugging face transformers' and 'huggingface transformers' -> one comparable form."""
+    return re.sub(r"[\s\-]", "", key)
+
+
+def skill_match_keys(skill: str) -> set[str]:
+    """
+    The keys used to decide whether two skills are "the same" when comparing a JD with an entity.
+    A known skill matches only itself ({"aws"}). An unknown phrase also matches:
+      - its listed parts: "aws (sagemaker, s3, ec2)" -> aws, sagemaker, s3, ec2
+      - known skills named word by word: "aws sagemaker" -> aws, "python scripting" -> python
+    The word-by-word step uses exact dictionary hits only (no fuzzy), so a generic word such as
+    "learning" in "deep learning" never turns into a match of its own.
+    """
+    canonical = normalize_one(skill) if isinstance(skill, str) else ""
+    if not canonical:
+        return set()
+    if canonical in SKILL_SYNONYMS:
+        return {canonical}
+
+    keys = {canonical, _squash(canonical)}
+    for part in filter(None, map(str.strip, _PHRASE_SPLIT.split(canonical))):
+        part_key = normalize_one(part)
+        keys.update({part_key, _squash(part_key)})
+    for word in _PHRASE_SPLIT.sub(" ", canonical).split():
+        if word in _ALIAS_TO_CANONICAL:
+            keys.add(_ALIAS_TO_CANONICAL[word])
+    keys.discard("")
+    return keys
