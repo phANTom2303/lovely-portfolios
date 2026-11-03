@@ -1,0 +1,82 @@
+/* ── Loading Spinner ── */
+.spinner {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 1rem;
+  border-radius: 50%;
+  border: 3px solid var(--portfolio-border, #e2dcce);
+  border-top-color: var(--teal, #2ec4a6);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.retryBtn {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ── Preview Banner ── */
+.previewBanner {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0.55rem 0.45rem 0.65rem;
+  background: #0f172a;
+  color: #f8fafc;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}
+
+.previewLabel {
+  background: var(--coral);
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+}
+
+.previewStatus {
+  color: rgba(248, 250, 252, 0.8);
+}
+
+.previewLink {
+  color: #0f172a;
+  background: #f8fafc;
+  text-decoration: none;
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  transition: background 0.15s ease;
+}
+
+.previewLink:hover {
+  background: var(--coral-soft);
+}
+
+@media (max-width: 480px) {
+  .previewBanner {
+    gap: 0.5rem;
+    font-size: 0.74rem;
+  }
+
+  .previewStatus {
+    display: none;
+  }
+}

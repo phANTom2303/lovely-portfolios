@@ -2,17 +2,31 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./PortfolioCard.module.css";
 
+const STATUS_BADGES = {
+  published: { label: "Published", className: "activeBadge", pulse: true },
+  draft: { label: "Draft", className: "inactiveBadge" },
+  archived: { label: "Archived", className: "archivedBadge" },
+};
+
 export default function PortfolioCard({
   portfolio,
-  onSetActive,
+  isBusy = false,
+  onChangeStatus,
   onDuplicate,
   onDelete,
 }) {
   const [copied, setCopied] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
-  const fullUrl = `${window.location.origin}/portfolio/${portfolio.slug}`;
-  const displayPath = `/portfolio/${portfolio.slug}`;
+  const id = portfolio.portfolio_id;
+  const status = portfolio.status || "draft";
+  const isPublished = status === "published";
+  const isArchived = status === "archived";
+  const badge = STATUS_BADGES[status] || STATUS_BADGES.draft;
+  const theme = portfolio.profile_data?.theme === "dark" ? "dark" : "light";
+
+  const displayPath = `/portfolio/${id}`;
+  const fullUrl = `${window.location.origin}${displayPath}`;
 
   const handleCopyLink = async () => {
     try {
@@ -24,8 +38,8 @@ export default function PortfolioCard({
     }
   };
 
-  const formattedDate = portfolio.updatedAt
-    ? new Date(portfolio.updatedAt).toLocaleDateString("en-US", {
+  const formattedDate = portfolio.create_date
+    ? new Date(portfolio.create_date).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -33,33 +47,29 @@ export default function PortfolioCard({
     : "Recently";
 
   return (
-    <article
-      className={`${styles.card} ${portfolio.isActive ? styles.activeCard : ""}`}
-    >
+    <article className={`${styles.card} ${isPublished ? styles.activeCard : ""}`}>
       <div className={styles.cardHeader}>
         <div className={styles.badgeGroup}>
-          {portfolio.isActive ? (
-            <span className={styles.activeBadge}>
-              <span className={styles.pulseDot} /> Active
-            </span>
-          ) : (
-            <span className={styles.inactiveBadge}>Inactive</span>
-          )}
-          <span className={styles.themeBadge} title={`Theme: ${portfolio.theme}`}>
-            {portfolio.theme === "dark" ? "🌙 Dark" : "☀️ Light"}
+          <span className={styles[badge.className]}>
+            {badge.pulse && <span className={styles.pulseDot} />} {badge.label}
+          </span>
+          <span className={styles.themeBadge} title={`Theme: ${theme}`}>
+            {theme === "dark" ? "🌙 Dark" : "☀️ Light"}
           </span>
         </div>
 
-        <div className={styles.metaTime}>Updated {formattedDate}</div>
+        <div className={styles.metaTime}>Created {formattedDate}</div>
       </div>
 
       <div className={styles.cardBody}>
-        <h3 className={styles.title}>{portfolio.title}</h3>
+        <h3 className={styles.title}>{portfolio.portfolio_name}</h3>
 
         {/* Unique Link Bar */}
         <div className={styles.linkBar}>
           <div className={styles.linkInfo}>
-            <span className={styles.linkLabel}>Unique Link</span>
+            <span className={styles.linkLabel}>
+              {isPublished ? "Public Link" : "Publish to share"}
+            </span>
             <span className={styles.linkPath} title={fullUrl}>
               {displayPath}
             </span>
@@ -68,7 +78,9 @@ export default function PortfolioCard({
             type="button"
             className={`${styles.copyButton} ${copied ? styles.copied : ""}`}
             onClick={handleCopyLink}
-            aria-label="Copy unique link to clipboard"
+            disabled={!isPublished}
+            title={isPublished ? "Copy public link" : "Only published portfolios are publicly visible"}
+            aria-label="Copy public link to clipboard"
           >
             {copied ? "Copied! ✓" : "Copy Link"}
           </button>
@@ -78,35 +90,50 @@ export default function PortfolioCard({
       {/* Card Actions */}
       <div className={styles.cardFooter}>
         <div className={styles.primaryActions}>
-          <Link
-            to={`/portfolio/${portfolio.slug}`}
-            className={styles.viewButton}
-            title="Open and view this portfolio"
-          >
-            View Portfolio ↗
-          </Link>
+          {isPublished ? (
+            <Link
+              to={displayPath}
+              className={styles.viewButton}
+              title="Open the public portfolio page"
+            >
+              View Live ↗
+            </Link>
+          ) : (
+            <Link
+              to={`/portfolio/${id}/preview`}
+              className={styles.viewButton}
+              title="Preview this portfolio (only visible to you)"
+            >
+              Preview ↗
+            </Link>
+          )}
 
-          <button
-            type="button"
-            className={
-              portfolio.isActive
-                ? styles.activeToggleButton
-                : styles.setActiveButton
-            }
-            onClick={() => onSetActive(portfolio.id)}
-            title={
-              portfolio.isActive
-                ? "Click to set as inactive"
-                : "Click to set as active"
-            }
-          >
-            {portfolio.isActive ? "Active ✓" : "Set as Active"}
-          </button>
+          {isPublished ? (
+            <button
+              type="button"
+              className={styles.activeToggleButton}
+              onClick={() => onChangeStatus(id, "draft")}
+              disabled={isBusy}
+              title="Click to unpublish (move back to draft)"
+            >
+              Published ✓
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={styles.setActiveButton}
+              onClick={() => onChangeStatus(id, isArchived ? "draft" : "published")}
+              disabled={isBusy}
+              title={isArchived ? "Move back to drafts" : "Make this portfolio publicly visible"}
+            >
+              {isArchived ? "Restore to Draft" : "Publish"}
+            </button>
+          )}
         </div>
 
         <div className={styles.secondaryActions}>
           <Link
-            to={`/portfolio/${portfolio.slug || portfolio.id}/edit`}
+            to={`/portfolio/${id}/edit`}
             className={styles.iconAction}
             title="Edit portfolio content"
           >
@@ -115,17 +142,30 @@ export default function PortfolioCard({
           <button
             type="button"
             className={styles.iconAction}
-            onClick={() => onDuplicate(portfolio.id)}
-            title="Duplicate this portfolio"
+            onClick={() => onDuplicate(id)}
+            disabled={isBusy}
+            title="Duplicate this portfolio as a new draft"
           >
             Duplicate
           </button>
+          {!isArchived && (
+            <button
+              type="button"
+              className={styles.iconAction}
+              onClick={() => onChangeStatus(id, "archived")}
+              disabled={isBusy}
+              title="Archive this portfolio"
+            >
+              Archive
+            </button>
+          )}
 
           {!showConfirmDelete ? (
             <button
               type="button"
               className={`${styles.iconAction} ${styles.deleteAction}`}
               onClick={() => setShowConfirmDelete(true)}
+              disabled={isBusy}
               title="Delete portfolio"
             >
               Delete
@@ -135,7 +175,8 @@ export default function PortfolioCard({
               <button
                 type="button"
                 className={styles.confirmDeleteBtn}
-                onClick={() => onDelete(portfolio.id)}
+                onClick={() => onDelete(id)}
+                disabled={isBusy}
               >
                 Confirm
               </button>

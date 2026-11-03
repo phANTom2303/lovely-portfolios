@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
@@ -6,81 +6,217 @@ import PortfolioCard from "../../components/dashboard/PortfolioCard";
 import CreatePortfolioModal from "../../components/dashboard/CreatePortfolioModal";
 import { useAuth } from "../../context/authContext";
 import {
-  getPortfolios,
-  setActivePortfolio,
+  fetchPortfolios,
   createPortfolio,
-  duplicatePortfolio,
+  updatePortfolio,
   deletePortfolio,
-} from "../../services/portfolioStorage";
+} from "../../api/portfolioApi";
+import { getErrorMessage } from "../../utils/getErrorMessage";
 import styles from "./Home.module.css";
+
+const STATUS_FILTERS = [
+  { value: "all", label: "All" },
+  { value: "draft", label: "Draft" },
+  { value: "published", label: "Published" },
+  { value: "archived", label: "Archived" },
+];
+
+const STATUS_LABELS = {
+  draft: "moved to drafts",
+  published: "published",
+  archived: "archived",
+};
+
+// Newest first
+function sortPortfolios(list) {
+  return [...list].sort((a, b) => b.portfolio_id - a.portfolio_id);
+}
 
 export default function Home() {
   const { user } = useAuth();
-  const effectiveUser = user || { name: "Alex Sterling", email: "alex@sterling.dev" };
-  const [portfolios, setPortfolios] = useState(() => getPortfolios());
+  const [portfolios, setPortfolios] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [reloadToken, setReloadToken] = useState(0);
+  const [busyId, setBusyId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState("all"); // 'all' | 'active' | 'inactive'
+  const [filterType, setFilterType] = useState("all"); // 'all' | 'draft' | 'published' | 'archived'
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [notification, setNotification] = useState(null);
 
-  const loadPortfolios = useCallback(() => {
-    const list = getPortfolios();
-    setPortfolios(list);
-  }, []);
+  // Re-runs whenever reloadToken is bumped (retry, or after a new portfolio is generated)
+  useEffect(() => {
+    let isMounted = true;
+    fetchPortfolios()
+      .then((list) => {
+        if (!isMounted) return;
+        setPortfolios(sortPortfolios(Array.isArray(list) ? list : []));
+        setLoadError("");
+      })
+      .catch((err) => {
+        if (isMounted) setLoadError(getErrorMessage(err, "Failed to load your portfolios."));
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [reloadToken]);
 
-  const showToast = (message) => {
-    setNotification(message);
+  const showToast = (message, isError = false) => {
+    const next = { message, isError };
+    setNotification(next);
     setTimeout(() => {
-      setNotification((curr) => (curr === message ? null : curr));
+      setNotification((curr) => (curr === next ? null : curr));
     }, 3500);
   };
 
-  const handleToggleActive = (id) => {
-    const updated = setActivePortfolio(id);
-    setPortfolios(updated);
-    const item = updated.find((p) => p.id === id);
-    showToast(
-      `"${item?.title}" is now ${item?.isActive ? "active" : "inactive"}.`
+  const replacePortfolio = (updated) => {
+    setPortfolios((prev) =>
+      prev.map((p) => (p.portfolio_id === updated.portfolio_id ? updated : p))
     );
   };
 
-  const handleCreate = (data) => {
-    const created = createPortfolio(data);
-    loadPortfolios();
-    showToast(`Created new portfolio: "${created.title}"`);
-  };
-
-  const handleDuplicate = (id) => {
-    const duplicated = duplicatePortfolio(id);
-    loadPortfolios();
-    if (duplicated) {
-      showToast(`Duplicated into "${duplicated.title}"`);
+  const handleChangeStatus = async (id, status) => {
+    setBusyId(id);
+    try {
+      const updated = await updatePortfolio({ portfolio_id: id, status });
+      replacePortfolio(updated);
+      showToast(`"${updated.portfolio_name}" ${STATUS_LABELS[status]}.`);
+    } catch (err) {
+      showToast(getErrorMessage(err, "Failed to update portfolio status."), true);
+    } finally {
+      setBusyId(null);
     }
   };
 
-  const handleDelete = (id) => {
+  const handleCreated = (result) => {
+    setReloadToken((t) => t + 1);
+    showToast(
+      `Portfolio #${result?.portfolio_id} generated as a draft. Review it before publishing.`
+    );
+  };
+
+  const handleDuplicate = async (id) => {
+    const original = portfolios.find((p) => p.portfolio_id === id);
+    if (!original) return;
+    setBusyId(id);
     try {
-      const remaining = deletePortfolio(id);
-      setPortfolios(remaining);
+      const duplicated = await createPortfolio({
+        portfolio_name: `Copy of ${original.portfolio_name}`,
+        profile_data: original.profile_data,
+      });
+      setPortfolios((prev) => sortPortfolios([duplicated, ...prev]));
+      showToast(`Duplicated into "${duplicated.portfolio_name}"`);
+    } catch (err) {
+      showToast(getErrorMessage(err, "Failed to duplicate portfolio."), true);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    setBusyId(id);
+    try {
+      await deletePortfolio(id);
+      setPortfolios((prev) => prev.filter((p) => p.portfolio_id !== id));
       showToast("Portfolio removed successfully.");
     } catch (err) {
-      alert(err.message || "Failed to delete portfolio");
+      showToast(getErrorMessage(err, "Failed to delete portfolio."), true);
+    } finally {
+      setBusyId(null);
     }
   };
 
-  const activeCount = portfolios.filter((p) => p.isActive).length;
-  const inactiveCount = portfolios.filter((p) => !p.isActive).length;
+  const countFor = (status) =>
+    status === "all"
+      ? portfolios.length
+      : portfolios.filter((p) => p.status === status).length;
 
   const filteredPortfolios = portfolios.filter((p) => {
-    const matchesSearch =
-      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.slug.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (p.portfolio_name || "")
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
 
     if (!matchesSearch) return false;
-    if (filterType === "active") return p.isActive;
-    if (filterType === "inactive") return !p.isActive;
-    return true;
+    if (filterType === "all") return true;
+    return p.status === filterType;
   });
+
+  const renderGridArea = () => {
+    if (isLoading) {
+      return (
+        <div className={styles.emptyState} role="status">
+          <p className={styles.emptyText}>Loading your portfolios…</p>
+        </div>
+      );
+    }
+
+    if (loadError) {
+      return (
+        <div className={styles.emptyState}>
+          <p className={styles.emptyText}>{loadError}</p>
+          <button
+            type="button"
+            className={styles.resetFilterBtn}
+            onClick={() => {
+              setIsLoading(true);
+              setReloadToken((t) => t + 1);
+            }}
+          >
+            Try Again
+          </button>
+        </div>
+      );
+    }
+
+    if (filteredPortfolios.length > 0) {
+      return (
+        <div className={styles.portfolioGrid}>
+          {filteredPortfolios.map((item) => (
+            <PortfolioCard
+              key={item.portfolio_id}
+              portfolio={item}
+              isBusy={busyId === item.portfolio_id}
+              onChangeStatus={handleChangeStatus}
+              onDuplicate={handleDuplicate}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className={styles.emptyState}>
+        <p className={styles.emptyText}>
+          {searchQuery
+            ? `No portfolios matching "${searchQuery}"`
+            : portfolios.length === 0
+              ? "You don't have any portfolios yet."
+              : "No portfolios available in this view."}
+        </p>
+        {searchQuery ? (
+          <button
+            type="button"
+            className={styles.resetFilterBtn}
+            onClick={() => setSearchQuery("")}
+          >
+            Clear Search
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={styles.createBtn}
+            onClick={() => setIsCreateOpen(true)}
+          >
+            + Create Your First Portfolio
+          </button>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className={styles.homeLayout}>
@@ -88,7 +224,7 @@ export default function Home() {
 
       {notification && (
         <div className={styles.toastBanner} role="status">
-          <span>✓ {notification}</span>
+          <span>{notification.isError ? "⚠" : "✓"} {notification.message}</span>
         </div>
       )}
 
@@ -98,10 +234,10 @@ export default function Home() {
           <div className={styles.hubHeaderBanner}>
             <div>
               <h1 className={styles.hubMainTitle}>
-                Welcome{effectiveUser?.name ? `, ${effectiveUser.name}` : ""}.
+                Welcome{user?.name ? `, ${user.name}` : ""}.
               </h1>
               <p className={styles.hubSubtitle}>
-                Your portfolio workspace is ready. Manage your personalized portfolio links, toggle active status, and customize your builds.
+                Your portfolio workspace is ready. Generate portfolios tailored to a job description, review drafts, and publish them to share.
               </p>
             </div>
             <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}>
@@ -121,33 +257,18 @@ export default function Home() {
           <div className={styles.hubToolbar}>
             <div className={styles.toolbarLeft}>
               <div className={styles.filterPills}>
-                <button
-                  type="button"
-                  className={`${styles.filterPill} ${
-                    filterType === "all" ? styles.filterPillActive : ""
-                  }`}
-                  onClick={() => setFilterType("all")}
-                >
-                  All ({portfolios.length})
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.filterPill} ${
-                    filterType === "active" ? styles.filterPillActive : ""
-                  }`}
-                  onClick={() => setFilterType("active")}
-                >
-                  Active ({activeCount})
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.filterPill} ${
-                    filterType === "inactive" ? styles.filterPillActive : ""
-                  }`}
-                  onClick={() => setFilterType("inactive")}
-                >
-                  Inactive ({inactiveCount})
-                </button>
+                {STATUS_FILTERS.map((filter) => (
+                  <button
+                    key={filter.value}
+                    type="button"
+                    className={`${styles.filterPill} ${
+                      filterType === filter.value ? styles.filterPillActive : ""
+                    }`}
+                    onClick={() => setFilterType(filter.value)}
+                  >
+                    {filter.label} ({countFor(filter.value)})
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -175,44 +296,7 @@ export default function Home() {
           </div>
 
           {/* Grid of Portfolio Cards */}
-          {filteredPortfolios.length > 0 ? (
-            <div className={styles.portfolioGrid}>
-              {filteredPortfolios.map((item) => (
-                <PortfolioCard
-                  key={item.id}
-                  portfolio={item}
-                  onSetActive={handleToggleActive}
-                  onDuplicate={handleDuplicate}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className={styles.emptyState}>
-              <p className={styles.emptyText}>
-                {searchQuery
-                  ? `No portfolios matching "${searchQuery}"`
-                  : "No portfolios available in this view."}
-              </p>
-              {searchQuery ? (
-                <button
-                  type="button"
-                  className={styles.resetFilterBtn}
-                  onClick={() => setSearchQuery("")}
-                >
-                  Clear Search
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className={styles.createBtn}
-                  onClick={() => setIsCreateOpen(true)}
-                >
-                  + Create Your First Portfolio
-                </button>
-              )}
-            </div>
-          )}
+          {renderGridArea()}
         </section>
       </main>
 
@@ -221,8 +305,7 @@ export default function Home() {
       <CreatePortfolioModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
-        onCreate={handleCreate}
-        portfolios={portfolios}
+        onCreated={handleCreated}
       />
     </div>
   );

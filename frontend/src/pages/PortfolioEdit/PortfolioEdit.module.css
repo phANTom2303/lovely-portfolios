@@ -207,6 +207,73 @@
   transform: translateY(-1px);
 }
 
+.saveButtonOutline {
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+}
+
+.saveButtonOutline:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.publishButton {
+  background: var(--coral);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(255, 107, 90, 0.25);
+}
+
+.publishButton:hover:not(:disabled) {
+  background: #e85545;
+  transform: translateY(-1px);
+}
+
+.saveButton:disabled {
+  cursor: not-allowed;
+}
+
+.publishButton:disabled {
+  background: var(--coral-soft);
+  color: var(--coral);
+  box-shadow: none;
+}
+
+.saveButtonOutline:disabled {
+  opacity: 0.6;
+}
+
+/* ── Status Badge ── */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.statusDraft {
+  background: #f1f5f9;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+
+.statusPublished {
+  background: var(--coral-soft);
+  color: var(--coral);
+  border-color: var(--coral);
+}
+
+.statusArchived {
+  background: var(--mustard-soft);
+  color: #854d0e;
+  border-color: var(--mustard);
+}
+
 /* ── Save Toast ── */
 .saveToast {
   position: fixed;
@@ -224,6 +291,10 @@
   gap: 0.5rem;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   animation: slideUp 0.25s ease-out;
+}
+
+.saveToastError {
+  background: #b91c1c;
 }
 
 @keyframes slideUp {
@@ -822,6 +893,10 @@
 }
 
 @media (max-width: 520px) {
+  .statusBadge {
+    display: none;
+  }
+
   .topBar {
     height: auto;
     min-height: 54px;

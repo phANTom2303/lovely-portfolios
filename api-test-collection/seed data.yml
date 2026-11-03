@@ -1,0 +1,22 @@
+info:
+  name: seed data
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: http://localhost:5001/seed
+  body:
+    type: json
+    data: |-
+      {
+        "user_id":"06f1cc7b-0604-4e8b-b7f9-658b9f4b4989"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

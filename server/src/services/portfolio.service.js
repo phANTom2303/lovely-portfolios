@@ -11,6 +11,8 @@ export const getPortfolio = async (user_id, portfolio_id) => {
         return result;
     } else {
         const result = await portfolioRepo.getPortfolioById(portfolio_id);
+        // Another user's portfolio is reported as not found so its existence is not revealed
+        if (!result || result.user_id !== user_id) throw new NotFoundError(`Portfolio with id "${portfolio_id}" not found`);
         return result;
     }
 };
