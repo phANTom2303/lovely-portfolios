@@ -1,6 +1,10 @@
 import "./Hero.css";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/authContext";
+
 function Hero() {
+  const { isAuthenticated } = useAuth();
+
   return (
     <section className="hero">
       <div className="hero-visuals" aria-hidden="true">
@@ -59,13 +63,27 @@ function Hero() {
         </p>
 
         <div className="hero-actions">
-          <Link to="/signup" className="hero-primary">
-            Start with Resume
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <Link to="/home" className="hero-primary">
+                Go to Home
+              </Link>
 
-          <Link to="/signin" className="hero-secondary">
-            Sign In
-          </Link>
+              <Link to="/profile" className="hero-secondary">
+                My Profile
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/signup" className="hero-primary">
+                Getting Started
+              </Link>
+
+              <Link to="/signin" className="hero-secondary">
+                Sign In
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </section>
