@@ -117,11 +117,7 @@ function Header() {
                 <div className="mobile-link mobile-user-name">
                   {user?.name || "Account"}
                 </div>
-                <Link
-                  to="/profile"
-                  className="mobile-link"
-                  onClick={closeMenu}
-                >
+                <Link to="/profile" className="mobile-link" onClick={closeMenu}>
                   My profile
                 </Link>
                 <Link to="/home" className="mobile-link" onClick={closeMenu}>
@@ -140,18 +136,10 @@ function Header() {
                 <Link to="/" className="mobile-link" onClick={closeMenu}>
                   Home
                 </Link>
-                <Link
-                  to="/profile"
-                  className="mobile-link"
-                  onClick={closeMenu}
-                >
+                <Link to="/profile" className="mobile-link" onClick={closeMenu}>
                   Profile
                 </Link>
-                <Link
-                  to="/signin"
-                  className="mobile-link"
-                  onClick={closeMenu}
-                >
+                <Link to="/signin" className="mobile-link" onClick={closeMenu}>
                   Sign In
                 </Link>
                 <Link

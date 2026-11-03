@@ -1,0 +1,389 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   PORTFOLIO PAGE WRAPPER & STORY NAVIGATION
+───────────────────────────────────────────────────────────────────────────── */
+
+.page {
+  background: var(--portfolio-bg);
+  min-height: 100vh;
+  color: var(--portfolio-text);
+  overflow-x: clip;
+  position: relative;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.page[data-theme="dark"] {
+  background: var(--portfolio-bg);
+  color: var(--portfolio-text);
+}
+
+/* ── Global Scroll Reveal Data Attribute Styles ── */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+[data-reveal][data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+@media print {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ── Floating Story Dock (Hysteresis & Calm Damping prevent shaky jitter) ── */
+.dockWrapper {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99;
+  padding-bottom: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  pointer-events: auto;
+}
+
+.storyDock {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(24, 27, 26, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+  /* Resting state: partially hidden (~25-30% visible) to maximize screen space */
+  transform: translateY(32px);
+  opacity: 0.72;
+  transition:
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.35s ease,
+    box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+/* React hysteresis-controlled expansion + keyboard focus-within */
+.dockWrapper[data-expanded="true"] .storyDock,
+.dockWrapper:focus-within .storyDock {
+  transform: translateY(0);
+  opacity: 1;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);
+}
+
+.dockThemeBtn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.dockThemeBtn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.14);
+  transform: scale(1.1);
+}
+
+.dockChapter {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.65);
+  text-decoration: none;
+  transition: color 0.15s ease;
+  white-space: nowrap;
+}
+
+.dockChapter:hover {
+  color: #fff;
+}
+
+.dockActiveBubble {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--teal, #2ec4a6);
+  z-index: 1;
+  box-shadow: 0 2px 12px rgba(46, 196, 166, 0.35);
+}
+
+.dockChapterLabel {
+  position: relative;
+  z-index: 2;
+}
+
+.dockChapterActive {
+  color: var(--dark, #191919) !important;
+}
+.dockChapterActive:hover {
+  color: var(--dark, #191919) !important;
+}
+
+
+.dockDivider {
+  width: 1px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.backHome {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.backHome:hover {
+  color: #fff;
+}
+
+/* ── Minimal Story Footer ── */
+.miniFooter {
+  padding: 24px 72px;
+  background: var(--portfolio-footer-bg);
+  border-top: 1px solid var(--portfolio-footer-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--portfolio-footer-text);
+  flex-wrap: wrap;
+  gap: 12px;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.miniFooterLinks {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.miniFooterLinks a,
+.backToTopBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--portfolio-footer-text);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.miniFooterLinks a:hover,
+.backToTopBtn:hover {
+  color: var(--portfolio-accent-primary);
+}
+
+@media (max-width: 768px) {
+  .dockWrapper {
+    width: calc(100vw - 16px);
+    max-width: calc(100vw - 16px);
+    padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
+  }
+
+  .storyDock {
+    width: 100%;
+    padding: 6px 8px;
+    gap: 4px;
+    transform: translateY(20px);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    scroll-padding: 0 6px;
+    justify-content: flex-start;
+  }
+
+  .dockWrapper[data-expanded="true"] .storyDock,
+  .dockWrapper:focus-within .storyDock {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .storyDock::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dockChapter {
+    flex-shrink: 0;
+    scroll-snap-align: center;
+    padding: 7px 11px;
+    font-size: 0.73rem;
+    min-height: 36px;
+  }
+
+  .backHome {
+    flex-shrink: 0;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 8px;
+  }
+
+  .dockThemeBtn {
+    flex-shrink: 0;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .miniFooter {
+    padding: 24px 20px max(70px, calc(env(safe-area-inset-bottom, 0px) + 64px));
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dockWrapper {
+    width: calc(100vw - 12px);
+    max-width: calc(100vw - 12px);
+  }
+
+  .storyDock {
+    padding: 5px 6px;
+    gap: 3px;
+    transform: translateY(18px);
+  }
+
+  .dockChapter {
+    padding: 6px 9px;
+    font-size: 0.71rem;
+    min-height: 38px;
+  }
+
+  .dockThemeBtn {
+    min-width: 38px;
+    min-height: 38px;
+    font-size: 0.95rem;
+  }
+
+  .miniFooter {
+    padding: 20px 16px max(70px, calc(env(safe-area-inset-bottom, 0px) + 64px));
+  }
+}
+
+/* 404 Not Found State */
+.notFoundPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--portfolio-bg, #f7f5f0);
+  padding: 2rem 1.5rem;
+}
+
+.notFoundCard {
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  background: var(--portfolio-card-bg, #ffffff);
+  border: 1px solid var(--portfolio-border, #e2dcce);
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.notFoundEmoji {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.notFoundTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--portfolio-text-heading, #11141a);
+  margin: 0 0 0.5rem 0;
+}
+
+.notFoundDesc {
+  font-size: 0.92rem;
+  color: var(--portfolio-text-muted, #64748b);
+  margin: 0 0 1.75rem 0;
+  line-height: 1.5;
+}
+
+.notFoundDesc code {
+  background: var(--portfolio-pill-bg, #f1ede4);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  color: var(--portfolio-text-heading, #11141a);
+  font-weight: 600;
+}
+
+.notFoundAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--teal, #2ec4a6);
+  color: #0b1f1a;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.7rem 1.4rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.notFoundAction:hover {
+  background: #27ad92;
+  transform: translateY(-1px);
+}
+
+/* ── Preview Mode Overrides ── */
+.previewPage {
+  min-height: 100%;
+  position: relative;
+}
+
+.previewPage .dockWrapper {
+  position: sticky;
+  bottom: 12px;
+  z-index: 50;
+}
+

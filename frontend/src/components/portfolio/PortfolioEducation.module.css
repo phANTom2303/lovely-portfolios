@@ -1,0 +1,299 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   PORTFOLIO EDUCATION — Academic Pedigree & Coursework
+   (Supports light/dark themes, coursework chips, and distinction badges)
+───────────────────────────────────────────────────────────────────────────── */
+
+.section {
+  padding: 100px 72px 130px;
+  background: var(--portfolio-bg);
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.3s ease;
+}
+
+.inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+}
+
+/* ── Pure Vector Background Artwork (Zero Text) ── */
+.backgroundArtwork {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: var(--portfolio-drawing-opacity);
+  z-index: 1;
+  color: var(--portfolio-drawing-color);
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+:global([data-theme="dark"]) .backgroundArtwork {
+  color: var(--portfolio-drawing-color);
+  opacity: var(--portfolio-drawing-opacity);
+}
+
+/* ── Section Header ── */
+.headerGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-bottom: 2px dashed var(--portfolio-border-dashed);
+  padding-bottom: 24px;
+}
+
+.boardTag {
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--portfolio-accent-gold);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.headline {
+  font-family: var(--font-heading, sans-serif);
+  font-size: clamp(2.4rem, 4.2vw, 3.4rem);
+  font-weight: 800;
+  color: #11141a;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+/* ── Education Grid ── */
+.eduGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 28px;
+}
+
+.eduCard {
+  background: #ffffff;
+  border: 1.5px solid #e2dcce;
+  border-radius: 20px;
+  padding: 34px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.035),
+    0 1px 3px rgba(0, 0, 0, 0.02);
+  transition:
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.2s ease;
+}
+
+.eduCard:hover {
+  transform: translateY(-5px);
+  border-color: #11141a;
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.badgeRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.periodBadge {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #f1ede4;
+  border: 1px solid #ded7c9;
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.gradeBadge {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #ecfccb;
+  border: 1px solid #84cc16;
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #3f6212;
+}
+
+.degreeTitle {
+  font-family: var(--font-heading, sans-serif);
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #11141a;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.streamText {
+  color: #64748b;
+  font-weight: 600;
+  font-size: 1.15rem;
+}
+
+.institution {
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+/* ── Coursework Focus ── */
+.courseworkSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 18px;
+  border-top: 1px dashed #ded7c9;
+}
+
+.courseworkLabel {
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.courseworkPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.coursePill {
+  padding: 4px 11px;
+  border-radius: 6px;
+  background: #f1ede4;
+  border: 1px solid #ded7c9;
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DARK THEME OVERRIDES
+───────────────────────────────────────────────────────────────────────────── */
+:global([data-theme="dark"]) .section {
+  background: var(--portfolio-bg);
+}
+
+:global([data-theme="dark"]) .headerGroup {
+  border-bottom-color: var(--portfolio-border-dashed);
+}
+
+:global([data-theme="dark"]) .boardTag {
+  color: var(--portfolio-accent-gold);
+}
+
+:global([data-theme="dark"]) .headline {
+  color: var(--portfolio-text-heading);
+}
+
+:global([data-theme="dark"]) .eduCard {
+  background: var(--portfolio-card-bg);
+  border-color: var(--portfolio-border);
+  box-shadow: var(--portfolio-card-shadow);
+}
+
+:global([data-theme="dark"]) .eduCard:hover {
+  border-color: var(--portfolio-accent-primary);
+  box-shadow: var(--portfolio-card-shadow-hover);
+}
+
+:global([data-theme="dark"]) .periodBadge {
+  background: var(--portfolio-pill-bg);
+  border-color: var(--portfolio-border);
+  color: var(--portfolio-pill-text);
+}
+
+:global([data-theme="dark"]) .degreeTitle {
+  color: var(--portfolio-text-heading);
+}
+
+:global([data-theme="dark"]) .institution {
+  color: var(--portfolio-accent-sky);
+}
+
+:global([data-theme="dark"]) .courseworkSection {
+  border-top-color: var(--portfolio-border);
+}
+
+:global([data-theme="dark"]) .courseworkLabel {
+  color: var(--portfolio-text-subtle);
+}
+
+:global([data-theme="dark"]) .coursePill {
+  background: var(--portfolio-pill-bg);
+  border-color: var(--portfolio-border);
+  color: var(--portfolio-pill-text);
+}
+
+/* ── Responsive ── */
+@media (max-width: 960px) {
+  .section {
+    padding: 80px 28px 100px;
+  }
+}
+
+@media (max-width: 540px) {
+  .section {
+    padding: 50px 16px 70px;
+  }
+  .headline {
+    font-size: clamp(1.8rem, 6.5vw, 2.5rem);
+  }
+  .eduGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .eduCard {
+    padding: 22px 18px;
+    border-radius: 16px;
+  }
+  .degreeTitle {
+    font-size: 1.25rem;
+  }
+  .courseworkPills {
+    gap: 6px;
+  }
+  .coursePill {
+    font-size: 0.72rem;
+    padding: 4px 9px;
+  }
+}
+
+@media (max-width: 380px) {
+  .section {
+    padding: 40px 12px 60px;
+  }
+  .eduCard {
+    padding: 18px 14px;
+  }
+}

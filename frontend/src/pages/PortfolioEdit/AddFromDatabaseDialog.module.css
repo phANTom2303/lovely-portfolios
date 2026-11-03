@@ -1,0 +1,298 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.dialog {
+  width: min(680px, calc(100vw - 2rem));
+  max-height: min(85vh, 750px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border, #e2dcce);
+  border-radius: 16px;
+  background: var(--surface, #ffffff);
+  color: var(--text, #191919);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dialogHeader {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.6rem;
+  border-bottom: 1px solid var(--border-soft, #ece7dc);
+  background: var(--surface-raised, #faf8f5);
+}
+
+.titleArea {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.dialogTitle {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text, #191919);
+}
+
+.dialogSubtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted, #64748b);
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.closeButton:hover {
+  background: var(--surface-dim, #f1ede4);
+  color: var(--text, #191919);
+}
+
+.dialogBody {
+  flex: 1;
+  min-height: 0;
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.candidateList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.candidateCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1.15rem 1.25rem;
+  background: var(--surface-raised, #faf8f5);
+  border: 1px solid var(--border-soft, #ece7dc);
+  border-radius: 12px;
+  transition: all 0.15s ease;
+}
+
+.candidateCard:hover {
+  border-color: var(--coral, #ff6b5a);
+  box-shadow: 0 4px 14px rgba(255, 107, 90, 0.12);
+  background: #ffffff;
+}
+
+.cardMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cardTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text, #191919);
+}
+
+.cardDate {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+  background: #f1f5f9;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+}
+
+.cardSubtitle {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--coral, #ff6b5a);
+}
+
+.cardDesc {
+  margin: 0.2rem 0 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted, #64748b);
+  line-height: 1.4;
+}
+
+.cardSkillsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.skillPill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #475569;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+
+.moreSkillsPill {
+  font-size: 0.72rem;
+  color: #64748b;
+  padding: 0.15rem 0.3rem;
+}
+
+.addBtn {
+  flex-shrink: 0;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--coral, #ff6b5a);
+  background: var(--coral-soft, #ffe8e5);
+  color: var(--coral, #ff6b5a);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.addBtn:hover {
+  background: var(--coral, #ff6b5a);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.emptyState {
+  margin: auto;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-muted, #64748b);
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text, #191919);
+}
+
+.emptyDesc {
+  margin: 0;
+  font-size: 0.85rem;
+  max-width: 380px;
+  line-height: 1.5;
+}
+
+.dialogFooter {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 1rem 1.6rem;
+  border-top: 1px solid var(--border-soft, #ece7dc);
+  background: var(--surface-raised, #faf8f5);
+}
+
+.cancelButton {
+  padding: 0.55rem 1.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--border, #dcd9d9);
+  background: var(--surface, #ffffff);
+  color: var(--text, #191919);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cancelButton:hover {
+  background: var(--surface-dim, #f1ede4);
+}
+
+@media (max-width: 540px) {
+  .overlay {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .dialog {
+    width: calc(100vw - 1rem);
+    max-height: 90vh;
+    border-radius: 12px;
+  }
+
+  .dialogHeader {
+    padding: 1rem;
+  }
+
+  .dialogTitle {
+    font-size: 1.1rem;
+  }
+
+  .dialogBody {
+    padding: 1rem 0.85rem;
+  }
+
+  .candidateCard {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+    padding: 1rem;
+  }
+
+  .addBtn {
+    width: 100%;
+    min-height: 40px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .dialogFooter {
+    padding: 0.85rem 1rem;
+  }
+
+  .cancelButton {
+    width: 100%;
+    min-height: 42px;
+    text-align: center;
+    justify-content: center;
+  }
+}

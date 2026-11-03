@@ -1,0 +1,24 @@
+.tiltWrapper {
+  position: relative;
+  perspective: 1200px;
+  border-radius: inherit;
+  will-change: transform;
+}
+
+.tiltInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  transform-style: preserve-3d;
+}
+
+.glareLayer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 10;
+  mix-blend-mode: overlay;
+  transition: opacity 0.2s ease;
+}

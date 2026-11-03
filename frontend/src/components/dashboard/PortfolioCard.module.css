@@ -1,0 +1,455 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #e2dcce);
+  border-radius: 14px;
+  padding: 1.5rem;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.07);
+  border-color: #cbd5e1;
+}
+
+.activeCard {
+  border: 2px solid var(--coral);
+  box-shadow: 0 4px 16px rgba(255, 107, 90, 0.15);
+}
+
+.activeCard:hover {
+  border-color: var(--coral);
+  box-shadow: 0 12px 28px rgba(255, 107, 90, 0.2);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.badgeGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.activeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--coral-soft);
+  color: var(--coral);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--coral);
+}
+
+[data-theme="dark"] .activeBadge {
+  color: var(--coral);
+  background: var(--coral-soft);
+  border-color: var(--coral);
+}
+
+.pulseDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--coral);
+  box-shadow: 0 0 0 0 rgba(255, 107, 90, 0.7);
+  animation: pulse 2s infinite;
+}
+
+[data-theme="dark"] .pulseDot {
+  background: var(--coral);
+  box-shadow: 0 0 0 0 rgba(255, 107, 90, 0.7);
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 90, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(255, 107, 90, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 90, 0);
+  }
+}
+
+.inactiveBadge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--surface-dim, #f1ede4);
+  color: var(--text-muted, #6b6b67);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--border, #e2dcce);
+}
+
+.themeBadge {
+  font-size: 0.75rem;
+  color: var(--text-muted, #6b6b67);
+  background: var(--surface-dim, #f1ede4);
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--border, #e2dcce);
+}
+
+.metaTime {
+  font-size: 0.75rem;
+  color: var(--text-muted, #6b6b67);
+  white-space: nowrap;
+}
+
+.cardBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text, #191919);
+  margin: 0 0 0.4rem 0;
+  line-height: 1.3;
+}
+
+.description {
+  font-size: 0.88rem;
+  color: var(--text-muted, #6b6b67);
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Unique Link Box */
+.linkBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: var(--background, #f7f5f0);
+  border: 1px dashed var(--border, #dcd9d9);
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  margin-bottom: 1rem;
+}
+
+[data-theme="dark"] .linkBar {
+  background: #11141a;
+  border-color: #30363d;
+}
+
+.linkInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.linkLabel {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #6b6b67);
+}
+
+.linkPath {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text, #191919);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.copyButton {
+  background: transparent;
+  border: 1px solid var(--border, #dcd9d9);
+  color: var(--text, #191919);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.copyButton:hover {
+  background: var(--surface, #ffffff);
+  border-color: var(--coral);
+  color: var(--coral);
+}
+
+.copyButton.copied {
+  background: var(--coral-soft);
+  border-color: var(--coral);
+  color: var(--coral);
+}
+
+/* Stats Row */
+.statsRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted, #6b6b67);
+  margin-bottom: 1.25rem;
+}
+
+.statItem strong {
+  color: var(--text, #191919);
+}
+
+.statDot {
+  opacity: 0.5;
+}
+
+/* Card Footer */
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border, #e2dcce);
+}
+
+.primaryActions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.viewButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--coral);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.45rem 0.9rem;
+  border-radius: 7px;
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.viewButton:hover {
+  background: #e85545;
+  transform: translateY(-1px);
+}
+
+.setActiveButton {
+  background: transparent;
+  border: 1px solid var(--border, #dcd9d9);
+  color: var(--text, #191919);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.42rem 0.8rem;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.setActiveButton:hover {
+  border-color: var(--coral);
+  color: var(--coral);
+  background: var(--coral-soft);
+}
+
+.activeToggleButton {
+  background: var(--coral-soft);
+  border: 1px solid var(--coral);
+  color: var(--coral);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.42rem 0.8rem;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.activeToggleButton:hover {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #dc2626;
+}
+
+[data-theme="dark"] .activeToggleButton {
+  background: var(--coral-soft);
+  border-color: var(--coral);
+  color: var(--coral);
+}
+
+[data-theme="dark"] .activeToggleButton:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #f87171;
+}
+
+.currentActiveLabel {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--coral);
+}
+
+[data-theme="dark"] .currentActiveLabel {
+  color: var(--coral);
+}
+
+.secondaryActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.iconAction {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #6b6b67);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.iconAction:hover {
+  color: var(--text, #191919);
+  background: var(--surface-dim, #f1ede4);
+}
+
+.deleteAction:hover {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+.confirmDeleteWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.confirmDeleteBtn {
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.3rem 0.55rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.confirmDeleteBtn:hover {
+  background: #b91c1c;
+}
+
+.cancelDeleteBtn {
+  background: transparent;
+  border: 1px solid var(--border, #dcd9d9);
+  color: var(--text-muted, #6b6b67);
+  font-size: 0.75rem;
+  padding: 0.3rem 0.45rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancelDeleteBtn:hover {
+  color: var(--text, #191919);
+}
+
+@media (max-width: 600px) {
+  .cardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cardFooter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .primaryActions {
+    width: 100%;
+  }
+  .viewButton {
+    flex: 1;
+    min-height: 44px;
+  }
+  .setActiveButton,
+  .activeToggleButton {
+    flex: 1;
+    min-height: 44px;
+  }
+  .secondaryActions {
+    justify-content: flex-end;
+    padding-top: 0.5rem;
+  }
+}
+
+@media (max-width: 450px) {
+  .card {
+    padding: 1.15rem 1rem;
+    border-radius: 12px;
+  }
+  .linkBar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .copyButton {
+    width: 100%;
+    min-height: 38px;
+    text-align: center;
+    justify-content: center;
+  }
+  .primaryActions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .viewButton,
+  .setActiveButton,
+  .activeToggleButton {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+  .secondaryActions {
+    justify-content: space-between;
+    width: 100%;
+    border-top: 1px dashed var(--border, #dcd9d9);
+    padding-top: 0.65rem;
+  }
+  .iconAction {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+    min-height: 38px;
+  }
+}
