@@ -1,11 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import useScrollReveal from "../../components/portfolio/useScrollReveal";
-import {
-  getPortfolioByIdOrSlug,
-  getActivePortfolio,
-} from "../../services/portfolioStorage";
 
 import PortfolioHero from "../../components/portfolio/PortfolioHero";
 import PortfolioSkills from "../../components/portfolio/PortfolioSkills";
@@ -131,24 +127,14 @@ const SECTION_CONFIG = {
   },
 };
 
+// Presentational renderer: `overrideData` is { document, theme }. Data fetching lives in PortfolioPage.
 export default function Portfolio({ overrideData, isPreview = false }) {
   useScrollReveal();
-  const { identifier } = useParams();
-
-  const portfolioData = useMemo(() => {
-    if (overrideData) {
-      return overrideData;
-    }
-    if (identifier) {
-      return getPortfolioByIdOrSlug(identifier);
-    }
-    return getActivePortfolio();
-  }, [overrideData, identifier]);
+  const portfolioData = overrideData;
 
   const [themeOverride, setThemeOverride] = useState(null);
   const theme =
     themeOverride ||
-    overrideData?.theme ||
     portfolioData?.theme ||
     localStorage.getItem("portfolio_theme") ||
     "light";
@@ -290,11 +276,11 @@ export default function Portfolio({ overrideData, isPreview = false }) {
           <span className={styles.notFoundEmoji}>🔍</span>
           <h2 className={styles.notFoundTitle}>Portfolio Not Found</h2>
           <p className={styles.notFoundDesc}>
-            The portfolio link <code>{identifier || "default"}</code> could not
-            be found or may have been deleted.
+            This portfolio could not be found. It may have been deleted, or it
+            has not been published yet.
           </p>
           <Link to="/" className={styles.notFoundAction}>
-            ← Back to My Portfolios
+            ← Back to Lovely Portfolio
           </Link>
         </div>
       </div>

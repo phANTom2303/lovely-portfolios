@@ -101,6 +101,18 @@
   border: 1px solid var(--border, #e2dcce);
 }
 
+.archivedBadge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--mustard-soft);
+  color: #854d0e;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--mustard);
+}
+
 .themeBadge {
   font-size: 0.75rem;
   color: var(--text-muted, #6b6b67);
@@ -207,6 +219,25 @@
   background: var(--coral-soft);
   border-color: var(--coral);
   color: var(--coral);
+}
+
+.copyButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.copyButton:disabled:hover {
+  background: transparent;
+  border-color: var(--border, #dcd9d9);
+  color: var(--text, #191919);
+}
+
+.setActiveButton:disabled,
+.activeToggleButton:disabled,
+.iconAction:disabled,
+.confirmDeleteBtn:disabled {
+  opacity: 0.5;
+  cursor: wait;
 }
 
 /* Stats Row */

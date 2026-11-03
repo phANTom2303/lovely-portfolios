@@ -1,10 +1,5 @@
-import { useState, useMemo } from "react";
-import sampleProjects from "../../data/sampleProjects";
-import sampleExperience from "../../data/sampleExperience";
-import sampleAchievements from "../../data/sampleAchievements";
-import sampleCertifications from "../../data/sampleCertifications";
-import sampleEducation from "../../data/sampleEducation";
-import sampleExtraCurricular from "../../data/sampleExtraCurricular";
+import { useState, useMemo, useEffect } from "react";
+import { loadSourceRecords, findSourceRecord } from "./sourceRecords";
 import SkillBadge from "../../components/shared/SkillBadge";
 import ItemSkillsPickerDialog from "./ItemSkillsPickerDialog";
 import styles from "./PortfolioItemEditDialog.module.css";
@@ -74,30 +69,6 @@ function toMonthInput(val) {
   return "";
 }
 
-function findMatchingSampleItem(sectionKey, item) {
-  if (!item) return null;
-  const datasets = {
-    projects: sampleProjects,
-    experience: sampleExperience,
-    achievements: sampleAchievements,
-    certifications: sampleCertifications,
-    education: sampleEducation,
-    extraCurricular: sampleExtraCurricular,
-  };
-  const list = datasets[sectionKey] || [];
-  const searchName = (item.role || item.title || item.name || item.degree || "").toLowerCase().trim();
-  const searchSub = (item.company || item.subtitle || item.institute_name || item.institution || item.org || "").toLowerCase().trim();
-
-  return list.find((s) => {
-    if (item.id && s.id === item.id) return true;
-    const sName = (s.role || s.title || s.name || s.degree || "").toLowerCase().trim();
-    const sSub = (s.company || s.subtitle || s.institute || s.org || "").toLowerCase().trim();
-    if (searchName && sName === searchName) return true;
-    if (searchSub && sSub === searchSub) return true;
-    return false;
-  });
-}
-
 function getInitialFormData(item, sectionKey) {
   if (!item) {
     return {
@@ -161,72 +132,41 @@ function getInitialSkills(item) {
   );
 }
 
-function getInitialAssets(item, sectionKey) {
+function getInitialAssets(item) {
   if (!item) return [];
-  const sampleMatch = findMatchingSampleItem(sectionKey, item);
-
   // Existing assets in the item: displayed by default, matched by title
-  const existingAssets = (item.assets || item.images || []).map((ast, idx) => ({
+  return (item.assets || item.images || []).map((ast, idx) => ({
     title: ast.title || `Attachment #${idx + 1}`,
     link: ast.link || ast.url || "",
     description: ast.description || ast.caption || "",
     asset_type: ast.asset_type || ast.type || "image",
     isDisplayed: true,
   }));
-
-  const existingTitles = new Set(existingAssets.map((a) => a.title.toLowerCase().trim()));
-
-  // Sample assets from the same entity
-  const sampleAssets = (sampleMatch?.images || sampleMatch?.assets || []).map((ast, idx) => ({
-    title: ast.title || `Attachment #${idx + 1}`,
-    link: ast.url || ast.link || "",
-    description: ast.description || ast.caption || "",
-    asset_type: ast.asset_type || ast.type || "image",
-    isDisplayed: false,
-  }));
-
-  const combinedAssets = [...existingAssets];
-  sampleAssets.forEach((sa) => {
-    const cleanTitle = sa.title.toLowerCase().trim();
-    if (sa.link && !existingTitles.has(cleanTitle)) {
-      combinedAssets.push(sa);
-      existingTitles.add(cleanTitle);
-    }
-  });
-
-  return combinedAssets;
 }
 
-function getInitialLinks(item, sectionKey) {
+function getInitialLinks(item) {
   if (!item) return [];
-  const sampleMatch = findMatchingSampleItem(sectionKey, item);
-
   // Existing links in item: displayed by default, matched by title
-  const existingLinks = (item.links || []).map((l, idx) => ({
+  return (item.links || []).map((l, idx) => ({
     title: l.title || l.label || `Link #${idx + 1}`,
     link: l.link || l.url || "",
     isDisplayed: true,
   }));
+}
 
-  const existingTitles = new Set(existingLinks.map((l) => l.title.toLowerCase().trim()));
-
-  // Sample links from the same entity
-  const sampleLinks = (sampleMatch?.links || []).map((l, idx) => ({
-    title: l.title || l.label || `Link #${idx + 1}`,
-    link: l.url || l.link || "",
-    isDisplayed: false,
-  }));
-
-  const combinedLinks = [...existingLinks];
-  sampleLinks.forEach((sl) => {
-    const cleanTitle = sl.title.toLowerCase().trim();
-    if (sl.link && !existingTitles.has(cleanTitle)) {
-      combinedLinks.push(sl);
-      existingTitles.add(cleanTitle);
+// Append source-record entries whose title is not in the pool yet, hidden by default
+function mergeIntoPool(pool, sourceEntries) {
+  const titles = new Set(pool.map((p) => p.title.toLowerCase().trim()));
+  const additions = [];
+  sourceEntries.forEach((entry, idx) => {
+    const title = entry.title || `Attachment #${pool.length + idx + 1}`;
+    const cleanTitle = title.toLowerCase().trim();
+    if (entry.link && !titles.has(cleanTitle)) {
+      additions.push({ ...entry, title, isDisplayed: false });
+      titles.add(cleanTitle);
     }
   });
-
-  return combinedLinks;
+  return additions.length > 0 ? [...pool, ...additions] : pool;
 }
 
 export default function PortfolioItemEditDialog({
@@ -242,12 +182,34 @@ export default function PortfolioItemEditDialog({
   const [formData, setFormData] = useState(() => getInitialFormData(item, sectionKey));
   const [displayedSkills, setDisplayedSkills] = useState(() => getInitialSkills(item));
   const [isSkillPickerOpen, setIsSkillPickerOpen] = useState(false);
-  const [assetsPool, setAssetsPool] = useState(() => getInitialAssets(item, sectionKey));
-  const [linksPool, setLinksPool] = useState(() => getInitialLinks(item, sectionKey));
+  const [assetsPool, setAssetsPool] = useState(() => getInitialAssets(item));
+  const [linksPool, setLinksPool] = useState(() => getInitialLinks(item));
+  // The saved profile record this item was generated from (if any)
+  const [sourceItem, setSourceItem] = useState(null);
+
+  // Offer the record's assets, links and skills that the AI left out of the portfolio
+  useEffect(() => {
+    if (!item || sectionKey === "education") return;
+    let isMounted = true;
+    loadSourceRecords(sectionKey)
+      .then((records) => {
+        const match = findSourceRecord(sectionKey, item, records);
+        if (!isMounted || !match) return;
+        setSourceItem(match.item);
+        setAssetsPool((prev) => mergeIntoPool(prev, match.item.assets || []));
+        setLinksPool((prev) => mergeIntoPool(prev, match.item.links || []));
+      })
+      .catch((err) => {
+        // Non-fatal: the dialog still edits the item's own data
+        console.error("Failed to load source record for portfolio item:", err);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [sectionKey, item]);
 
   // Candidate skills belonging to this specific item only
   const allCandidateSkills = useMemo(() => {
-    const sampleMatch = findMatchingSampleItem(sectionKey, item);
     const set = new Set();
 
     (item.skills || []).forEach((s) => {
@@ -255,7 +217,7 @@ export default function PortfolioItemEditDialog({
       if (name) set.add(name);
     });
 
-    (sampleMatch?.skills || []).forEach((s) => {
+    (sourceItem?.skills || []).forEach((s) => {
       const name = typeof s === "object" ? s.skill_name || s.name : s;
       if (name) set.add(name);
     });
@@ -265,7 +227,7 @@ export default function PortfolioItemEditDialog({
     });
 
     return Array.from(set).sort();
-  }, [sectionKey, item, displayedSkills]);
+  }, [item, sourceItem, displayedSkills]);
 
   if (!isOpen || !item) return null;
 

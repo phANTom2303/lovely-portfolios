@@ -7,6 +7,7 @@
 -- RESET EXISTING TABLES
 -- ============================================================
 
+DROP TABLE IF EXISTS portfolio CASCADE;
 DROP TABLE IF EXISTS resume_entity CASCADE;
 DROP TABLE IF EXISTS education CASCADE;
 DROP TABLE IF EXISTS assets CASCADE;
@@ -19,6 +20,7 @@ DROP TABLE IF EXISTS users CASCADE;
 -- RESET EXISTING ENUM TYPES
 -- ============================================================
 
+DROP TYPE IF EXISTS portfolio_status_enum CASCADE;
 DROP TYPE IF EXISTS status_enum CASCADE;
 DROP TYPE IF EXISTS re_type_enum CASCADE;
 DROP TYPE IF EXISTS asset_type_enum CASCADE;
@@ -82,6 +84,13 @@ CREATE TYPE status_enum AS ENUM (
     'draft',
     'active',
     'deleted'
+);
+
+-- Portfolio status
+CREATE TYPE portfolio_status_enum AS ENUM (
+    'draft',
+    'published',
+    'archived'
 );
 
 
@@ -188,7 +197,8 @@ CREATE TABLE IF NOT EXISTS portfolio(
     user_email  VARCHAR(100)  NOT NULL,
     profile_data        JSONB,
     portfolio_name      TEXT,
-    create_date         DATE
+    create_date         DATE,
+    status              portfolio_status_enum NOT NULL DEFAULT 'draft'
 );
 -- ============================================================
 -- INSERT DUMMY DATA

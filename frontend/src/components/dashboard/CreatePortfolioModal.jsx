@@ -1,222 +1,161 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { generatePortfolio } from "../../api/portfolioApi";
+import { getErrorMessage } from "../../utils/getErrorMessage";
 import styles from "./CreatePortfolioModal.module.css";
 
-function slugify(text) {
-  return text
-    .toString()
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-_]/g, "")
-    .replace(/[\s_]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
+const LOADING_MESSAGES = [
+  "Analysing the job description…",
+  "Extracting the skills that matter…",
+  "Scoring your experience against the role…",
+  "Picking your strongest projects…",
+  "Fine-tuning your work…",
+  "Rewriting highlights in the right voice…",
+  "Polishing your portfolio…",
+];
 
-export default function CreatePortfolioModal({
-  isOpen,
-  onClose,
-  onCreate,
-  portfolios = [],
-}) {
-  const [title, setTitle] = useState("");
-  const [slug, setSlug] = useState("");
-  const [isSlugManual, setIsSlugManual] = useState(false);
-  const [theme, setTheme] = useState("light");
-  const [templateId, setTemplateId] = useState("");
+const MESSAGE_INTERVAL_MS = 2600;
+
+export default function CreatePortfolioModal({ isOpen, onClose, onCreated }) {
+  const [jdText, setJdText] = useState("");
   const [error, setError] = useState("");
-
-  const activePortfolio = portfolios.find((p) => p.isActive);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [messageIndex, setMessageIndex] = useState(0);
 
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   if (isOpen !== prevIsOpen) {
     setPrevIsOpen(isOpen);
     if (isOpen) {
-      setTitle("");
-      setSlug("");
-      setIsSlugManual(false);
-      setTheme("light");
-      setTemplateId(activePortfolio?.id || "");
+      setJdText("");
       setError("");
+      setMessageIndex(0);
     }
   }
 
+  useEffect(() => {
+    if (!isGenerating) return;
+    const timer = setInterval(() => {
+      setMessageIndex((i) => (i + 1) % LOADING_MESSAGES.length);
+    }, MESSAGE_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [isGenerating]);
+
   if (!isOpen) return null;
 
-  const handleTitleChange = (e) => {
-    const val = e.target.value;
-    setTitle(val);
-    if (!isSlugManual) {
-      setSlug(slugify(val));
-    }
+  // Generation keeps running server-side, so the dialog cannot be dismissed mid-request
+  const handleClose = () => {
+    if (!isGenerating) onClose();
   };
 
-  const handleSlugChange = (e) => {
-    setIsSlugManual(true);
-    setSlug(slugify(e.target.value));
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title.trim()) {
-      setError("Please provide a title for your portfolio.");
+    const trimmed = jdText.trim();
+    if (!trimmed) {
+      setError("Please paste a job description to tailor your portfolio to.");
       return;
     }
 
-    const finalSlug = slug.trim() || slugify(title);
-    if (!finalSlug) {
-      setError("Please provide a valid URL slug.");
-      return;
-    }
-
+    setError("");
+    setMessageIndex(0);
+    setIsGenerating(true);
     try {
-      onCreate({
-        title: title.trim(),
-        slug: finalSlug,
-        theme,
-        templateId: templateId || null,
-      });
+      const result = await generatePortfolio(trimmed);
+      setIsGenerating(false);
+      onCreated(result);
       onClose();
     } catch (err) {
-      setError(err.message || "Failed to create portfolio.");
+      setIsGenerating(false);
+      setError(getErrorMessage(err, "Failed to generate portfolio. Please try again."));
     }
   };
 
   return (
-    <div className={styles.overlay} onClick={onClose} role="dialog" aria-modal="true">
+    <div className={styles.overlay} onClick={handleClose} role="dialog" aria-modal="true">
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <div>
             <h2 className={styles.modalTitle}>Create New Portfolio</h2>
             <p className={styles.modalSubtitle}>
-              Generate a new personalized portfolio with its own unique link.
+              Paste a job description and we&apos;ll tailor a portfolio from your profile to match it.
             </p>
           </div>
           <button
             type="button"
             className={styles.closeBtn}
-            onClick={onClose}
+            onClick={handleClose}
+            disabled={isGenerating}
             aria-label="Close dialog"
           >
             ✕
           </button>
         </div>
 
-        {error && <div className={styles.errorBox}>{error}</div>}
-
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.field}>
-            <label htmlFor="portfolio-title" className={styles.label}>
-              Portfolio Title <span className={styles.required}>*</span>
-            </label>
-            <input
-              id="portfolio-title"
-              type="text"
-              className={styles.input}
-              placeholder="e.g. Senior Full-Stack Lead, Open Source Builder..."
-              value={title}
-              onChange={handleTitleChange}
-              autoFocus
-              required
-            />
-          </div>
-
-          <div className={styles.field}>
-            <label htmlFor="portfolio-slug" className={styles.label}>
-              Custom Link / Slug <span className={styles.required}>*</span>
-            </label>
-            <div className={styles.slugInputWrapper}>
-              <span className={styles.slugPrefix}>/portfolio/</span>
-              <input
-                id="portfolio-slug"
-                type="text"
-                className={styles.slugInput}
-                placeholder="your-unique-slug"
-                value={slug}
-                onChange={handleSlugChange}
-                required
-              />
-            </div>
-            <span className={styles.hint}>
-              Live public link:{" "}
-              <code>{`${window.location.origin}/portfolio/${slug || "your-slug"}`}</code>
-            </span>
-          </div>
-
-          <div className={styles.rowFields}>
-            <div className={styles.field}>
-              <label htmlFor="portfolio-template" className={styles.label}>
-                Base Data
-              </label>
-              <select
-                id="portfolio-template"
-                className={styles.select}
-                value={templateId}
-                onChange={(e) => setTemplateId(e.target.value)}
-              >
-                {activePortfolio && (
-                  <option value={activePortfolio.id}>
-                    Clone from Active ({activePortfolio.title})
-                  </option>
-                )}
-                {portfolios
-                  .filter((p) => p.id !== activePortfolio?.id)
-                  .map((p) => (
-                    <option key={p.id} value={p.id}>
-                      Clone from {p.title}
-                    </option>
-                  ))}
-                <option value="">Clean Starter Template</option>
-              </select>
+        {isGenerating ? (
+          <div className={styles.generatingState} role="status" aria-live="polite">
+            <div className={styles.orbit} aria-hidden="true">
+              <span className={styles.orbitDot} />
+              <span className={styles.orbitDot} />
+              <span className={styles.orbitDot} />
             </div>
 
-            <div className={styles.field}>
-              <label className={styles.label}>Default Theme</label>
-              <div className={styles.themeRadioGroup}>
-                <label
-                  className={`${styles.themeOption} ${
-                    theme === "light" ? styles.themeOptionSelected : ""
-                  }`}
+            <div className={styles.messageSlot}>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={messageIndex}
+                  className={styles.generatingMessage}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
                 >
-                  <input
-                    type="radio"
-                    name="theme"
-                    value="light"
-                    checked={theme === "light"}
-                    onChange={() => setTheme("light")}
-                  />
-                  <span>☀️ Light</span>
+                  {LOADING_MESSAGES[messageIndex]}
+                </motion.p>
+              </AnimatePresence>
+            </div>
+
+            <div className={styles.progressTrack} aria-hidden="true">
+              <span className={styles.progressBar} />
+            </div>
+
+            <p className={styles.generatingHint}>
+              This usually takes under a minute. Please keep this window open.
+            </p>
+          </div>
+        ) : (
+          <>
+            {error && <div className={styles.errorBox}>{error}</div>}
+
+            <form onSubmit={handleSubmit} className={styles.form}>
+              <div className={styles.field}>
+                <label htmlFor="portfolio-jd" className={styles.label}>
+                  Job Description <span className={styles.required}>*</span>
                 </label>
-                <label
-                  className={`${styles.themeOption} ${
-                    theme === "dark" ? styles.themeOptionSelected : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="theme"
-                    value="dark"
-                    checked={theme === "dark"}
-                    onChange={() => setTheme("dark")}
-                  />
-                  <span>🌙 Dark</span>
-                </label>
+                <textarea
+                  id="portfolio-jd"
+                  className={`${styles.textarea} ${styles.jdTextarea}`}
+                  placeholder="e.g. We are looking for a Backend Engineer experienced in Node.js and PostgreSQL..."
+                  value={jdText}
+                  onChange={(e) => setJdText(e.target.value)}
+                  rows={10}
+                  autoFocus
+                  required
+                />
+                <span className={styles.hint}>
+                  {jdText.trim().length} characters · The generated portfolio is saved as a draft for you to review.
+                </span>
               </div>
-            </div>
-          </div>
 
-          <div className={styles.modalFooter}>
-            <button
-              type="button"
-              className={styles.cancelBtn}
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-            <button type="submit" className={styles.submitBtn}>
-              Create Portfolio
-            </button>
-          </div>
-        </form>
+              <div className={styles.modalFooter}>
+                <button type="button" className={styles.cancelBtn} onClick={handleClose}>
+                  Cancel
+                </button>
+                <button type="submit" className={styles.submitBtn}>
+                  ✦ Generate Portfolio
+                </button>
+              </div>
+            </form>
+          </>
+        )}
       </div>
     </div>
   );

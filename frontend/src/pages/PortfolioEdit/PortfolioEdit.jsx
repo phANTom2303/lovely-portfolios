@@ -1,9 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import {
-  getPortfolioByIdOrSlug,
-  updatePortfolio,
-} from "../../services/portfolioStorage";
+import { fetchPortfolio, updatePortfolio } from "../../api/portfolioApi";
+import { getErrorMessage } from "../../utils/getErrorMessage";
 // import { useAuth } from "../../context/authContext";
 import PortfolioItemEditDialog from "./PortfolioItemEditDialog";
 import AddSocialLinkDialog from "./AddSocialLinkDialog";
@@ -26,6 +24,17 @@ const ALL_SECTION_META = {
 
 const ALL_SECTION_KEYS = Object.keys(ALL_SECTION_META);
 
+const STATUS_META = {
+  draft: { label: "Draft", className: "statusDraft" },
+  published: { label: "Published", className: "statusPublished" },
+  archived: { label: "Archived", className: "statusArchived" },
+};
+
+// The editor keeps the theme separately; it is persisted inside profile_data
+function splitProfileData(profileData) {
+  const { theme, ...doc } = profileData ? JSON.parse(JSON.stringify(profileData)) : {};
+  return { theme: theme === "dark" ? "dark" : "light", doc };
+}
 
 
 function formatDisplayDate(val) {
@@ -41,25 +50,57 @@ function formatDisplayDate(val) {
 }
 
 export default function PortfolioEdit() {
-  const { identifier } = useParams();
-  const originalPortfolio = useMemo(
-    () => getPortfolioByIdOrSlug(identifier),
-    [identifier]
-  );
+  const { portfolioId } = useParams();
+  const [state, setState] = useState({ portfolioId, portfolio: null, error: "" });
 
-  if (!originalPortfolio) {
+  // Reset when navigating between portfolios without unmounting
+  if (state.portfolioId !== portfolioId) {
+    setState({ portfolioId, portfolio: null, error: "" });
+  }
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchPortfolio(portfolioId)
+      .then((portfolio) => {
+        if (!isMounted) return;
+        if (portfolio) {
+          setState({ portfolioId, portfolio, error: "" });
+        } else {
+          setState({ portfolioId, portfolio: null, error: "The requested portfolio could not be found." });
+        }
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        const message =
+          err?.response?.status === 404 || err?.response?.status === 400
+            ? "The requested portfolio could not be found."
+            : getErrorMessage(err, "Failed to load this portfolio.");
+        setState({ portfolioId, portfolio: null, error: message });
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [portfolioId]);
+
+  if (!state.portfolio) {
     return (
       <div className={styles.pageLayout}>
         <div style={{ padding: "4rem 2rem", textAlign: "center" }}>
-          <h2 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.5rem" }}>
-            Portfolio Not Found
-          </h2>
-          <p style={{ color: "#64748b", marginBottom: "1.5rem" }}>
-            The requested portfolio could not be found.
-          </p>
-          <Link to="/" className={styles.backBtn}>
-            Return to Dashboard
-          </Link>
+          {state.error ? (
+            <>
+              <h2 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.5rem" }}>
+                Portfolio Not Found
+              </h2>
+              <p style={{ color: "#64748b", marginBottom: "1.5rem" }}>{state.error}</p>
+              <Link to="/home" className={styles.backBtn}>
+                Return to Dashboard
+              </Link>
+            </>
+          ) : (
+            <p style={{ color: "#64748b" }} role="status">
+              Loading portfolio…
+            </p>
+          )}
         </div>
       </div>
     );
@@ -67,8 +108,8 @@ export default function PortfolioEdit() {
 
   return (
     <PortfolioEditorInner
-      key={originalPortfolio.id}
-      originalPortfolio={originalPortfolio}
+      key={state.portfolio.portfolio_id}
+      originalPortfolio={state.portfolio}
     />
   );
 }
@@ -78,16 +119,18 @@ function PortfolioEditorInner({ originalPortfolio }) {
   // const { user } = useAuth();
   const [isAddSocialOpen, setIsAddSocialOpen] = useState(false);
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
-  const [draftTitle, setDraftTitle] = useState(() => originalPortfolio.title || "");
-  const draftSlug = originalPortfolio.slug || "";
-  const [draftTheme, setDraftTheme] = useState(() => originalPortfolio.theme || "light");
-  const [draftDoc, setDraftDoc] = useState(() =>
-    originalPortfolio.document
-      ? JSON.parse(JSON.stringify(originalPortfolio.document))
-      : {}
-  );
+  const portfolioId = originalPortfolio.portfolio_id;
+  const [initialData] = useState(() => splitProfileData(originalPortfolio.profile_data));
+  const [draftTitle, setDraftTitle] = useState(() => originalPortfolio.portfolio_name || "");
+  const [draftTheme, setDraftTheme] = useState(initialData.theme);
+  const [draftDoc, setDraftDoc] = useState(initialData.doc);
+  const [status, setStatus] = useState(() => originalPortfolio.status || "draft");
   const [isDirty, setIsDirty] = useState(false);
-  const [showToast, setShowToast] = useState(false);
+  const [savingMode, setSavingMode] = useState(null); // null | 'save' | 'publish'
+  const [toast, setToast] = useState(null); // { message, isError }
+  const toastTimerRef = useRef(null);
+
+  useEffect(() => () => clearTimeout(toastTimerRef.current), []);
 
   // Active edit dialog state: { sectionKey, itemIndex, item }
   const [activeEditModal, setActiveEditModal] = useState(null);
@@ -223,21 +266,43 @@ function PortfolioEditorInner({ originalPortfolio }) {
     setActiveEditModal(null);
   };
 
-  // ── SAVE ACTION ──
-  const handleSave = () => {
-    if (!originalPortfolio) return;
-    const updated = updatePortfolio(originalPortfolio.id, {
-      title: draftTitle.trim() || originalPortfolio.title,
-      slug: draftSlug,
-      theme: draftTheme,
-      document: draftDoc,
-    });
-    if (updated) {
+  const showToast = (message, isError = false) => {
+    clearTimeout(toastTimerRef.current);
+    setToast({ message, isError });
+    toastTimerRef.current = setTimeout(() => setToast(null), isError ? 5000 : 3000);
+  };
+
+  // ── SAVE ACTIONS ──
+  // "Save" leaves the status untouched; "Save & Publish" also sets it to published.
+  const handleSave = async (publish = false) => {
+    if (savingMode) return;
+    setSavingMode(publish ? "publish" : "save");
+    const payload = {
+      portfolio_id: portfolioId,
+      portfolio_name: draftTitle.trim() || originalPortfolio.portfolio_name,
+      profile_data: { ...draftDoc, theme: draftTheme },
+    };
+    if (publish) payload.status = "published";
+
+    try {
+      const updated = await updatePortfolio(payload);
       setIsDirty(false);
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
+      setStatus(updated?.status || status);
+      if (updated?.portfolio_name) setDraftTitle(updated.portfolio_name);
+      showToast(
+        publish
+          ? "Portfolio saved and published. It is now publicly visible."
+          : "Portfolio saved successfully. Refresh your preview tab to view updates."
+      );
+    } catch (err) {
+      showToast(getErrorMessage(err, "Failed to save portfolio. Please try again."), true);
+    } finally {
+      setSavingMode(null);
     }
   };
+
+  const isPublished = status === "published";
+  const statusMeta = STATUS_META[status] || STATUS_META.draft;
 
   if (!draftDoc) {
     return null;
@@ -860,6 +925,12 @@ function PortfolioEditorInner({ originalPortfolio }) {
               </svg>
               <span>Home</span>
             </Link>
+            <span
+              className={`${styles.statusBadge} ${styles[statusMeta.className]}`}
+              title={`Current status: ${statusMeta.label}`}
+            >
+              {statusMeta.label}
+            </span>
           </div>
 
           <div className={styles.topBarRight}>
@@ -878,11 +949,15 @@ function PortfolioEditorInner({ originalPortfolio }) {
 
             {/* Preview Button */}
             <a
-              href={`/portfolio/${draftSlug}`}
+              href={`/portfolio/${portfolioId}/preview`}
               target="_blank"
               rel="noopener noreferrer"
               className={styles.previewBtn}
-              title="Preview portfolio in a new tab"
+              title={
+                isDirty
+                  ? "Preview shows the last saved version. Save to see your latest changes."
+                  : "Preview portfolio in a new tab"
+              }
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -894,14 +969,14 @@ function PortfolioEditorInner({ originalPortfolio }) {
               </svg>
             </a>
 
-            {/* Open live page option: ONLY if portfolio is currently active */}
-            {originalPortfolio.isActive && (
+            {/* Open live page option: ONLY if portfolio is currently published */}
+            {isPublished && (
               <a
-                href={`/portfolio/${draftSlug}`}
+                href={`/portfolio/${portfolioId}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.livePageBtn}
-                title="Open live active portfolio"
+                title="Open live published portfolio"
               >
                 <span>Live Page</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -913,15 +988,16 @@ function PortfolioEditorInner({ originalPortfolio }) {
             <button
               type="button"
               className={`${styles.saveButton} ${
-                isDirty ? styles.saveButtonDirty : styles.saveButtonClean
+                isDirty ? styles.saveButtonOutline : styles.saveButtonClean
               }`}
-              onClick={handleSave}
-              title={isDirty ? "Save changes to storage" : "All changes saved"}
+              onClick={() => handleSave(false)}
+              disabled={Boolean(savingMode)}
+              title={isDirty ? "Save changes without changing the status" : "All changes saved"}
             >
-              {isDirty ? (
-                <>
-                  <span>Save Changes</span>
-                </>
+              {savingMode === "save" ? (
+                <span>Saving…</span>
+              ) : isDirty ? (
+                <span>Save</span>
               ) : (
                 <>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -931,17 +1007,53 @@ function PortfolioEditorInner({ originalPortfolio }) {
                 </>
               )}
             </button>
+
+            <button
+              type="button"
+              className={`${styles.saveButton} ${styles.publishButton}`}
+              onClick={() => handleSave(true)}
+              disabled={Boolean(savingMode) || (isPublished && !isDirty)}
+              title={
+                isPublished && !isDirty
+                  ? "This portfolio is published and up to date"
+                  : "Save changes and make this portfolio publicly visible"
+              }
+            >
+              {savingMode === "publish" ? (
+                <span>Publishing…</span>
+              ) : isPublished && !isDirty ? (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>Published</span>
+                </>
+              ) : (
+                <span>Save &amp; Publish</span>
+              )}
+            </button>
           </div>
         </div>
       </header>
 
-      {/* Save Success Toast */}
-      {showToast && (
-        <div className={styles.saveToast}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-          <span>Portfolio saved successfully. Refresh your preview tab to view updates.</span>
+      {/* Save Result Toast */}
+      {toast && (
+        <div
+          className={`${styles.saveToast} ${toast.isError ? styles.saveToastError : ""}`}
+          role={toast.isError ? "alert" : "status"}
+        >
+          {toast.isError ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          )}
+          <span>{toast.message}</span>
         </div>
       )}
 
