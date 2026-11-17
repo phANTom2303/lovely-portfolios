@@ -42,7 +42,9 @@
   position: relative;
   z-index: 2;
 
-  width: min(900px, 100%);
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
 
   display: flex;
   flex-direction: column;
@@ -52,16 +54,24 @@
 }
 
 .hero-eyebrow {
-  margin-bottom: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  text-align: center;
 
-  padding: 8px 16px;
+  margin: 0 auto 24px auto;
+  padding: 6px 18px;
 
   background: var(--mustard);
   border-radius: 999px;
 
   color: var(--text);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+  box-sizing: border-box;
 }
 
 .hero h1 {
@@ -72,6 +82,7 @@
   font-weight: 700;
   line-height: 1.02;
   letter-spacing: -0.055em;
+  text-wrap: balance;
 }
 
 .hero h1 span {
@@ -88,6 +99,7 @@
 
   font-size: 1.1rem;
   line-height: 1.7;
+  text-wrap: balance;
 }
 
 .hero-actions {
@@ -170,8 +182,6 @@
   width: 160px;
 
   transform: rotate(11deg);
-
-  /* opacity: 0.68; */
 
   animation: float-three 9s ease-in-out infinite;
 }
@@ -290,22 +300,39 @@
   }
 }
 @media (max-width: 768px) {
-  .hero h1 {
-    font-size: 3rem;
-    line-height: 1.05;
+  .hero {
+    min-height: auto;
+    padding: 60px 16px;
   }
-  .card-one {
-    top: 12%;
-    left: -40px;
 
-    width: 140px;
+  .hero h1 {
+    font-size: clamp(2.2rem, 6.5vw, 3.2rem);
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+  }
+
+  .hero p {
+    font-size: 1rem;
+    margin-top: 24px;
+    line-height: 1.6;
+  }
+
+  .hero-actions {
+    margin-top: 32px;
+  }
+
+  .card-one {
+    top: 8%;
+    left: 2%;
+    width: 130px;
+    opacity: 0.45;
   }
 
   .card-two {
-    right: -45px;
-    bottom: 14%;
-
-    width: 160px;
+    right: 2%;
+    bottom: 8%;
+    width: 140px;
+    opacity: 0.45;
   }
 
   .card-three {
@@ -316,17 +343,44 @@
     opacity: 0.1;
   }
 }
-@media (max-width: 480px) {
-  .card-one {
-    opacity: 0.55;
-    transform: scale(0.8) rotate(-7deg);
-  }
 
-  .card-two {
-    opacity: 0.55;
-    transform: scale(0.8) rotate(6deg);
+@media (max-width: 640px) {
+  .floating-card {
+    display: none;
   }
 }
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 50px 16px;
+  }
+
+  .hero-eyebrow {
+    font-size: 0.72rem;
+    padding: 5px 14px;
+    margin-bottom: 20px;
+    max-width: 95%;
+  }
+
+  .hero h1 {
+    font-size: 2.1rem;
+    letter-spacing: -0.035em;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+    max-width: 280px;
+    gap: 12px;
+  }
+
+  .hero-actions a {
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .floating-card {
     animation: none;
